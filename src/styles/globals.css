@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// Default styles from create-next-app
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+body {
+  font-family: var(--font-manrope);
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+// Styles from shadcn
+@layer base {
+  :root {
+    --radius: 0.5rem;
+  }
+}

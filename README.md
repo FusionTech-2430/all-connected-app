@@ -1,36 +1,130 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+![Logo](https://github.com/FusionTech-2430/.github/blob/main/profile/Banner2.png?raw=true)
 
-## Getting Started
+# AllConnected Web App
 
-First, run the development server:
+AllConnected es una **PWA** (Progressive Web App) que permite a diferentes usuarios, emprendedores y organizaciones, conectarse entre sí para realizar sus negocios, proyectos y eventos de manera más eficiente y efectiva.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Stack Tecnológico
+
+- [Next.js](https://nextjs.org/) 14.2.9
+- [Tailwindcss](https://tailwindcss.com/) 3.4.10
+- [Typescript](https://www.typescriptlang.org/) 5.6.2
+- [Shadcn](https://ui.shadcn.com/) 2.0.5
+- [Lucide icons](https://lucide.dev/) 0.439.0
+- [Prettier](https://prettier.io/) 3.3.3
+
+## Variables de entorno
+
+Para ejecutar este proyecto, necesitarás agregar las siguientes variables de entorno a tu archivo `.env.local`.
+
+`API_GATEWAY_URL`
+
+> 📘 INFO
+>
+> Las variables de entorno que no tengan el prefijo `NEXT_PUBLIC_` sólo están disponibles en el entorno `Node.js` **(Server side)**, lo que significa que no son accesibles para el navegador **(Client side)**.
+
+### Ejemplo de uso
+
+```tsx
+export async function Page() {
+  const users: User[] = await fetch(`${process.env.API_GATEWAY_URL}/users`)
+
+  return (
+    <>
+      <p>{JSON.stringify(users)}</p>
+    </>
+  )
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Ejecutar Localmente
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Clona el proyecto
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+  git clone https://github.com/FusionTech-2430/all-connected-app.git
+```
 
-## Learn More
+Ve al directorio del proyecto
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+  cd all-connected-app
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Instala las dependencias
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+  npm install
+```
 
-## Deploy on Vercel
+Inicia el servidor de desarrollo
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+  npm run dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Estructura de directorios
+
+```
+└── 📁all-connected-app
+    └── 📁.github
+        └── 📁workflows
+    └── 📁public
+
+    └── 📁src
+        └── 📁app
+            └── favicon.ico
+            └── layout.tsx
+            └── page.tsx
+        └── 📁components
+        └── 📁hooks
+        └── 📁lib
+        └── 📁styles
+        └── 📁types
+        └── 📁utils
+        └── middleware.ts
+    └── .eslintrc.json
+    └── .gitignore
+    └── .prettierrc
+    └── components.json
+    └── next-env.d.ts
+    └── next.config.mjs
+    └── package-lock.json
+    └── package.json
+    └── postcss.config.mjs
+    └── README.md
+    └── tailwind.config.ts
+    └── tsconfig.json
+```
+
+- **.github/workflows**: Directorio de acciones de GitHub.
+- **public**: Directorio de archivos estáticos(imágenes, svg, videos,etc.).
+- **src**: Directorio principal de la aplicación.
+  - **app**: Directorio para la navegación, layout y páginas de la aplicación.
+    - **favicon.ico**: Icono de la aplicación.
+    - **layout.tsx**: Root layout de la aplicación.
+    - **page.tsx**: Home page de la aplicación.
+  - **components**: Directorio de componentes de la aplicación.
+  - **hooks**: Directorio de hooks personalizados (Solamente funcionan en el lado del cliente).
+  - **lib**: Directorio de librerías personalizadas.
+  - **styles**: Directorio de estilos globales.
+  - **types**: Directorio de tipos personalizados.
+  - **utils**: Directorio de utilidades.
+  - **middleware.ts**: Middleware de la aplicación.
+- **.eslintrc.json**: Configuración de ESLint.
+- **.gitignore**: Archivos ignorados por Git.
+- **.prettierrc**: Configuración de Prettier.
+- **components.json**: Configuración de componentes de shadcn.
+- **next-env.d.ts**: Tipos de Next.js.
+- **next.config.mjs**: Configuración de Next.js.
+- **package.json**: Dependencias del proyecto.
+- **tailwind.config.ts**: Configuración de Tailwindcss.
+
+
+## Autores
+
+- [@alejandronoss1017](https://github.com/alejandronoss1017)
+- [@ValEscoSierra](https://github.com/ValEscoSierra)
+- [@StiivenOrtiz](https://github.com/StiivenOrtiz)
+- [@Moyano1711](https://github.com/Moyano1711)
+- [@GianlucaGav](https://github.com/GianlucaGav)
