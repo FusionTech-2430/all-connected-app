@@ -1,12 +1,9 @@
-import { ModeToggle } from '@/components/mode-toggle'
+import MessagesList from '@/components/MessagesList';
 
-export default function Page() {
+export default function MessagesPage() {
   return (
-    <>
-      <main className="flex flex-col min-h-screen justify-center items-center gap-4">
-        <h1 className="text-lg font-bold">Hello, world!</h1>
-        <ModeToggle />
-      </main>
-    </>
-  )
+    <div className="container mx-auto p-6">
+      <MessagesList />
+    </div>
+  );
 }
