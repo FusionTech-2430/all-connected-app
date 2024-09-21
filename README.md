@@ -63,6 +63,40 @@ Inicia el servidor de desarrollo
   npm run dev
 ```
 
+
+## Ejecutar con Docker
+
+Crear la imagen de Docker
+
+```bash
+  docker build -t all-connected-app:etiqueta .
+```
+- `-t`: Asigna un nombre y una etiqueta a la imagen
+
+- `.`: Indica que el contexto es el directorio actual
+
+> 📘 INFO
+>
+> La etiqueta es opcional, si no se especifica, se asignará `latest` por defecto.
+
+Ejecutar el contenedor de Docker
+
+```bash
+  docker run -d --name all-connected-app-container -p 3000:3000 all-connected-app
+```
+
+### Opciones de Docker
+
+- `-d`: Ejecuta el contenedor en modo desconectado (en segundo plano)
+
+- `-p`: Mapea un puerto del host a un puerto del contenedor
+
+- `-v`: Monta un volumen
+
+- `--name`: Asigna un nombre al contenedor
+
+- `-e`: Define variables de entorno
+
 ## Estructura de directorios
 
 ```
@@ -83,10 +117,12 @@ Inicia el servidor de desarrollo
         └── 📁types
         └── 📁utils
         └── middleware.ts
+    └── .dockerignore
     └── .eslintrc.json
     └── .gitignore
     └── .prettierrc
     └── components.json
+    └── Dockerfile
     └── next-env.d.ts
     └── next.config.mjs
     └── package-lock.json
@@ -96,30 +132,6 @@ Inicia el servidor de desarrollo
     └── tailwind.config.ts
     └── tsconfig.json
 ```
-
-- **.github/workflows**: Directorio de acciones de GitHub.
-- **public**: Directorio de archivos estáticos(imágenes, svg, videos,etc.).
-- **src**: Directorio principal de la aplicación.
-  - **app**: Directorio para la navegación, layout y páginas de la aplicación.
-    - **favicon.ico**: Icono de la aplicación.
-    - **layout.tsx**: Root layout de la aplicación.
-    - **page.tsx**: Home page de la aplicación.
-  - **components**: Directorio de componentes de la aplicación.
-  - **hooks**: Directorio de hooks personalizados (Solamente funcionan en el lado del cliente).
-  - **lib**: Directorio de librerías personalizadas.
-  - **styles**: Directorio de estilos globales.
-  - **types**: Directorio de tipos personalizados.
-  - **utils**: Directorio de utilidades.
-  - **middleware.ts**: Middleware de la aplicación.
-- **.eslintrc.json**: Configuración de ESLint.
-- **.gitignore**: Archivos ignorados por Git.
-- **.prettierrc**: Configuración de Prettier.
-- **components.json**: Configuración de componentes de shadcn.
-- **next-env.d.ts**: Tipos de Next.js.
-- **next.config.mjs**: Configuración de Next.js.
-- **package.json**: Dependencias del proyecto.
-- **tailwind.config.ts**: Configuración de Tailwindcss.
-
 
 ## Autores
 
