@@ -1,9 +1,12 @@
-import MessagesList from '@/components/MessagesList';
+import React from 'react';
+import MessageList from '@/components/MessagesList'; 
 
-export default function MessagesPage() {
+const MessagePage = () => {
   return (
-    <div className="container mx-auto p-6">
-      <MessagesList />
+    <div>
+      <MessageList />
     </div>
   );
-}
+};
+
+export default MessagePage;
