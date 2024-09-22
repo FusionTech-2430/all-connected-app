@@ -1,12 +1,15 @@
-import React from 'react';
-import Chat from '@/components/Chat'; 
+import React, { Suspense } from 'react';
+import Chat from '@/components/Chat';
 
 const MessagePage = () => {
   return (
     <div>
-      <Chat />
+      <Suspense fallback={<div>Cargando...</div>}>
+        <Chat />
+      </Suspense>
     </div>
   );
 };
 
 export default MessagePage;
+
