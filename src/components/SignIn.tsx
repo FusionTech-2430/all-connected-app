@@ -1,5 +1,6 @@
 import React from 'react';
 import NavBar from '@/components/NavBar';
+import Footer from '@/components/FooterApp';
 
 const SignIn = () => {
   return (
@@ -58,6 +59,7 @@ const SignIn = () => {
           }} />
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

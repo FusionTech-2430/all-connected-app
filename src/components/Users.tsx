@@ -1,5 +1,6 @@
 import React from 'react';
 import NavBar from '@/components/NavBar';
+import Footer from '@/components/FooterApp';
 
 const SignUp = () => {
   return (
@@ -72,6 +73,7 @@ const SignUp = () => {
           ¿Ya tienes una cuenta? <a href="#" style={{ color: '#0369A1' }}>Inicia Sesión</a>
         </p>
       </div>
+      <Footer />
     </div>
   );
 };
