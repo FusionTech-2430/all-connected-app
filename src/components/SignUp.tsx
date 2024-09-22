@@ -70,7 +70,7 @@ const SignUp = () => {
           </div>
         </form>
         <p className="text-center mt-4 text-sm">
-          ¿Ya tienes una cuenta? <a href="#" style={{ color: '#0369A1' }}>Inicia Sesión</a>
+          ¿Ya tienes una cuenta? <a href="/SignIn" style={{ color: '#0369A1' }}>Inicia Sesión</a>
         </p>
       </div>
       <Footer />
