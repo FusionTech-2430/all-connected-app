@@ -1,127 +1,73 @@
-// src/components/MessagesList.tsx
+"use client";
+import { Bell, User, Send } from "lucide-react"
+import Link from "next/link"
 
-"use client"; 
-import { Bell, ChevronRight, LayoutDashboard, MessageSquare, PlusCircle, ShoppingCart, User } from 'lucide-react'
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-
-interface MenuItem {
-  icon: React.ReactNode;
-  label: string;
-  active?: boolean;
-}
-
-interface Message {
-  id: number;
-  client: string;
-  date: string;
-}
-
-const menuItems: MenuItem[] = [
-  { icon: <LayoutDashboard className="w-4 h-4" />, label: "Inventario" },
-  { icon: <PlusCircle className="w-4 h-4" />, label: "Flujo de Caja" },
-  { icon: <ShoppingCart className="w-4 h-4" />, label: "Mi emprendimiento" },
-  { icon: <MessageSquare className="w-4 h-4" />, label: "Mensajes", active: true },
-  { icon: <PlusCircle className="w-4 h-4" />, label: "Registro Manual Ventas" },
+const messages = [
+  { id: 1, name: "Esteban Salazar", date: "2024-05-01" },
+  { id: 2, name: "Victor Joel Vasquez", date: "2024-06-10" },
+  { id: 3, name: "Alejandra Romero", date: "2024-08-03" },
 ]
 
-const messages: Message[] = [
-  { id: 1, client: "Esteban Salazar", date: "2024-05-01" },
-  { id: 2, client: "Victor Joel Vazquez", date: "2024-06-10" },
-  { id: 3, client: "Alejandra Romero", date: "2024-08-03" },
-]
-
-export default function Component() {
+export default function MessageList() {
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar */}
-      <div className="w-64 bg-white border-r hidden md:block">
-        <div className="p-4 border-b">
-          <div className="flex items-center space-x-2">
-            <Avatar className="w-8 h-8 bg-blue-500">
-              <AvatarImage src="/logo.png" alt="AllConnected Logo" />
-              <AvatarFallback>AC</AvatarFallback>
-            </Avatar>
-            <span className="font-semibold text-blue-500">AllConnected</span>
+    <div className="flex flex-col md:flex-row h-screen bg-gray-900">
+      <aside className="w-full md:w-64 bg-gray-800 p-6">
+        <div className="flex items-center mb-6">
+          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white mr-2">
+            <span className="text-xl">A</span>
           </div>
+          <span className="text-xl font-semibold text-white">AllConnected</span>
         </div>
-        <nav className="p-4">
-          {menuItems.map((item, index) => (
-            <div key={index} className={`flex items-center space-x-2 p-2 rounded ${item.active ? 'bg-blue-50 text-blue-500' : 'text-gray-600'}`}>
-              {item.icon}
-              <span>{item.label}</span>
-            </div>
-          ))}
+        <nav>
+          <Link href="#" className="block py-2 text-gray-300 hover:bg-gray-700 rounded px-2">Inventario</Link>
+          <Link href="#" className="block py-2 text-gray-300 hover:bg-gray-700 rounded px-2">Flujo de Caja</Link>
+          <Link href="#" className="block py-2 text-gray-300 hover:bg-gray-700 rounded px-2">Mi emprendimiento</Link>
+          <Link href="#" className="block py-2 text-blue-500 bg-blue-900 rounded px-2">Mensajes</Link>
+          <Link href="#" className="block py-2 text-gray-300 hover:bg-gray-700 rounded px-2">Registro Manual Ventas</Link>
         </nav>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="bg-white p-4 flex justify-between items-center border-b">
-          <div className="flex items-center space-x-4 md:hidden">
-            <Avatar className="w-8 h-8 bg-blue-500">
-              <AvatarImage src="/logo.png" alt="AllConnected Logo" />
-              <AvatarFallback>AC</AvatarFallback>
-            </Avatar>
-            <span className="font-semibold text-blue-500">AllConnected</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="sm" className="text-blue-500 hidden md:inline-flex">
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              Comprar
-            </Button>
-            <Button className="bg-blue-500 hover:bg-blue-600 text-white">
-              Mejora tu membresía
-            </Button>
-            <Button variant="ghost" size="icon">
-              <Bell className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <User className="h-4 w-4" />
-            </Button>
+      </aside>
+      <main className="flex-1 flex flex-col">
+        <header className="bg-gray-800 p-4 flex justify-between items-center">
+          <h1 className="text-2xl font-semibold text-white">Mensajes Recibidos</h1>
+          <div className="flex items-center space-x-4">
+            <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+              Mejora tu membresia
+            </button>
+            <Bell className="text-gray-300" />
+            <User className="text-gray-300" />
           </div>
         </header>
-
-        {/* Content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">Mensajes Recibidos</h1>
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold mb-2">Ver mensajes</h2>
-              <p className="text-sm text-gray-500 mb-4">Aquí se muestran todos los mensajes de tus clientes</p>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Cliente</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead className="w-[100px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+        <div className="flex-1 p-6 bg-gray-900">
+          <div className="bg-gray-800 rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-2 text-white">Ver mensajes</h2>
+            <p className="text-gray-400 mb-4">Aquí se muestran todos los mensajes de tus clientes.</p>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-700">
+                    <th className="text-left py-2 text-white">Cliente</th>
+                    <th className="text-left py-2 text-white">Fecha</th>
+                    <th className="py-2"></th>
+                  </tr>
+                </thead>
+                <tbody>
                   {messages.map((message) => (
-                    <TableRow key={message.id}>
-                      <TableCell className="font-medium">{message.client}</TableCell>
-                      <TableCell>{message.date}</TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="sm">
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
+                    <tr key={message.id} className="border-b border-gray-700">
+                      <td className="py-2 text-white">{message.name}</td>
+                      <td className="py-2 text-white">{message.date}</td>
+                      <td className="py-2 text-right">
+                        <Link href={`/messages?id=${message.id}`}>
+                          <Send className="inline-block text-blue-500" />
+                        </Link>
+                      </td>
+                    </tr>
                   ))}
-                </TableBody>
-              </Table>
+                </tbody>
+              </table>
             </div>
           </div>
-        </main>
-
-        {/* Footer */}
-        <footer className="bg-white p-4 text-center text-sm text-gray-500">
-          © 2024 AllConnected. Todos los derechos reservados by FusionTech
-        </footer>
-      </div>
+        </div>
+      </main>
     </div>
-  );
+  )
 }
