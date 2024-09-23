@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -10,7 +10,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -24,13 +23,15 @@ interface Service {
   requests: number;
 }
 
-interface AddServiceModalProps {
-  onAddService: (newService: Service) => void;
+interface EditServiceModalProps {
+  service: Service | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (updatedService: Service) => void;
 }
 
-export function AddServiceModal({ onAddService }: AddServiceModalProps) {
-  const [open, setOpen] = useState(false)
-  const [newService, setNewService] = useState<Service>({
+export function EditServiceModal({ service, isOpen, onClose, onSave }: EditServiceModalProps) {
+  const [editedService, setEditedService] = useState<Service>({
     name: '',
     category: '',
     description: '',
@@ -39,41 +40,34 @@ export function AddServiceModal({ onAddService }: AddServiceModalProps) {
     requests: 0
   })
 
+  useEffect(() => {
+    if (service) {
+      setEditedService(service)
+    }
+  }, [service])
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setNewService(prev => ({ ...prev, [name]: value }))
+    setEditedService(prev => ({ ...prev, [name]: value }))
   }
 
   const handleCategoryChange = (value: string) => {
-    setNewService(prev => ({ ...prev, category: value }))
+    setEditedService(prev => ({ ...prev, category: value }))
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onAddService(newService)
-    setOpen(false)
-    setNewService({
-      name: '',
-      category: '',
-      description: '',
-      tags: '',
-      photo: '',
-      requests: 0
-    })
+    onSave(editedService)
+    onClose()
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <span className="mr-2">+</span> Añadir
-        </Button>
-      </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Agregar Nuevo Servicio</DialogTitle>
+          <DialogTitle>Editar Servicio</DialogTitle>
           <DialogDescription>
-            Ingresa los detalles de tu nuevo Servicio
+            Ingresa los detalles que quiera cambiar de tu servicio
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -85,7 +79,7 @@ export function AddServiceModal({ onAddService }: AddServiceModalProps) {
               <Input
                 id="name"
                 name="name"
-                value={newService.name}
+                value={editedService.name}
                 onChange={handleChange}
                 className="col-span-3"
               />
@@ -97,7 +91,7 @@ export function AddServiceModal({ onAddService }: AddServiceModalProps) {
               <Textarea
                 id="description"
                 name="description"
-                value={newService.description}
+                value={editedService.description}
                 onChange={handleChange}
                 className="col-span-3"
               />
@@ -106,7 +100,7 @@ export function AddServiceModal({ onAddService }: AddServiceModalProps) {
               <Label htmlFor="category" className="text-right">
                 Categoría
               </Label>
-              <Select onValueChange={handleCategoryChange} value={newService.category}>
+              <Select onValueChange={handleCategoryChange} value={editedService.category}>
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Selecciona una categoría" />
                 </SelectTrigger>
@@ -125,7 +119,7 @@ export function AddServiceModal({ onAddService }: AddServiceModalProps) {
               <Input
                 id="tags"
                 name="tags"
-                value={newService.tags}
+                value={editedService.tags}
                 onChange={handleChange}
                 placeholder="Etiquetas del servicio separadas por ,"
                 className="col-span-3"
