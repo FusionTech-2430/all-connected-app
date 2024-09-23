@@ -139,7 +139,7 @@ export default function ChatInterface() {
       <main className="flex-1 flex flex-col">
         <header className="bg-white dark:bg-gray-800 shadow-sm p-4 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center mb-4 md:mb-0">
-            <Link href="/greet" className="text-blue-500 flex items-center">
+            <Link href="/messages" className="text-blue-500 flex items-center">
               <ArrowLeft className="mr-2" />
               Volver a mensajes
             </Link>
