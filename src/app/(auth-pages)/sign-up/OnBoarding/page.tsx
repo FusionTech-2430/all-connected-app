@@ -1,10 +1,10 @@
 import React from 'react';
-import SignUp from '@/components/SignUp'; 
+import OnBoardingOne from '@/components/OnBoardingOne'; 
 
 export default function UsersPage() {
   return (
     <div className="container mx-auto p-6">
-      <SignUp />
+      <OnBoardingOne />
     </div>
   );
 }
