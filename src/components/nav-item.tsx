@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 interface SidebarNavItemProps {
-  icon: React.ReactNode
+  icon?: React.ReactNode
   href: string
   title: string
 }
