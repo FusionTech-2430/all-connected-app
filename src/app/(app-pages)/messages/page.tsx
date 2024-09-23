@@ -1,12 +1,9 @@
-import React from 'react';
-import MessageList from '@/components/messages-list'; 
+import MessageList from '@/components/messages-list'
 
-const MessagePage = () => {
+export default function Page() {
   return (
     <div>
       <MessageList />
     </div>
-  );
-};
-
-export default MessagePage;
+  )
+}
