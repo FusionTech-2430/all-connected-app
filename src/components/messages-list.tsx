@@ -1,5 +1,5 @@
 'use client'
-import { Bell, User, Send } from 'lucide-react'
+import { Send } from 'lucide-react'
 import Link from 'next/link'
 
 const messages = [
