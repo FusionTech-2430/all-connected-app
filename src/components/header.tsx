@@ -1,7 +1,8 @@
 import Image from 'next/image'
 
-import { LifeBuoy, MenuIcon } from 'lucide-react'
-import { Button } from './ui/button'
+import { Bell, LifeBuoy, MenuIcon } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+
 import {
   Sheet,
   SheetContent,
@@ -9,20 +10,13 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger
-} from './ui/sheet'
+} from '@/components/ui/sheet'
 import NavItem from './nav-item'
-import { ThemeToggle } from './theme-toggle'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from '@radix-ui/react-dropdown-menu'
-import { Avatar, AvatarFallback } from '@radix-ui/react-avatar'
+import { ThemeToggle } from '@/components/theme-toggle'
 import NavBar from './nav-bar'
 import Link from 'next/link'
+
+import UserAvatar from '@/components/user-avatar'
 
 type HeaderProps = React.ComponentProps<'header'>
 
@@ -68,27 +62,15 @@ export function AppHeader({ children, ...props }: HeaderProps) {
         </Sheet>
         {children}
         <div className="ml-auto flex items-center gap-4">
+          <Button variant="outline">Comprar</Button>
+          <Button className="bg-primary hover:bg-primary-600">
+            Mejora tu membresía
+          </Button>
+          <Button variant="ghost" size="icon">
+            <Bell size={20} />
+          </Button>
           <ThemeToggle />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="overflow-hidden rounded-full"
-              >
-                <Avatar>
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <UserAvatar />
         </div>
       </header>
     </>
@@ -135,14 +117,8 @@ export function PublicHeader() {
           </ul>
         </nav>
         <div className="hidden md:flex space-x-2">
-          <Button
-            variant="outline"
-            className="text-primary-900"
-          >
-            Iniciar Sesión
-          </Button>
-          <Button className="bg-blue-500 hover:bg-blue-600">
-            Crear Cuenta
+          <Button variant="outline" className="text-primary-900">
+            uenta
           </Button>
         </div>
       </div>
