@@ -1,7 +1,10 @@
-export default function Page() {
+import React from 'react';
+import SignIn from '@/components/SignIn';
+
+export default function SignInPage() {
   return (
-    <>
-      <p>This is the sign in page</p>
-    </>
-  )
+    <div className="container mx-auto p-6">
+      <SignIn />
+    </div>
+  );
 }
