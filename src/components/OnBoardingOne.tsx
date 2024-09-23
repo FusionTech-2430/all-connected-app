@@ -4,7 +4,7 @@ import Footer from '@/components/FooterApp';
 
 const OnboardingOne = () => {
   const handleNextClick = () => {
-    window.location.href = '/SignIn'; 
+    window.location.href = '/SignUp/OnBoarding2'; 
   };
 
   return (
@@ -15,7 +15,7 @@ const OnboardingOne = () => {
         </div>
 
         <div className="flex-grow flex flex-col justify-center px-8 md:px-16">
-          <div className="w-full max-w-4xl mx-auto">
+          <div className="w-full max-w-7xl mx-auto">
             <div className="mb-7">
               <h3 className="text-xl font-semibold text-[#7DD3FC]">Paso 1 de 2</h3>
               <div className="w-full h-4 bg-gray-200 rounded-full mt-4">
@@ -30,7 +30,7 @@ const OnboardingOne = () => {
             </div>
 
             <div className="flex justify-center">
-              <img src="/OnBoarding.png" alt="Onboarding" className="w-full md:w-3/4" />
+              <img src="/OnBoarding.png" alt="Onboarding" className="w-full md:w-2/4" />
             </div>
           </div>
 
