@@ -32,26 +32,7 @@ export default function Component() {
   const [searchTerm, setSearchTerm] = useState('')
 
   return (
-    <main className="flex-1 p-8">
-      {/* <header className="flex flex-col md:flex-row justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4 md:mb-0">
-          Mis Eventos
-        </h1>
-        <div className="flex items-center space-x-4">
-          <Button variant="outline" className="text-gray-700">
-            Comprar
-          </Button>
-          <Button className="bg-blue-500 text-white hover:bg-blue-600">
-            Mejora tu membresía
-          </Button>
-          <Button variant="ghost" size="icon" className="text-gray-700">
-            <Bell className="w-6 h-6" />
-          </Button>
-          <Button variant="ghost" size="icon" className="text-gray-700">
-            <User className="w-6 h-6" />
-          </Button>
-        </div>
-      </header> */}
+    <section className="flex-1 p-8">
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex flex-col md:flex-row justify-between mb-4">
           <Input
@@ -132,6 +113,6 @@ export default function Component() {
           </div>
         </div>
       </div>
-    </main>
+    </section>
   )
 }
