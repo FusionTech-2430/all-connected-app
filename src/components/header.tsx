@@ -1,7 +1,7 @@
 import Image from 'next/image'
 
-import { Bell, LifeBuoy, MenuIcon } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Bell, LifeBuoy, LogIn, MenuIcon, UserRoundPlus } from 'lucide-react'
+import { Button, buttonVariants } from '@/components/ui/button'
 
 import {
   Sheet,
@@ -79,7 +79,7 @@ export function AppHeader({ children, ...props }: HeaderProps) {
 
 export function PublicHeader() {
   return (
-    <header className="bg-primary-900 text-white p-4">
+    <header className="bg-primary-900 p-4">
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex items-center space-x-2">
           {/* <Globe className="h-6 w-6" /> */}
@@ -90,10 +90,52 @@ export function PublicHeader() {
             height={32}
           />
 
-          <span className="font-bold text-xl">AllConnected</span>
+          <span className="font-bold text-xl text-primary-100">
+            AllConnected
+          </span>
         </div>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button size="icon" variant="outline" className="sm:hidden">
+              <MenuIcon size={20} />
+              <span className="sr-only">Toggle Menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="sm:max-w-xs">
+            {/* Metadata for screen readers */}
+            <SheetHeader>
+              <SheetTitle className="sr-only">Menu</SheetTitle>
+              <SheetDescription className="sr-only">
+                Principal navigation
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex flex-col h-full gap-6">
+              <Image
+                src={'/all-connected-banner.png'}
+                alt="All Connected banner"
+                width={192}
+                height={192}
+                priority
+              />
+
+              <nav className="grid gap-2 text-lg">
+                <NavItem
+                  href="/sign-in"
+                  icon={<LogIn size={20} />}
+                  title="Iniciar Sesión"
+                />
+
+                <NavItem
+                  href="/sign-up"
+                  icon={<UserRoundPlus size={20} />}
+                  title="Crear Cuenta"
+                />
+              </nav>
+            </div>
+          </SheetContent>
+        </Sheet>
         <nav className="hidden md:block">
-          <ul className="flex space-x-4">
+          <ul className="flex space-x-4 text-primary-100">
             <li>
               <Link href="#features" className="hover:underline">
                 Características
@@ -117,9 +159,18 @@ export function PublicHeader() {
           </ul>
         </nav>
         <div className="hidden md:flex space-x-2">
-          <Button variant="outline" className="text-primary-900">
-            uenta
-          </Button>
+          <Link
+            href="sign-in"
+            className={`hover:bg-primary-200 ${buttonVariants({ variant: 'outline' })}`}
+          >
+            Iniciar Sesión
+          </Link>
+          <Link
+            href="sign-up"
+            className={`bg-primary hover:bg-primary-600 ${buttonVariants({ variant: 'default' })}`}
+          >
+            Crear Cuenta
+          </Link>
         </div>
       </div>
     </header>
