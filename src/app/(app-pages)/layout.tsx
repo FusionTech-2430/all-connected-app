@@ -16,7 +16,7 @@ export default function AppLayout({
         <AppHeader className="sticky flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6" />
 
         {/* Main content */}
-        {children}
+        <main className='h-full pr-4'>{children}</main>
       </div>
     </div>
   )
