@@ -1,7 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Eye, Edit, Trash } from "lucide-react"
+
+
 import {
   Select,
   SelectContent,
@@ -19,7 +23,12 @@ import {
 } from "@/components/ui/table"
 import { MoreHorizontal, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
 import { AddServiceModal } from "@/components/add-service-modal"
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const services = [
   { name: "Tutorias de matemáticas", category: "Educación", requests: 8 },
@@ -30,6 +39,13 @@ const services = [
 ]
 
 export default function MyServicesPage() {
+  const [selectedService, setSelectedService] = useState(null)
+
+  const handleAction = (action: string, service: any) => {
+    console.log(`${action} service:`, service)
+    // Implement the logic for each action here
+  }
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6">Mis servicios</h1>
@@ -69,9 +85,27 @@ export default function MyServicesPage() {
               <TableCell>{service.category}</TableCell>
               <TableCell>{service.requests}</TableCell>
               <TableCell className="text-right">
-                <Button variant="ghost" size="icon">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
+              <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => handleAction('visualizar', service)}>
+                      <Eye className="mr-2 h-4 w-4 text-blue-500" />
+                      Visualizar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleAction('modificar', service)}>
+                      <Edit className="mr-2 h-4 w-4 text-yellow-500" />
+                      Modificar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleAction('eliminar', service)}>
+                      <Trash className="mr-2 h-4 w-4 text-red-500" />
+                      Eliminar
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}
