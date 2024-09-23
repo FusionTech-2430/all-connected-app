@@ -136,7 +136,7 @@ export default function ChatInterface() {
           <Link href="#" className="block py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-2">Registro Manual Ventas</Link>
         </nav>
       </aside>
-      <main className="flex-1 flex flex-col">
+      <section className="flex-1 flex flex-col">
         <header className="bg-white dark:bg-gray-800 shadow-sm p-4 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center mb-4 md:mb-0">
             <Link href="/messages" className="text-blue-500 flex items-center">
@@ -234,7 +234,7 @@ export default function ChatInterface() {
             </button>
           </div>
         </div>
-      </main>
+      </section>
       <Modal isOpen={!!modalImage} onClose={() => setModalImage(null)}>
         {modalImage && (
           <Image
