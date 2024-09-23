@@ -39,7 +39,8 @@ const config: Config = {
           600: 'hsl(var(--primary-600))',
           700: 'hsl(var(--primary-700))',
           800: 'hsl(var(--primary-800))',
-          900: 'hsl(var(--primary-900))'
+          900: 'hsl(var(--primary-900))',
+          950: 'hsl(var(--primary-950))'
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
