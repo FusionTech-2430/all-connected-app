@@ -7,7 +7,8 @@ import {
   LineChart,
   Package,
   ShoppingCart,
-  Users
+  Users,
+  NotebookPen
 } from 'lucide-react'
 
 const navBarItems = [
@@ -46,6 +47,12 @@ const navBarItems = [
     href: '/events',
     title: 'Eventos',
     icon: <Calendar size={20} />
+  },
+  {
+    uid: 'my-services',
+    href: '/my-services',
+    title: 'Servicios',
+    icon: <NotebookPen size={20} />
   }
 ]
 
