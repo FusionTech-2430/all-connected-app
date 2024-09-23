@@ -47,7 +47,22 @@ export default function ChatInterface() {
   const [inputMessage, setInputMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [modalImage, setModalImage] = useState<string | null>(null);
-  const [chatName, setChatName] = useState('');
+  const [chatName, setChatName] = useState('Cliente All Connected'); // Valor por defecto
+
+  // Cargar nombre del chat desde Firebase o usar valor por defecto
+  useEffect(() => {
+    if (id) {
+      const chatRef = ref(database, `chats/${id}/name`);
+      onValue(chatRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          setChatName(data);
+        } else {
+          setChatName('Cliente All Connected'); // Si no existe el nombre, mostrar predeterminado
+        }
+      });
+    }
+  }, [id]);
 
   // Cargar mensajes desde Firebase cuando el componente se monte
   useEffect(() => {
@@ -84,18 +99,23 @@ export default function ChatInterface() {
       const fileRef = storageRef(storage, `chats/${id}/${file.name}`);
       const uploadTask = uploadBytesResumable(fileRef, file);
 
+      // Inicia la subida del archivo
       uploadTask.on(
         'state_changed',
-        null,
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log(`Upload is ${progress}% done`);
+        },
         (error) => {
-          console.error('Upload failed:', error);
+          console.error('Error al subir archivo:', error);
         },
         () => {
+          // Obtener la URL de descarga cuando la subida se complete
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
             const isImage = file.type.startsWith('image/');
             const newMessage: Message = {
               id: Date.now(),
-              text: isImage ? '' : `File: ${file.name}`,
+              text: isImage ? '' : `Archivo: ${file.name}`,
               sender: 'user',
               time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
               file: {
@@ -150,9 +170,9 @@ export default function ChatInterface() {
           <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-center mb-4">
               <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full mr-2 flex items-center justify-center">
-                {chatName.charAt(0)}
+                {chatName.charAt(0)} {/* Muestra la inicial del nombre del chat */}
               </div>
-              <span className="font-semibold dark:text-white">{chatName}</span>
+              <span className="font-semibold dark:text-white">{chatName}</span> {/* Muestra el nombre completo */}
             </div>
             {messages.map((message) => (
               <div
