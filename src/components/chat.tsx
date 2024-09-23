@@ -135,21 +135,7 @@ export default function ChatInterface() {
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-gray-100 dark:bg-gray-900">
-      <aside className="w-full md:w-64 bg-white dark:bg-gray-800 p-6 shadow-md">
-        <div className="flex items-center mb-6">
-          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white mr-2">
-            <span className="text-xl">A</span>
-          </div>
-          <span className="text-xl font-semibold dark:text-white">AllConnected</span>
-        </div>
-        <nav>
-          <Link href="#" className="block py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-2">Inventario</Link>
-          <Link href="#" className="block py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-2">Flujo de Caja</Link>
-          <Link href="#" className="block py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-2">Mi emprendimiento</Link>
-          <Link href="#" className="block py-2 text-blue-500 bg-blue-100 dark:bg-blue-900 rounded px-2">Mensajes</Link>
-          <Link href="#" className="block py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-2">Registro Manual Ventas</Link>
-        </nav>
-      </aside>
+      
       <section className="flex-1 flex flex-col">
         <header className="bg-white dark:bg-gray-800 shadow-sm p-4 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center mb-4 md:mb-0">
@@ -158,13 +144,7 @@ export default function ChatInterface() {
               Volver a mensajes
             </Link>
           </div>
-          <div className="flex items-center space-x-4">
-            <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-              Mejora tu membresía
-            </button>
-            <Bell className="text-gray-600 dark:text-gray-300" />
-            <User className="text-gray-600 dark:text-gray-300" />
-          </div>
+          
         </header>
         <div className="flex-1 overflow-y-auto p-6 bg-gray-100 dark:bg-gray-900">
           <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow p-6">
