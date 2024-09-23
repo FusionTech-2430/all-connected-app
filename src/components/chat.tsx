@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ref, push, onValue } from "firebase/database";
 import { uploadBytesResumable, getDownloadURL, ref as storageRef } from 'firebase/storage';
 import { database, storage } from '@/services/firebase';
-import { Bell, User, Send, Paperclip, ArrowLeft, File, X } from "lucide-react";
+import { Send, Paperclip, ArrowLeft, File, X } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
