@@ -1,7 +1,8 @@
 import Image from 'next/image'
 
-import { LifeBuoy, MenuIcon } from 'lucide-react'
-import { Button } from './ui/button'
+import { Bell, LifeBuoy, LogIn, MenuIcon, UserRoundPlus } from 'lucide-react'
+import { Button, buttonVariants } from '@/components/ui/button'
+
 import {
   Sheet,
   SheetContent,
@@ -9,23 +10,17 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger
-} from './ui/sheet'
+} from '@/components/ui/sheet'
 import NavItem from './nav-item'
-import { ThemeToggle } from './theme-toggle'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from '@radix-ui/react-dropdown-menu'
-import { Avatar, AvatarFallback } from '@radix-ui/react-avatar'
+import { ThemeToggle } from '@/components/theme-toggle'
 import NavBar from './nav-bar'
+import Link from 'next/link'
+
+import UserAvatar from '@/components/user-avatar'
 
 type HeaderProps = React.ComponentProps<'header'>
 
-export default function Header({ children, ...props }: HeaderProps) {
+export function AppHeader({ children, ...props }: HeaderProps) {
   return (
     <>
       <header {...props}>
@@ -67,29 +62,117 @@ export default function Header({ children, ...props }: HeaderProps) {
         </Sheet>
         {children}
         <div className="ml-auto flex items-center gap-4">
+          <Button variant="outline">Comprar</Button>
+          <Button className="bg-primary hover:bg-primary-600">
+            Mejora tu membresía
+          </Button>
+          <Button variant="ghost" size="icon">
+            <Bell size={20} />
+          </Button>
           <ThemeToggle />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="overflow-hidden rounded-full"
-              >
-                <Avatar>
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <UserAvatar />
         </div>
       </header>
     </>
+  )
+}
+
+export function PublicHeader() {
+  return (
+    <header className="bg-primary-900 p-4">
+      <div className="container mx-auto flex justify-between items-center">
+        <div className="flex items-center space-x-2">
+          {/* <Globe className="h-6 w-6" /> */}
+          <Image
+            src={'/white-logo.png'}
+            alt="AllConnected logo"
+            width={32}
+            height={32}
+          />
+
+          <span className="font-bold text-xl text-primary-100">
+            AllConnected
+          </span>
+        </div>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button size="icon" variant="outline" className="sm:hidden">
+              <MenuIcon size={20} />
+              <span className="sr-only">Toggle Menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="sm:max-w-xs">
+            {/* Metadata for screen readers */}
+            <SheetHeader>
+              <SheetTitle className="sr-only">Menu</SheetTitle>
+              <SheetDescription className="sr-only">
+                Principal navigation
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex flex-col h-full gap-6">
+              <Image
+                src={'/all-connected-banner.png'}
+                alt="All Connected banner"
+                width={192}
+                height={192}
+                priority
+              />
+
+              <nav className="grid gap-2 text-lg">
+                <NavItem
+                  href="/sign-in"
+                  icon={<LogIn size={20} />}
+                  title="Iniciar Sesión"
+                />
+
+                <NavItem
+                  href="/sign-up"
+                  icon={<UserRoundPlus size={20} />}
+                  title="Crear Cuenta"
+                />
+              </nav>
+            </div>
+          </SheetContent>
+        </Sheet>
+        <nav className="hidden md:block">
+          <ul className="flex space-x-4 text-primary-100">
+            <li>
+              <Link href="#features" className="hover:underline">
+                Características
+              </Link>
+            </li>
+            <li>
+              <Link href="#pricing" className="hover:underline">
+                Precios
+              </Link>
+            </li>
+            <li>
+              <Link href="#benefits" className="hover:underline">
+                Acerca de
+              </Link>
+            </li>
+            <li>
+              <Link href="#contact-us" className="hover:underline">
+                Contacto
+              </Link>
+            </li>
+          </ul>
+        </nav>
+        <div className="hidden md:flex space-x-2">
+          <Link
+            href="sign-in"
+            className={`hover:bg-primary-200 ${buttonVariants({ variant: 'outline' })}`}
+          >
+            Iniciar Sesión
+          </Link>
+          <Link
+            href="sign-up"
+            className={`bg-primary hover:bg-primary-600 ${buttonVariants({ variant: 'default' })}`}
+          >
+            Crear Cuenta
+          </Link>
+        </div>
+      </div>
+    </header>
   )
 }

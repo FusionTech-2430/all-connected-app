@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import Chat from '@/components/Chat';
+import Chat from '@/components/chat';
 
 const MessagePage = () => {
   return (

@@ -1,7 +1,14 @@
 import React from 'react'
 import NavItem from './nav-item'
 
-import { House, LineChart, Package, ShoppingCart, Users } from 'lucide-react'
+import {
+  Calendar,
+  House,
+  LineChart,
+  Package,
+  ShoppingCart,
+  Users
+} from 'lucide-react'
 
 const navBarItems = [
   {
@@ -33,6 +40,12 @@ const navBarItems = [
     href: '/sales',
     title: 'Ventas',
     icon: <LineChart size={20} />
+  },
+  {
+    uid: 'events',
+    href: '/events',
+    title: 'Eventos',
+    icon: <Calendar size={20} />
   }
 ]
 
