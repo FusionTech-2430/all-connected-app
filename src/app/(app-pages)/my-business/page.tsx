@@ -1,7 +1,7 @@
 export default function Page() {
   return (
     <>
-      <p>This is the inventory page</p>
+      <p>This is the my business page</p>
     </>
   )
 }
