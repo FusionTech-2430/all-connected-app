@@ -18,6 +18,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { MoreHorizontal, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
+import { AddServiceModal } from "@/components/add-service-modal"
+
 
 const services = [
   { name: "Tutorias de matemáticas", category: "Educación", requests: 8 },
@@ -47,9 +49,7 @@ export default function MyServicesPage() {
               <SelectItem value="music">Música</SelectItem>
             </SelectContent>
           </Select>
-          <Button>
-            <span className="mr-2">+</span> Añadir
-          </Button>
+          <AddServiceModal />
         </div>
       </div>
 
