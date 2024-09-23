@@ -66,14 +66,14 @@ const SignUp = () => {
           <button
   type="button"
   className="w-full bg-[#0284C7] text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700"
-  onClick={() => (window.location.href = '/SignUp/OnBoarding')}
+  onClick={() => (window.location.href = '/sign-up/OnBoarding')}
 >
   Crear Cuenta
 </button>
           </div>
         </form>
         <p className="text-center mt-4 text-sm">
-          ¿Ya tienes una cuenta? <a href="/SignIn" style={{ color: '#0369A1' }}>Inicia Sesión</a>
+          ¿Ya tienes una cuenta? <a href="/sign-in" style={{ color: '#0369A1' }}>Inicia Sesión</a>
         </p>
       </div>
       <Footer />

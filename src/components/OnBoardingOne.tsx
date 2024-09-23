@@ -4,7 +4,7 @@ import Footer from '@/components/FooterApp';
 
 const OnboardingOne = () => {
   const handleNextClick = () => {
-    window.location.href = '/SignUp/OnBoarding2'; 
+    window.location.href = '/sign-up/OnBoarding2'; 
   };
 
   return (
