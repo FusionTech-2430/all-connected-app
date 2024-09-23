@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Button, ButtonProps } from './ui/button'
+import { Button, ButtonProps } from '@/components/ui/button'
 
 interface GoBackButtonProps extends Omit<ButtonProps, 'onClick'> {}
 
