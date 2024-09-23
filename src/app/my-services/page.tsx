@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Eye, Edit, Trash } from "lucide-react"
+
 import {
   Select,
   SelectContent,
@@ -22,6 +23,8 @@ import {
 import { MoreHorizontal, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
 import { AddServiceModal } from "@/components/add-service-modal"
 import { EditServiceModal } from "@/components/edit-service-modal"
+import { ViewServiceModal } from "@/components/view-service-modal"
+import { DeleteServiceModal } from "@/components/delete-service-modal"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,17 +53,29 @@ export default function MyServicesPage() {
   const [services, setServices] = useState<Service[]>(initialServices)
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
 
   const handleAction = (action: string, service: Service) => {
-    if (action === 'modificar') {
-      setSelectedService(service)
+    setSelectedService(service)
+    if (action === 'visualizar') {
+      setIsViewModalOpen(true)
+    } else if (action === 'modificar') {
       setIsEditModalOpen(true)
     } else if (action === 'eliminar') {
-      setServices(prevServices => prevServices.filter(s => s.name !== service.name))
+      setIsDeleteModalOpen(true)
     } else {
       console.log(`${action} service:`, service)
+    }
+  }
+
+  const handleDeleteService = () => {
+    if (selectedService) {
+      setServices(prevServices => prevServices.filter(s => s.name !== selectedService.name))
+      setIsDeleteModalOpen(false)
+      setSelectedService(null)
     }
   }
 
@@ -172,11 +187,24 @@ export default function MyServicesPage() {
         </div>
       </div>
 
+      <ViewServiceModal
+        service={selectedService}
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+      />
+
       <EditServiceModal
         service={selectedService}
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSave={handleSaveService}
+      />
+
+      <DeleteServiceModal
+        serviceName={selectedService?.name || ''}
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteService}
       />
     </div>
   )
