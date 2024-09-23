@@ -1,10 +1,13 @@
-'use client'
+'use client';
 
-import { useState, useRef, useEffect } from 'react'
-import { Bell, User, Send, Paperclip, ArrowLeft, File, X } from "lucide-react"
-import Link from "next/link"
-import { useSearchParams } from 'next/navigation'
-import Image from 'next/image'
+import { useState, useRef, useEffect } from 'react';
+import { ref, push, onValue } from "firebase/database";
+import { uploadBytesResumable, getDownloadURL, ref as storageRef } from 'firebase/storage';
+import { database, storage } from '@/services/firebase';
+import { Bell, User, Send, Paperclip, ArrowLeft, File, X } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 
 type Message = {
   id: number;
@@ -16,39 +19,9 @@ type Message = {
     url: string;
     type: 'image' | 'document';
   };
-}
+};
 
-type ChatData = {
-  [key: string]: {
-    name: string;
-    messages: Message[];
-  };
-}
-
-const chatData: ChatData = {
-  '1': {
-    name: "Esteban Salazar",
-    messages: [
-      { id: 1, text: "Hola, me gustaría comentarte un problema", sender: "client", time: "15:30 PM" },
-      { id: 2, text: "Si claro, comentame en que te podemos ayudar", sender: "user", time: "15:35 PM" },
-    ]
-  },
-  '2': {
-    name: "Victor Joel Vasquez",
-    messages: [
-      { id: 1, text: "Buenas tardes, tengo una consulta sobre mi pedido", sender: "client", time: "14:00 PM" },
-      { id: 2, text: "Hola, con gusto te ayudo. ¿Cuál es tu número de pedido?", sender: "user", time: "14:05 PM" },
-    ]
-  },
-  '3': {
-    name: "Alejandra Romero",
-    messages: [
-      { id: 1, text: "Hola, ¿tienen disponible el producto XYZ?", sender: "client", time: "10:15 AM" },
-      { id: 2, text: "Buenos días, déjame verificar el inventario", sender: "user", time: "10:20 AM" },
-    ]
-  },
-}
-
+// Modal Component Definition
 function Modal({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: React.ReactNode }) {
   if (!isOpen) return null;
 
@@ -68,56 +41,97 @@ function Modal({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => 
 }
 
 export default function ChatInterface() {
-  const searchParams = useSearchParams()
-  const id = searchParams.get('id')
-  const [messages, setMessages] = useState<Message[]>([])
-  const [inputMessage, setInputMessage] = useState('')
-  const [chatName, setChatName] = useState('')
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [modalImage, setModalImage] = useState<string | null>(null)
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputMessage, setInputMessage] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [modalImage, setModalImage] = useState<string | null>(null);
+  const [chatName, setChatName] = useState('Cliente All Connected'); // Valor por defecto
 
+  // Cargar nombre del chat desde Firebase o usar valor por defecto
   useEffect(() => {
-    if (id && chatData[id]) {
-      setMessages(chatData[id].messages)
-      setChatName(chatData[id].name)
+    if (id) {
+      const chatRef = ref(database, `chats/${id}/name`);
+      onValue(chatRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          setChatName(data);
+        } else {
+          setChatName('Cliente All Connected'); // Si no existe el nombre, mostrar predeterminado
+        }
+      });
     }
-  }, [id])
+  }, [id]);
+
+  // Cargar mensajes desde Firebase cuando el componente se monte
+  useEffect(() => {
+    if (id) {
+      const chatRef = ref(database, `chats/${id}/messages`);
+      onValue(chatRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const chatMessages = Object.values(data);
+          setMessages(chatMessages as Message[]);
+        }
+      });
+    }
+  }, [id]);
 
   const handleSendMessage = () => {
     if (inputMessage.trim() !== '') {
       const newMessage: Message = {
-        id: messages.length + 1,
+        id: Date.now(),
         text: inputMessage,
         sender: 'user',
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })
-      }
-      setMessages([...messages, newMessage])
-      setInputMessage('')
+      };
+
+      const chatRef = ref(database, `chats/${id}/messages`);
+      push(chatRef, newMessage);
+      setInputMessage('');
     }
-  }
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+    const file = event.target.files?.[0];
     if (file) {
-      const isImage = file.type.startsWith('image/')
-      const newMessage: Message = {
-        id: messages.length + 1,
-        text: isImage ? '' : `File: ${file.name}`,
-        sender: 'user',
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
-        file: {
-          name: file.name,
-          url: URL.createObjectURL(file),
-          type: isImage ? 'image' : 'document'
-        }
-      }
-      setMessages([...messages, newMessage])
-    }
-  }
+      const fileRef = storageRef(storage, `chats/${id}/${file.name}`);
+      const uploadTask = uploadBytesResumable(fileRef, file);
 
-  const handleImageClick = (imageUrl: string) => {
-    setModalImage(imageUrl)
-  }
+      // Inicia la subida del archivo
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log(`Upload is ${progress}% done`);
+        },
+        (error) => {
+          console.error('Error al subir archivo:', error);
+        },
+        () => {
+          // Obtener la URL de descarga cuando la subida se complete
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+            const isImage = file.type.startsWith('image/');
+            const newMessage: Message = {
+              id: Date.now(),
+              text: isImage ? '' : `Archivo: ${file.name}`,
+              sender: 'user',
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
+              file: {
+                name: file.name,
+                url: downloadURL,
+                type: isImage ? 'image' : 'document',
+              },
+            };
+
+            const chatRef = ref(database, `chats/${id}/messages`);
+            push(chatRef, newMessage);
+          });
+        }
+      );
+    }
+  };
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-gray-100 dark:bg-gray-900">
@@ -136,7 +150,7 @@ export default function ChatInterface() {
           <Link href="#" className="block py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-2">Registro Manual Ventas</Link>
         </nav>
       </aside>
-      <main className="flex-1 flex flex-col">
+      <section className="flex-1 flex flex-col">
         <header className="bg-white dark:bg-gray-800 shadow-sm p-4 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center mb-4 md:mb-0">
             <Link href="/messages" className="text-blue-500 flex items-center">
@@ -146,7 +160,7 @@ export default function ChatInterface() {
           </div>
           <div className="flex items-center space-x-4">
             <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-              Mejora tu membresia
+              Mejora tu membresía
             </button>
             <Bell className="text-gray-600 dark:text-gray-300" />
             <User className="text-gray-600 dark:text-gray-300" />
@@ -156,33 +170,29 @@ export default function ChatInterface() {
           <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-center mb-4">
               <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full mr-2 flex items-center justify-center">
-                {chatName.charAt(0)}
+                {chatName.charAt(0)} {/* Muestra la inicial del nombre del chat */}
               </div>
-              <span className="font-semibold dark:text-white">{chatName}</span>
+              <span className="font-semibold dark:text-white">{chatName}</span> {/* Muestra el nombre completo */}
             </div>
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`mb-4 ${
-                  message.sender === "user" ? "text-right" : "text-left"
-                }`}
+                className={`mb-4 ${message.sender === 'user' ? 'text-right' : 'text-left'}`}
               >
                 <div
                   className={`inline-block p-2 rounded-lg ${
-                    message.sender === "user"
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 dark:bg-gray-700 dark:text-white"
+                    message.sender === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700 dark:text-white'
                   }`}
                 >
                   {message.file ? (
                     message.file.type === 'image' ? (
-                      <Image 
-                        src={message.file.url} 
-                        alt="Uploaded image" 
-                        width={200} 
-                        height={200} 
-                        className="rounded-lg cursor-pointer" 
-                        onClick={() => handleImageClick(message.file!.url)}
+                      <Image
+                        src={message.file.url}
+                        alt="Uploaded image"
+                        width={200}
+                        height={200}
+                        className="rounded-lg cursor-pointer"
+                        onClick={() => setModalImage(message.file!.url)}
                       />
                     ) : (
                       <a href={message.file.url} target="_blank" rel="noopener noreferrer" className="flex items-center">
@@ -220,21 +230,18 @@ export default function ChatInterface() {
               className="hidden"
               aria-label="Upload file"
             />
-            <button 
+            <button
               className="bg-gray-200 dark:bg-gray-700 p-2 rounded-r-lg hover:bg-gray-300 dark:hover:bg-gray-600"
               onClick={() => fileInputRef.current?.click()}
             >
               <Paperclip className="text-gray-600 dark:text-gray-300" />
             </button>
-            <button 
-              className="bg-blue-500 text-white p-2 rounded-lg ml-2 hover:bg-blue-600"
-              onClick={handleSendMessage}
-            >
+            <button className="bg-blue-500 text-white p-2 rounded-lg ml-2 hover:bg-blue-600" onClick={handleSendMessage}>
               <Send />
             </button>
           </div>
         </div>
-      </main>
+      </section>
       <Modal isOpen={!!modalImage} onClose={() => setModalImage(null)}>
         {modalImage && (
           <Image
@@ -247,5 +254,5 @@ export default function ChatInterface() {
         )}
       </Modal>
     </div>
-  )
+  );
 }
