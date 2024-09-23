@@ -1,7 +1,10 @@
-export default function Page() {
+import React from 'react';
+import SignUp from '@/components/SignUp'; 
+
+export default function UsersPage() {
   return (
-    <>
-      <p>This is the sign in page</p>
-    </>
-  )
+    <div className="container mx-auto p-6">
+      <SignUp />
+    </div>
+  );
 }

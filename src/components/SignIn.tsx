@@ -38,7 +38,7 @@ const SignIn = () => {
             </div>
           </form>
           <p className="text-center mt-4 text-sm">
-            ¿No tienes una cuenta? <a href="/SignUp" className="text-[#0369A1]">Regístrate</a>
+            ¿No tienes una cuenta? <a href="/sign-up" className="text-[#0369A1]">Regístrate</a>
           </p>
         </div>
 
