@@ -78,6 +78,7 @@ body {
     --chart-5: 340 75% 55%;
   }
 }
+
 @layer base {
   * {
     @apply border-border;
@@ -86,3 +87,18 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.background-section {
+  background-image: url('/1457718455276 1.png'), url('/1457718455276 2.png');
+  background-position: left bottom, right top;
+  background-repeat: no-repeat;
+  background-size: contain;
+  height: 50vh; /* Ajusta la altura del rectángulo azul */
+}
+
+.form-section {
+  width: 600px; /* Ajusta el ancho del formulario */
+  margin-top: -150px; /* Ajusta el margen superior para sobresalir */
+}
+
+
