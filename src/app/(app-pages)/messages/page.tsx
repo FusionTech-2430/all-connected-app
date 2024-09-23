@@ -1,5 +1,5 @@
 import React from 'react';
-import MessageList from '@/components/MessagesList'; 
+import MessageList from '@/components/messages-list'; 
 
 const MessagePage = () => {
   return (
