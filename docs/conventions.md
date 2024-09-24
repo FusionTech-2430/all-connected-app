@@ -62,3 +62,13 @@ function myFooFunction() {
   return `foo bar`
 }
 ```
+
+## Referencias
+
+- [Follow TypeScript best practices](https://docs.aws.amazon.com/prescriptive-guidance/latest/best-practices-cdk-typescript-iac/typescript-best-practices.html)
+
+- [File Conventions](https://nextjs.org/docs/app/api-reference/file-conventions)
+
+- [Next.js Project Structure](https://nextjs.org/docs/getting-started/project-structure#app-routing-conventions)
+
+- [Project Organization and File Colocation](https://nextjs.org/docs/app/building-your-application/routing/colocation)
