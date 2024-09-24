@@ -1,6 +1,7 @@
 import React from 'react'
 import NavBar from '@/components/NavBar'
 import Footer from '@/components/FooterApp'
+import Image from 'next/image'
 
 const SignIn = () => {
   return (
@@ -51,11 +52,14 @@ const SignIn = () => {
 
         {/* Sección del banner */}
         <div className="relative bg-[#075985] flex justify-center items-center rounded-lg">
-          <img
-            src="/Banner2-removebg-preview 1.png"
+          <Image 
+            src="/Banner1-removebg-preview.png"
             alt="AllConnected"
             className="z-10 w-2/3"
+            width={800}
+            height={800}
           />
+
           <div
             className="absolute inset-0"
             style={{

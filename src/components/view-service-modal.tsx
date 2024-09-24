@@ -2,6 +2,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import Image from "next/image";
 
 interface Service {
   name: string;
@@ -55,7 +56,13 @@ export function ViewServiceModal({ service, isOpen, onClose }: ViewServiceModalP
           {service.photo && (
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right font-bold">Foto:</Label>
-              <img src={service.photo} alt={service.name} className="col-span-3 max-w-full h-auto" />
+              <Image
+                src={service.photo}
+                alt={service.name}
+                width={100}
+                height={100}
+                className="col-span-3 max-w-full h-auto"
+              />
             </div>
           )}
         </div>
