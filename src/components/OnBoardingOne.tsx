@@ -40,6 +40,8 @@ const OnboardingOne = () => {
                 src="/OnBoarding.png"
                 alt="Onboarding"
                 className="w-full md:w-2/4"
+                width={500}
+                height={500}
               />
             </div>
           </div>
