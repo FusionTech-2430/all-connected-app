@@ -24,12 +24,17 @@ export function DeleteServiceModal({ serviceName, isOpen, onClose, onConfirm }: 
         <DialogHeader>
           <DialogTitle>Confirmar eliminación</DialogTitle>
           <DialogDescription>
-            ¿Estás seguro de que deseas eliminar el servicio "{serviceName}"? Esta acción no se puede deshacer.
+            ¿Estás seguro de que deseas eliminar el servicio &quot;{serviceName}
+            &quot;? Esta acción no se puede deshacer.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button variant="destructive" onClick={onConfirm}>Eliminar</Button>
+          <Button variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button variant="destructive" onClick={onConfirm}>
+            Eliminar
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
