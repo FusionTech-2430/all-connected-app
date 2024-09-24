@@ -17,7 +17,17 @@ AllConnected es una **PWA** (Progressive Web App) que permite a diferentes usuar
 
 Para ejecutar este proyecto, necesitarás agregar las siguientes variables de entorno a tu archivo `.env.local`.
 
-`API_GATEWAY_URL`
+`NEXT_PUBLIC_FIREBASE_API_KEY`
+
+`NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+
+`NEXT_PUBLIC_FIREBASE_DATABASE_URL`
+
+`NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+
+`NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+
+`NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
 
 > 📘 INFO
 >
