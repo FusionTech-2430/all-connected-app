@@ -1,6 +1,6 @@
-import React from 'react';
-import NavBar from '@/components/NavBar';
-import Footer from '@/components/FooterApp';
+import React from 'react'
+import NavBar from '@/components/NavBar'
+import Footer from '@/components/FooterApp'
 
 const SignIn = () => {
   return (
@@ -9,8 +9,12 @@ const SignIn = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 min-h-screen">
         {/* Sección de formulario */}
         <div className="flex flex-col justify-center px-8 md:px-16">
-          <h1 className="text-3xl font-bold text-[#0369A1] mb-4">¡Bienvenido de nuevo!</h1>
-          <p className="text-gray-700 mb-8">Ingresa tu correo y contraseña para iniciar sesión</p>
+          <h1 className="text-3xl font-bold text-[#0369A1] mb-4">
+            ¡Bienvenido de nuevo!
+          </h1>
+          <p className="text-gray-700 mb-8">
+            Ingresa tu correo y contraseña para iniciar sesión
+          </p>
           <form className="space-y-4">
             <div>
               <label className="block text-gray-700">Correo</label>
@@ -38,7 +42,10 @@ const SignIn = () => {
             </div>
           </form>
           <p className="text-center mt-4 text-sm">
-            ¿No tienes una cuenta? <a href="/sign-up" className="text-[#0369A1]">Regístrate</a>
+            ¿No tienes una cuenta?{' '}
+            <a href="/sign-up" className="text-[#0369A1]">
+              Regístrate
+            </a>
           </p>
         </div>
 
@@ -49,19 +56,23 @@ const SignIn = () => {
             alt="AllConnected"
             className="z-10 w-2/3"
           />
-          <div className="absolute inset-0" style={{
-            backgroundImage: "linear-gradient(rgba(7, 89, 133, 0.2), rgba(7, 89, 133, 0.2)), url('/background2.png'), url('/background2.2.png')",
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            backgroundSize: 'cover',
-            height: '100%',
-            width: '100%',
-          }} />
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(7, 89, 133, 0.2), rgba(7, 89, 133, 0.2)), url('/background2.png'), url('/background2.2.png')",
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: 'cover',
+              height: '100%',
+              width: '100%'
+            }}
+          />
         </div>
       </div>
       <Footer />
     </div>
-  );
-};
+  )
+}
 
-export default SignIn;
+export default SignIn

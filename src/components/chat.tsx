@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { ref, push, onValue } from "firebase/database";
 import { uploadBytesResumable, getDownloadURL, ref as storageRef } from 'firebase/storage';
-import { database, storage } from '@/services/firebase';
+import { database, storage } from '@/lib/firebase/config';
 import { Send, Paperclip, ArrowLeft, File, X } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from 'next/navigation';
