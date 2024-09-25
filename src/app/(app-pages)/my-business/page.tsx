@@ -1,7 +1,5 @@
-export default function Page() {
-  return (
-    <>
-      <p>This is the my business page</p>
-    </>
-  )
+import Component from '@/components/business-dashboard'
+
+export default function BusinessPage() {
+  return <Component />
 }
