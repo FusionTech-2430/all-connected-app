@@ -1,9 +1,28 @@
-import React from 'react'
+import React, { useState } from 'react'
 import NavBar from '@/components/NavBar'
 import Footer from '@/components/FooterApp'
 import Image from 'next/image'
+import { signIn } from '@/lib/firebase/auth'  // Importa la función signIn
 
 const SignIn = () => {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+
+    try {
+      const user = await signIn(email, password)
+      console.log('Usuario autenticado:', user)
+      window.location.href = '/my-business';
+    } catch (error) {
+      setError('Error al iniciar sesión. Verifica tu correo y contraseña.')
+      console.error('Error al iniciar sesión:', error)
+    }
+  }
+
   return (
     <div>
       <NavBar />
@@ -16,11 +35,14 @@ const SignIn = () => {
           <p className="text-gray-700 mb-8">
             Ingresa tu correo y contraseña para iniciar sesión
           </p>
-          <form className="space-y-4">
+          {error && <p className="text-red-500">{error}</p>}
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-gray-700">Correo</label>
               <input
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Tu dirección de correo electrónico"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none"
               />
@@ -29,6 +51,8 @@ const SignIn = () => {
               <label className="block text-gray-700">Contraseña</label>
               <input
                 type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Tu contraseña"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none"
               />
