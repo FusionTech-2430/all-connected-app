@@ -1,23 +1,28 @@
 'use client'
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+  DialogTitle
+} from '@/components/ui/dialog'
 
 interface DeleteServiceModalProps {
-  serviceName: string;
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
+  serviceName: string
+  isOpen: boolean
+  onClose: () => void
+  onConfirm: () => void
 }
 
-export function DeleteServiceModal({ serviceName, isOpen, onClose, onConfirm }: DeleteServiceModalProps) {
+export function DeleteServiceModal({
+  serviceName,
+  isOpen,
+  onClose,
+  onConfirm
+}: DeleteServiceModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>

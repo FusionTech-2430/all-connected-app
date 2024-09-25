@@ -6,7 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
+  DialogDescription
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -16,7 +16,10 @@ interface AddNewAllyModalProps {
   onClose: () => void
 }
 
-export default function AddNewAllyModal({ isOpen, onClose }: AddNewAllyModalProps) {
+export default function AddNewAllyModal({
+  isOpen,
+  onClose
+}: AddNewAllyModalProps) {
   const [allyName, setAllyName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -33,7 +36,9 @@ export default function AddNewAllyModal({ isOpen, onClose }: AddNewAllyModalProp
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Agregar Nuevo Aliado</DialogTitle>
+          <DialogTitle className="text-xl font-bold">
+            Agregar Nuevo Aliado
+          </DialogTitle>
           <DialogDescription>
             Ingresa los detalles del nuevo aliado de tu emprendimiento
           </DialogDescription>
@@ -87,13 +92,18 @@ export default function AddNewAllyModal({ isOpen, onClose }: AddNewAllyModalProp
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
-              <option value="" disabled>Rol que ocupará el aliado</option>
+              <option value="" disabled>
+                Rol que ocupará el aliado
+              </option>
               <option value="vendedor">Vendedor</option>
               <option value="contador">Contador</option>
               <option value="marketing">Marketing</option>
             </select>
           </div>
-          <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+          <Button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+          >
             Guardar y enviar alianza
           </Button>
         </form>

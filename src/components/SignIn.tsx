@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import NavBar from '@/components/NavBar'
 import Footer from '@/components/FooterApp'
 import Image from 'next/image'
-import { signIn } from '@/lib/firebase/auth'  // Importa la función signIn
+import { signIn } from '@/lib/firebase/auth' // Importa la función signIn
 
 const SignIn = () => {
   const [email, setEmail] = useState('')
@@ -16,7 +16,7 @@ const SignIn = () => {
     try {
       const user = await signIn(email, password)
       console.log('Usuario autenticado:', user)
-      window.location.href = '/my-business';
+      window.location.href = '/my-business'
     } catch (error) {
       setError('Error al iniciar sesión. Verifica tu correo y contraseña.')
       console.error('Error al iniciar sesión:', error)
@@ -76,7 +76,7 @@ const SignIn = () => {
 
         {/* Sección del banner */}
         <div className="relative bg-[#075985] flex justify-center items-center rounded-lg">
-          <Image 
+          <Image
             src="/Banner1-removebg-preview.png"
             alt="AllConnected"
             className="z-10 w-2/3"

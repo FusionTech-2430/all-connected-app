@@ -7,15 +7,15 @@ const OnboardingTwo = () => {
   const [selectedCard, setSelectedCard] = useState<string | null>(null)
 
   const handleCardClick = (card: string) => {
-    setSelectedCard(card);
-    if (card === 'bienes'){
-      window.location.href = '/business-creation';
+    setSelectedCard(card)
+    if (card === 'bienes') {
+      window.location.href = '/business-creation'
     }
-  };
+  }
 
   const handleNextClick = () => {
-    window.location.href = '/my-business';
-  };
+    window.location.href = '/my-business'
+  }
 
   return (
     <div>
@@ -160,7 +160,10 @@ const OnboardingTwo = () => {
           </div>
 
           <div className="flex justify-end mt-8">
-            <button className="bg-[#0284C7] text-white px-6 py-2 rounded-lg hover:bg-blue-700" onClick={() => handleNextClick()}>
+            <button
+              className="bg-[#0284C7] text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+              onClick={() => handleNextClick()}
+            >
               Siguiente
             </button>
           </div>

@@ -1,26 +1,35 @@
 'use client'
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import Image from "next/image";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import Image from 'next/image'
 
 interface Service {
-  name: string;
-  category: string;
-  requests: number;
-  description?: string;
-  tags?: string;
-  photo?: string;
+  name: string
+  category: string
+  requests: number
+  description?: string
+  tags?: string
+  photo?: string
 }
 
 interface ViewServiceModalProps {
-  service: Service | null;
-  isOpen: boolean;
-  onClose: () => void;
+  service: Service | null
+  isOpen: boolean
+  onClose: () => void
 }
 
-export function ViewServiceModal({ service, isOpen, onClose }: ViewServiceModalProps) {
-  if (!service) return null;
+export function ViewServiceModal({
+  service,
+  isOpen,
+  onClose
+}: ViewServiceModalProps) {
+  if (!service) return null
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

@@ -12,9 +12,7 @@ export default function NotFound() {
             Oops, la página que buscabas no existe.
           </p>
           <div className="mt-6">
-            <GoBackButton
-              size="sm" 
-            />
+            <GoBackButton size="sm" />
           </div>
         </div>
       </main>

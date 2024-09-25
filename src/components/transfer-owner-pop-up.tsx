@@ -1,26 +1,26 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { useState } from 'react'
+import { X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  DialogTitle
+} from '@/components/ui/dialog'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  SelectValue
+} from '@/components/ui/select'
 
 interface Partner {
-  id: string;
-  name: string;
+  id: string
+  name: string
 }
 
 const partners: Partner[] = [
@@ -29,22 +29,25 @@ const partners: Partner[] = [
   { id: '3', name: 'Esteban Salazar' },
   { id: '4', name: 'Diego Pardo' },
   { id: '5', name: 'Valentina Sierra' },
-  { id: '6', name: 'Carlos Rojas' },
-];
+  { id: '6', name: 'Carlos Rojas' }
+]
 
 interface OwnershipTransferModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen: boolean
+  onClose: () => void
 }
 
-export default function OwnershipTransferModal({ isOpen, onClose }: OwnershipTransferModalProps) {
-  const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
+export default function OwnershipTransferModal({
+  isOpen,
+  onClose
+}: OwnershipTransferModalProps) {
+  const [selectedPartner, setSelectedPartner] = useState<string | null>(null)
 
   const handleSaveChanges = () => {
     // Implement the logic to save the ownership transfer
-    console.log('Transferring ownership to:', selectedPartner);
-    onClose();
-  };
+    console.log('Transferring ownership to:', selectedPartner)
+    onClose()
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -52,7 +55,8 @@ export default function OwnershipTransferModal({ isOpen, onClose }: OwnershipTra
         <DialogHeader>
           <DialogTitle>Ceder título de propietario</DialogTitle>
           <DialogDescription>
-            Selecciona a alguno de tus aliados para cederle el título de propietario
+            Selecciona a alguno de tus aliados para cederle el título de
+            propietario
           </DialogDescription>
         </DialogHeader>
         <button
@@ -63,7 +67,10 @@ export default function OwnershipTransferModal({ isOpen, onClose }: OwnershipTra
           <span className="sr-only">Close</span>
         </button>
         <div className="grid gap-4 py-4">
-          <Select onValueChange={setSelectedPartner} value={selectedPartner || undefined}>
+          <Select
+            onValueChange={setSelectedPartner}
+            value={selectedPartner || undefined}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Selecciona el nuevo propietario" />
             </SelectTrigger>
@@ -83,5 +90,5 @@ export default function OwnershipTransferModal({ isOpen, onClose }: OwnershipTra
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

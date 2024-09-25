@@ -1,52 +1,58 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Eye, Edit, Trash } from "lucide-react"
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Eye, Edit, Trash } from 'lucide-react'
 
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  SelectValue
+} from '@/components/ui/select'
 import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { MoreHorizontal, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
-import { AddServiceModal } from "@/components/add-service-modal"
-import { EditServiceModal } from "@/components/edit-service-modal"
-import { ViewServiceModal } from "@/components/view-service-modal"
-import { DeleteServiceModal } from "@/components/delete-service-modal"
+  TableRow
+} from '@/components/ui/table'
+import {
+  MoreHorizontal,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight
+} from 'lucide-react'
+import { AddServiceModal } from '@/components/add-service-modal'
+import { EditServiceModal } from '@/components/edit-service-modal'
+import { ViewServiceModal } from '@/components/view-service-modal'
+import { DeleteServiceModal } from '@/components/delete-service-modal'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 
 interface Service {
-  name: string;
-  category: string;
-  requests: number;
-  description?: string;
-  tags?: string;
-  photo?: string;
+  name: string
+  category: string
+  requests: number
+  description?: string
+  tags?: string
+  photo?: string
 }
 
 const initialServices: Service[] = [
-  { name: "Tutorias de matemáticas", category: "Educación", requests: 8 },
-  { name: "Tutorias de física", category: "Educación", requests: 2 },
-  { name: "Mantenimiento de PCs", category: "Ingeniería", requests: 6 },
-  { name: "Diseño de logos", category: "Diseño", requests: 25 },
-  { name: "Serenata", category: "Música", requests: 1 },
+  { name: 'Tutorias de matemáticas', category: 'Educación', requests: 8 },
+  { name: 'Tutorias de física', category: 'Educación', requests: 2 },
+  { name: 'Mantenimiento de PCs', category: 'Ingeniería', requests: 6 },
+  { name: 'Diseño de logos', category: 'Diseño', requests: 25 },
+  { name: 'Serenata', category: 'Música', requests: 1 }
 ]
 
 export default function MyServicesPage() {
@@ -73,36 +79,43 @@ export default function MyServicesPage() {
 
   const handleDeleteService = () => {
     if (selectedService) {
-      setServices(prevServices => prevServices.filter(s => s.name !== selectedService.name))
+      setServices((prevServices) =>
+        prevServices.filter((s) => s.name !== selectedService.name)
+      )
       setIsDeleteModalOpen(false)
       setSelectedService(null)
     }
   }
 
   const handleSaveService = (updatedService: Service) => {
-    setServices(prevServices =>
-      prevServices.map(service =>
+    setServices((prevServices) =>
+      prevServices.map((service) =>
         service.name === updatedService.name ? updatedService : service
       )
     )
   }
 
   const handleAddService = (newService: Service) => {
-    setServices(prevServices => [...prevServices, newService])
+    setServices((prevServices) => [...prevServices, newService])
   }
 
   const filteredServices = services
-    .filter(service => service.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    .filter(service => categoryFilter === 'all' || service.category === categoryFilter)
+    .filter((service) =>
+      service.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .filter(
+      (service) =>
+        categoryFilter === 'all' || service.category === categoryFilter
+    )
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6">Mis servicios</h1>
-      
+
       <div className="flex justify-between mb-6">
-        <Input 
-          placeholder="Buscar por nombre..." 
-          className="max-w-sm" 
+        <Input
+          placeholder="Buscar por nombre..."
+          className="max-w-sm"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -139,22 +152,28 @@ export default function MyServicesPage() {
               <TableCell>{service.category}</TableCell>
               <TableCell>{service.requests}</TableCell>
               <TableCell className="text-right">
-              <DropdownMenu>
+                <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon">
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => handleAction('visualizar', service)}>
+                    <DropdownMenuItem
+                      onClick={() => handleAction('visualizar', service)}
+                    >
                       <Eye className="mr-2 h-4 w-4 text-blue-500" />
                       Visualizar
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleAction('modificar', service)}>
+                    <DropdownMenuItem
+                      onClick={() => handleAction('modificar', service)}
+                    >
                       <Edit className="mr-2 h-4 w-4 text-yellow-500" />
                       Modificar
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleAction('eliminar', service)}>
+                    <DropdownMenuItem
+                      onClick={() => handleAction('eliminar', service)}
+                    >
                       <Trash className="mr-2 h-4 w-4 text-red-500" />
                       Eliminar
                     </DropdownMenuItem>
@@ -167,7 +186,9 @@ export default function MyServicesPage() {
       </Table>
 
       <div className="flex items-center justify-between mt-4">
-        <p className="text-sm text-gray-500">Total: {filteredServices.length} servicios.</p>
+        <p className="text-sm text-gray-500">
+          Total: {filteredServices.length} servicios.
+        </p>
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium">Página 1 de 1</p>
           <div className="flex items-center space-x-1">

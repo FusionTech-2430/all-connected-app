@@ -1,25 +1,47 @@
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight, Info } from 'lucide-react'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 
 const events = [
-  { id: 1, name: 'Stereo picnic', date: '2024-06-12', description: 'Festival de música de distintos artistas para...' },
-  { id: 2, name: 'Rock al parque', date: '2024-06-16', description: 'Festival de rock de distintos artistas para...' },
+  {
+    id: 1,
+    name: 'Stereo picnic',
+    date: '2024-06-12',
+    description: 'Festival de música de distintos artistas para...'
+  },
+  {
+    id: 2,
+    name: 'Rock al parque',
+    date: '2024-06-16',
+    description: 'Festival de rock de distintos artistas para...'
+  }
 ]
 
 export default function Calendar() {
   const [currentMonth, setCurrentMonth] = useState(new Date(2024, 5, 1)) // June 2024
 
-  const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate()
-  const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay()
+  const daysInMonth = new Date(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth() + 1,
+    0
+  ).getDate()
+  const firstDayOfMonth = new Date(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth(),
+    1
+  ).getDay()
 
   const prevMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
+    )
   }
 
   const nextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
+    )
   }
 
   return (
@@ -31,7 +53,7 @@ export default function Calendar() {
         </Button>
       </div>
       <div className="space-y-4 mb-6">
-        {events.map(event => (
+        {events.map((event) => (
           <Card key={event.id}>
             <CardContent className="p-4">
               <div className="flex justify-between items-center">
@@ -47,7 +69,10 @@ export default function Calendar() {
       </div>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-gray-900">
-          {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
+          {currentMonth.toLocaleString('default', {
+            month: 'long',
+            year: 'numeric'
+          })}
         </h2>
         <div className="flex space-x-2">
           <Button variant="outline" size="icon" onClick={prevMonth}>
@@ -59,21 +84,26 @@ export default function Calendar() {
         </div>
       </div>
       <div className="grid grid-cols-7 gap-2 text-center">
-        {['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'].map(day => (
-          <div key={day} className="font-semibold text-gray-600">{day}</div>
+        {['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'].map((day) => (
+          <div key={day} className="font-semibold text-gray-600">
+            {day}
+          </div>
         ))}
         {Array.from({ length: firstDayOfMonth }, (_, i) => (
           <div key={`empty-${i}`} className="h-10"></div>
         ))}
         {Array.from({ length: daysInMonth }, (_, i) => {
           const day = i + 1
-          const isToday = day === new Date().getDate() && 
-                          currentMonth.getMonth() === new Date().getMonth() && 
-                          currentMonth.getFullYear() === new Date().getFullYear()
-          const hasEvent = events.some(event => new Date(event.date).getDate() === day)
+          const isToday =
+            day === new Date().getDate() &&
+            currentMonth.getMonth() === new Date().getMonth() &&
+            currentMonth.getFullYear() === new Date().getFullYear()
+          const hasEvent = events.some(
+            (event) => new Date(event.date).getDate() === day
+          )
           return (
-            <div 
-              key={day} 
+            <div
+              key={day}
               className={`h-10 flex items-center justify-center rounded-full
                 ${isToday ? 'bg-blue-500 text-white' : ''}
                 ${hasEvent ? 'font-bold text-blue-600' : 'text-gray-900'}

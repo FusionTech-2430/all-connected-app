@@ -1,31 +1,37 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+  DialogTrigger
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
 
 interface Service {
-  name: string;
-  category: string;
-  description?: string;
-  tags?: string;
-  photo?: string;
-  requests: number;
+  name: string
+  category: string
+  description?: string
+  tags?: string
+  photo?: string
+  requests: number
 }
 
 interface AddServiceModalProps {
-  onAddService: (newService: Service) => void;
+  onAddService: (newService: Service) => void
 }
 
 export function AddServiceModal({ onAddService }: AddServiceModalProps) {
@@ -39,13 +45,15 @@ export function AddServiceModal({ onAddService }: AddServiceModalProps) {
     requests: 0
   })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target
-    setNewService(prev => ({ ...prev, [name]: value }))
+    setNewService((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleCategoryChange = (value: string) => {
-    setNewService(prev => ({ ...prev, category: value }))
+    setNewService((prev) => ({ ...prev, category: value }))
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -106,7 +114,10 @@ export function AddServiceModal({ onAddService }: AddServiceModalProps) {
               <Label htmlFor="category" className="text-right">
                 Categoría
               </Label>
-              <Select onValueChange={handleCategoryChange} value={newService.category}>
+              <Select
+                onValueChange={handleCategoryChange}
+                value={newService.category}
+              >
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Selecciona una categoría" />
                 </SelectTrigger>
@@ -135,10 +146,17 @@ export function AddServiceModal({ onAddService }: AddServiceModalProps) {
               <Label htmlFor="photo" className="text-right">
                 Foto
               </Label>
-              <Input id="photo" name="photo" type="file" className="col-span-3" />
+              <Input
+                id="photo"
+                name="photo"
+                type="file"
+                className="col-span-3"
+              />
             </div>
           </div>
-          <Button type="submit" className="w-full">Guardar Servicio</Button>
+          <Button type="submit" className="w-full">
+            Guardar Servicio
+          </Button>
         </form>
       </DialogContent>
     </Dialog>

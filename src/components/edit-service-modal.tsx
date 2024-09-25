@@ -1,36 +1,47 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+  DialogTitle
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
 
 interface Service {
-  name: string;
-  category: string;
-  description?: string;
-  tags?: string;
-  photo?: string;
-  requests: number;
+  name: string
+  category: string
+  description?: string
+  tags?: string
+  photo?: string
+  requests: number
 }
 
 interface EditServiceModalProps {
-  service: Service | null;
-  isOpen: boolean;
-  onClose: () => void;
-  onSave: (updatedService: Service) => void;
+  service: Service | null
+  isOpen: boolean
+  onClose: () => void
+  onSave: (updatedService: Service) => void
 }
 
-export function EditServiceModal({ service, isOpen, onClose, onSave }: EditServiceModalProps) {
+export function EditServiceModal({
+  service,
+  isOpen,
+  onClose,
+  onSave
+}: EditServiceModalProps) {
   const [editedService, setEditedService] = useState<Service>({
     name: '',
     category: '',
@@ -46,13 +57,15 @@ export function EditServiceModal({ service, isOpen, onClose, onSave }: EditServi
     }
   }, [service])
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target
-    setEditedService(prev => ({ ...prev, [name]: value }))
+    setEditedService((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleCategoryChange = (value: string) => {
-    setEditedService(prev => ({ ...prev, category: value }))
+    setEditedService((prev) => ({ ...prev, category: value }))
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -100,7 +113,10 @@ export function EditServiceModal({ service, isOpen, onClose, onSave }: EditServi
               <Label htmlFor="category" className="text-right">
                 Categoría
               </Label>
-              <Select onValueChange={handleCategoryChange} value={editedService.category}>
+              <Select
+                onValueChange={handleCategoryChange}
+                value={editedService.category}
+              >
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Selecciona una categoría" />
                 </SelectTrigger>
@@ -129,10 +145,17 @@ export function EditServiceModal({ service, isOpen, onClose, onSave }: EditServi
               <Label htmlFor="photo" className="text-right">
                 Foto
               </Label>
-              <Input id="photo" name="photo" type="file" className="col-span-3" />
+              <Input
+                id="photo"
+                name="photo"
+                type="file"
+                className="col-span-3"
+              />
             </div>
           </div>
-          <Button type="submit" className="w-full">Guardar Servicio</Button>
+          <Button type="submit" className="w-full">
+            Guardar Servicio
+          </Button>
         </form>
       </DialogContent>
     </Dialog>

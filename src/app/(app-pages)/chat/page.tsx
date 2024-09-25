@@ -1,5 +1,5 @@
-import React, { Suspense } from 'react';
-import Chat from '@/components/chat';
+import React, { Suspense } from 'react'
+import Chat from '@/components/chat'
 
 const MessagePage = () => {
   return (
@@ -8,8 +8,7 @@ const MessagePage = () => {
         <Chat />
       </Suspense>
     </div>
-  );
-};
+  )
+}
 
-export default MessagePage;
-
+export default MessagePage
