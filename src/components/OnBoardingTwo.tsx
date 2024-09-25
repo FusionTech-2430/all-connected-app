@@ -13,6 +13,10 @@ const OnboardingTwo = () => {
     }
   };
 
+  const handleNextClick = () => {
+    window.location.href = '/my-business';
+  };
+
   return (
     <div>
       <div className="min-h-screen flex flex-col justify-between">
@@ -156,7 +160,7 @@ const OnboardingTwo = () => {
           </div>
 
           <div className="flex justify-end mt-8">
-            <button className="bg-[#0284C7] text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+            <button className="bg-[#0284C7] text-white px-6 py-2 rounded-lg hover:bg-blue-700" onClick={() => handleNextClick()}>
               Siguiente
             </button>
           </div>
