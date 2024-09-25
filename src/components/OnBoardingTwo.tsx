@@ -7,8 +7,11 @@ const OnboardingTwo = () => {
   const [selectedCard, setSelectedCard] = useState<string | null>(null)
 
   const handleCardClick = (card: string) => {
-    setSelectedCard(card)
-  }
+    setSelectedCard(card);
+    if (card === 'bienes'){
+      window.location.href = '/business-creation';
+    }
+  };
 
   return (
     <div>
