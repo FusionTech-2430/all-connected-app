@@ -28,7 +28,6 @@ import {
   DialogFooter,
   DialogClose
 } from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 
 interface Ally {
