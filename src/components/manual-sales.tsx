@@ -71,7 +71,7 @@ export default function VentasManuales() {
   const [configuracionOrden, setConfiguracionOrden] = useState<{ clave: ClavesOrdenamiento; direccion: DireccionOrdenamiento }>({ clave: 'cliente', direccion: 'asc' })
 
   const ventasOrdenadas = useMemo(() => {
-    let ventasOrdenables = [...ventas]
+    const ventasOrdenables = [...ventas]
     if (configuracionOrden.clave) {
       ventasOrdenables.sort((a, b) => {
         if (a[configuracionOrden.clave] < b[configuracionOrden.clave]) {
