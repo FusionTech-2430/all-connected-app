@@ -1,3 +1,5 @@
+'use client'
+
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -8,8 +10,16 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { logOut } from '@/lib/firebase'
+import { useRouter } from 'next/navigation'
 
 export default function UserAvatar() {
+  const router = useRouter()
+  const handleLogOut = () => {
+    logOut()
+    router.push('/')
+  };
+
   return (
     <>
       <DropdownMenu>
@@ -27,7 +37,7 @@ export default function UserAvatar() {
           <DropdownMenuItem>Settings</DropdownMenuItem>
           <DropdownMenuItem>Support</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Logout</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleLogOut}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </>
