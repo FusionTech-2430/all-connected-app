@@ -1,10 +1,9 @@
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1'
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
 
-// services/userService.ts
 export const createUser = async (userData: FormData) => {
   try {
-    const response = await fetch(API_URL + '/users', {
+    const response = await fetch(API_URL + '/users-service/api/v1/users', {
       method: 'POST',
       body: userData,
       headers: {
