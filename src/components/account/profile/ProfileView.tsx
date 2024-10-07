@@ -1,7 +1,7 @@
 'use-client'
 import React from 'react'
 
-export default function Component() {
+export default function ProfileView() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Contenedor general */}

@@ -1,5 +1,5 @@
-import { AppHeader } from '@/components/header'
-import Sidebar from '@/components/sidebar'
+import { AppHeader } from '@/components/layout/AppHeader'
+import Sidebar from '@/components/ui-own/sidebar'
 
 export default function AppLayout({
   children

@@ -1,5 +1,5 @@
 import React from 'react'
-import OnBoardingTwo from '@/components/OnBoardingTwo'
+import OnBoardingTwo from '@/components/account/onboarding/OnBoardingTwo'
 
 export default function UsersPage() {
   return (

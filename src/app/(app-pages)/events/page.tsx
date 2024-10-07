@@ -1,6 +1,6 @@
 // src/app/events/page.tsx
-import Component from '@/components/event-dashboard'
+import EventDashboard from '@/components/dashboard/events/EventDashboard'
 
 export default function EventsPage() {
-  return <Component />
+  return <EventDashboard />
 }

@@ -1,9 +1,9 @@
-import MessageList from '@/components/messages-list'
+import MessagesList from '@/components/chat/MessagesList'
 
 export default function Page() {
   return (
     <div>
-      <MessageList />
+      <MessagesList />
     </div>
   )
 }

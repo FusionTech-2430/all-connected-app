@@ -16,7 +16,7 @@ interface AddNewAllyModalProps {
   onClose: () => void
 }
 
-export default function AddNewAllyModal({
+export default function AddAllyModal({
   isOpen,
   onClose
 }: AddNewAllyModalProps) {
