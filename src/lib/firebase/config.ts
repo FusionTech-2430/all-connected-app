@@ -1,4 +1,4 @@
-import { initializeApp, type FirebaseOptions } from 'firebase/app'
+import { initializeApp, type FirebaseOptions, getApps, getApp } from 'firebase/app'
 import { getDatabase } from 'firebase/database'
 import { getStorage } from 'firebase/storage'
 import { getAuth } from 'firebase/auth'
@@ -13,9 +13,12 @@ const firebaseConfig: FirebaseOptions = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 }
 
-const app = initializeApp(firebaseConfig)
+// Initialize Firebase
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp()
+
+// Export the database and storage services
 const database = getDatabase(app)
 const storage = getStorage(app)
 const auth = getAuth(app)
 
-export { database, storage, auth }
+export { app, database, storage, auth }

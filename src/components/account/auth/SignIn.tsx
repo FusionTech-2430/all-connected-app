@@ -1,31 +1,19 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import NavBar from '@/components/ui-own/NavBar'
 import Footer from '@/components/layout/FooterApp'
 import Image from 'next/image'
-import { signIn } from '@/lib/firebase/auth'
-import { getAuth } from 'firebase/auth'
+import { signIn, getCurrentUser } from '@/lib/firebase/auth'
 
 const SignIn = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const auth = getAuth()
-    console.log('Usuario autenticado:', auth.currentUser)
-    if (auth.currentUser) {
-      console.log('Usuario autenticado:', auth.currentUser.uid)
-      window.location.href = '/my-business'
-    } else {
-      setIsLoading(false)
-    }
-  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     try {
+      console.log('auth:', getCurrentUser())
       const user = await signIn(email, password)
       console.log('Usuario autenticado:', user)
       window.location.href = '/my-business'
@@ -33,10 +21,6 @@ const SignIn = () => {
       setError('Error al iniciar sesión. Verifica tu correo y contraseña.')
       console.error('Error al iniciar sesión:', error)
     }
-  }
-
-  if (isLoading) {
-    return <div>Cargando...</div>
   }
 
   return (
