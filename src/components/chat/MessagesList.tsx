@@ -8,7 +8,7 @@ const messages = [
   { id: 3, name: 'Alejandra Romero', date: '2024-08-03' }
 ]
 
-export default function MessageList() {
+export default function MessagesList() {
   return (
     <>
       <section className="flex flex-col">

@@ -1,4 +1,4 @@
-import Component from '@/components/business-dashboard'
+import Component from '@/components/dashboard/businesses/BusinessDashboard'
 
 export default function BusinessPage() {
   return <Component />

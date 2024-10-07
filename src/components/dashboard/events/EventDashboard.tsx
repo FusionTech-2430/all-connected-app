@@ -28,7 +28,7 @@ const events = [
   { name: 'Serenata', category: 'Música', requests: 1 }
 ]
 
-export default function Component() {
+export default function EventDashboard() {
   const [searchTerm, setSearchTerm] = useState('')
 
   return (

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import NavBar from '@/components/NavBar'
-import Footer from '@/components/FooterApp'
+import NavBar from '@/components/ui-own/NavBar'
+import Footer from '@/components/layout/FooterApp'
 import Image from 'next/image'
 import { signIn } from '@/lib/firebase/auth'
 import { getAuth } from 'firebase/auth'

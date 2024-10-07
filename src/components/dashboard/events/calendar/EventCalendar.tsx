@@ -18,7 +18,7 @@ const events = [
   }
 ]
 
-export default function Calendar() {
+export default function EventCalendar() {
   const [currentMonth, setCurrentMonth] = useState(new Date(2024, 5, 1)) // June 2024
 
   const daysInMonth = new Date(

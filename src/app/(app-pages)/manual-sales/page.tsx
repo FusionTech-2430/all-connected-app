@@ -1,4 +1,4 @@
-import Component from '@/components/manual-sales'
+import Component from '@/components/dashboard/products/ManualSales'
 
 export default function BusinessPage() {
   return <Component />

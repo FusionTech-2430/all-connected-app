@@ -45,7 +45,7 @@ const initialAllies: Ally[] = [
   { id: 'ES', name: 'Esteban Salazar', email: 'estebans@fusiontech.com' }
 ]
 
-export default function MyBusiness() {
+export default function BusinessDashboard() {
   const [allies, setAllies] = useState<Ally[]>(initialAllies)
   const [searchTerm, setSearchTerm] = useState('')
   const [businessImage, setBusinessImage] = useState('/placeholder.svg?height=48&width=48')

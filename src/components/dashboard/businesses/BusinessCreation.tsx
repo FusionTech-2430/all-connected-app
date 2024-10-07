@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react'
-import NavBar from '@/components/NavBar'
-import Footer from '@/components/FooterApp'
+import NavBar from '@/components/ui-own/NavBar'
+import Footer from '@/components/layout/FooterApp'
 import { Upload } from 'lucide-react'
 
 const BusinessCreation = () => {

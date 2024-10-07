@@ -56,7 +56,7 @@ const esFechaValida = (fecha: string) => {
 type ClavesOrdenamiento = keyof Omit<Venta, 'id'>
 type DireccionOrdenamiento = 'asc' | 'desc'
 
-export default function VentasManuales() {
+export default function ManualSales() {
   const [ventas, setVentas] = useState<Venta[]>(ventasIniciales)
   const [modalAbierto, setModalAbierto] = useState(false)
   const [nuevaVenta, setNuevaVenta] = useState<Omit<Venta, 'id'>>({

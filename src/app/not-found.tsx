@@ -1,4 +1,4 @@
-import GoBackButton from '@/components/go-back-button'
+import GoBackButton from '@/components/ui-own/go-back-button'
 import { TriangleAlert } from 'lucide-react'
 
 export default function NotFound() {
