@@ -31,9 +31,9 @@ import {
 import { Select } from '@/components/ui/select'
 
 interface Ally {
-  id: string;
-  name: string;
-  email: string;
+  id: string
+  name: string
+  email: string
 }
 
 // Mock data for allies
@@ -48,7 +48,9 @@ const initialAllies: Ally[] = [
 export default function BusinessDashboard() {
   const [allies, setAllies] = useState<Ally[]>(initialAllies)
   const [searchTerm, setSearchTerm] = useState('')
-  const [businessImage, setBusinessImage] = useState('/placeholder.svg?height=48&width=48')
+  const [businessImage, setBusinessImage] = useState(
+    '/placeholder.svg?height=48&width=48'
+  )
   const [isOwnershipModalOpen, setIsOwnershipModalOpen] = useState(false)
   const [isAddAllyModalOpen, setIsAddAllyModalOpen] = useState(false)
   const [isViewAllyModalOpen, setIsViewAllyModalOpen] = useState(false)
@@ -58,9 +60,10 @@ export default function BusinessDashboard() {
   const [temporaryToken, setTemporaryToken] = useState('')
 
   useEffect(() => {
-    const filteredAllies = initialAllies.filter(ally =>
-      ally.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ally.email.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredAllies = initialAllies.filter(
+      (ally) =>
+        ally.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ally.email.toLowerCase().includes(searchTerm.toLowerCase())
     )
     setAllies(filteredAllies)
   }, [searchTerm])
@@ -90,7 +93,7 @@ export default function BusinessDashboard() {
 
   const deleteAlly = () => {
     if (selectedAlly) {
-      setAllies(allies.filter(a => a.id !== selectedAlly.id))
+      setAllies(allies.filter((a) => a.id !== selectedAlly.id))
       setIsDeleteAllyModalOpen(false)
     }
   }
@@ -107,7 +110,11 @@ export default function BusinessDashboard() {
       <div className="bg-blue-50 p-4 rounded-lg flex items-center justify-between mb-6">
         <div className="flex items-center space-x-4">
           <Avatar className="w-12 h-12">
-            <img src={businessImage} alt="Pontigomitas logo" className="w-full h-full object-cover" />
+            <img
+              src={businessImage}
+              alt="Pontigomitas logo"
+              className="w-full h-full object-cover"
+            />
           </Avatar>
           <div>
             <h2 className="font-semibold">Pontigomitas</h2>
@@ -115,7 +122,10 @@ export default function BusinessDashboard() {
           </div>
         </div>
         <div className="flex space-x-2">
-          <Button variant="outline" onClick={() => document.getElementById('imageUpload')?.click()}>
+          <Button
+            variant="outline"
+            onClick={() => document.getElementById('imageUpload')?.click()}
+          >
             <Upload className="w-4 h-4 mr-2" />
             Cambiar imagen
           </Button>
@@ -126,7 +136,10 @@ export default function BusinessDashboard() {
             className="hidden"
             onChange={handleImageChange}
           />
-          <Button variant="outline" onClick={() => setIsOwnershipModalOpen(true)}>
+          <Button
+            variant="outline"
+            onClick={() => setIsOwnershipModalOpen(true)}
+          >
             Ceder título propietario
           </Button>
         </div>
@@ -139,9 +152,13 @@ export default function BusinessDashboard() {
           className="flex-grow"
           placeholder="Buscar por nombre o correo..."
           value={searchTerm}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setSearchTerm(e.target.value)
+          }
         />
-        <Button onClick={() => setIsAddAllyModalOpen(true)}>Añadir Aliado</Button>
+        <Button onClick={() => setIsAddAllyModalOpen(true)}>
+          Añadir Aliado
+        </Button>
       </div>
 
       <Table>
@@ -166,7 +183,9 @@ export default function BusinessDashboard() {
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost"><MoreVertical className="h-4 w-4" /></Button>
+                    <Button variant="ghost">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
                     <DropdownMenuItem onClick={() => openViewAllyModal(ally)}>
@@ -190,7 +209,10 @@ export default function BusinessDashboard() {
       </div>
 
       {/* Ownership Transfer Modal */}
-      <Dialog open={isOwnershipModalOpen} onOpenChange={setIsOwnershipModalOpen}>
+      <Dialog
+        open={isOwnershipModalOpen}
+        onOpenChange={setIsOwnershipModalOpen}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Ceder título de propietario</DialogTitle>
@@ -200,15 +222,19 @@ export default function BusinessDashboard() {
           </DialogHeader>
           <Select value={newOwner} onValueChange={setNewOwner}>
             <option value="">Seleccione un aliado</option>
-            {allies.map(ally => (
-              <option key={ally.id} value={ally.id}>{ally.name}</option>
+            {allies.map((ally) => (
+              <option key={ally.id} value={ally.id}>
+                {ally.name}
+              </option>
             ))}
           </Select>
           <DialogFooter>
-            <Button onClick={() => {
-              // Logic to change ownership
-              setIsOwnershipModalOpen(false)
-            }}>
+            <Button
+              onClick={() => {
+                // Logic to change ownership
+                setIsOwnershipModalOpen(false)
+              }}
+            >
               Guardar Cambios
             </Button>
           </DialogFooter>
@@ -228,7 +254,9 @@ export default function BusinessDashboard() {
           {temporaryToken && (
             <div>
               <p>Token generado: {temporaryToken}</p>
-              <Button onClick={() => navigator.clipboard.writeText(temporaryToken)}>
+              <Button
+                onClick={() => navigator.clipboard.writeText(temporaryToken)}
+              >
                 Copiar Token
               </Button>
             </div>
@@ -247,8 +275,12 @@ export default function BusinessDashboard() {
           </DialogHeader>
           {selectedAlly && (
             <div>
-              <p><strong>Nombre:</strong> {selectedAlly.name}</p>
-              <p><strong>Email:</strong> {selectedAlly.email}</p>
+              <p>
+                <strong>Nombre:</strong> {selectedAlly.name}
+              </p>
+              <p>
+                <strong>Email:</strong> {selectedAlly.email}
+              </p>
             </div>
           )}
           <DialogClose asChild>
@@ -258,7 +290,10 @@ export default function BusinessDashboard() {
       </Dialog>
 
       {/* Delete Ally Modal */}
-      <Dialog open={isDeleteAllyModalOpen} onOpenChange={setIsDeleteAllyModalOpen}>
+      <Dialog
+        open={isDeleteAllyModalOpen}
+        onOpenChange={setIsDeleteAllyModalOpen}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Eliminar Aliado</DialogTitle>
@@ -266,11 +301,12 @@ export default function BusinessDashboard() {
               ¿Está seguro de que desea eliminar a este aliado?
             </DialogDescription>
           </DialogHeader>
-          {selectedAlly && (
-            <p>Aliado a eliminar: {selectedAlly.name}</p>
-          )}
+          {selectedAlly && <p>Aliado a eliminar: {selectedAlly.name}</p>}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteAllyModalOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteAllyModalOpen(false)}
+            >
               Cancelar
             </Button>
             <Button variant="destructive" onClick={deleteAlly}>

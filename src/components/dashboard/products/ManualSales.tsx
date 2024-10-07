@@ -1,44 +1,72 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  TableRow
+} from '@/components/ui/table'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog"
+  DialogFooter
+} from '@/components/ui/dialog'
 import { ChevronUp, ChevronDown } from 'lucide-react'
 
 interface Venta {
-  id: number;
-  cliente: string;
-  producto: string;
-  cantidad: number;
-  precio: number;
-  fecha: string;
+  id: number
+  cliente: string
+  producto: string
+  cantidad: number
+  precio: number
+  fecha: string
 }
 
 const ventasIniciales: Venta[] = [
-  { id: 1, cliente: "Juan Pérez", producto: "Brownie de chocolate", cantidad: 2, precio: 8000, fecha: "2024-05-01" },
-  { id: 2, cliente: "María Rodríguez", producto: "Galleta de limón", cantidad: 5, precio: 20000, fecha: "2024-05-01" },
-  { id: 3, cliente: "Pedro Torres", producto: "Brownie de arequipe", cantidad: 1, precio: 4000, fecha: "2024-05-12" },
-  { id: 4, cliente: "Julián García", producto: "Galleta Rebelvet", cantidad: 2, precio: 8000, fecha: "2024-05-01" },
+  {
+    id: 1,
+    cliente: 'Juan Pérez',
+    producto: 'Brownie de chocolate',
+    cantidad: 2,
+    precio: 8000,
+    fecha: '2024-05-01'
+  },
+  {
+    id: 2,
+    cliente: 'María Rodríguez',
+    producto: 'Galleta de limón',
+    cantidad: 5,
+    precio: 20000,
+    fecha: '2024-05-01'
+  },
+  {
+    id: 3,
+    cliente: 'Pedro Torres',
+    producto: 'Brownie de arequipe',
+    cantidad: 1,
+    precio: 4000,
+    fecha: '2024-05-12'
+  },
+  {
+    id: 4,
+    cliente: 'Julián García',
+    producto: 'Galleta Rebelvet',
+    cantidad: 2,
+    precio: 8000,
+    fecha: '2024-05-01'
+  }
 ]
 
 const formatearPrecio = (precio: number) => {
-  return precio.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+  return precio.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }
 
 const formatearFecha = (fecha: string) => {
@@ -66,9 +94,14 @@ export default function ManualSales() {
     precio: 0,
     fecha: new Date().toISOString().split('T')[0]
   })
-  const [errores, setErrores] = useState<Partial<Record<keyof Venta, string>>>({})
+  const [errores, setErrores] = useState<Partial<Record<keyof Venta, string>>>(
+    {}
+  )
   const [notificacion, setNotificacion] = useState<string | null>(null)
-  const [configuracionOrden, setConfiguracionOrden] = useState<{ clave: ClavesOrdenamiento; direccion: DireccionOrdenamiento }>({ clave: 'cliente', direccion: 'asc' })
+  const [configuracionOrden, setConfiguracionOrden] = useState<{
+    clave: ClavesOrdenamiento
+    direccion: DireccionOrdenamiento
+  }>({ clave: 'cliente', direccion: 'asc' })
 
   const ventasOrdenadas = useMemo(() => {
     const ventasOrdenables = [...ventas]
@@ -88,7 +121,10 @@ export default function ManualSales() {
 
   const solicitarOrdenamiento = (clave: ClavesOrdenamiento) => {
     let direccion: DireccionOrdenamiento = 'asc'
-    if (configuracionOrden.clave === clave && configuracionOrden.direccion === 'asc') {
+    if (
+      configuracionOrden.clave === clave &&
+      configuracionOrden.direccion === 'asc'
+    ) {
       direccion = 'desc'
     }
     setConfiguracionOrden({ clave, direccion })
@@ -96,14 +132,18 @@ export default function ManualSales() {
 
   const validarFormulario = () => {
     const nuevosErrores: Partial<Record<keyof Venta, string>> = {}
-    if (!nuevaVenta.cliente) nuevosErrores.cliente = "El nombre del cliente es obligatorio"
-    if (!nuevaVenta.producto) nuevosErrores.producto = "El nombre del producto es obligatorio"
-    if (!nuevaVenta.cantidad || nuevaVenta.cantidad <= 0) nuevosErrores.cantidad = "La cantidad debe ser mayor a 0"
-    if (!nuevaVenta.precio || nuevaVenta.precio <= 0) nuevosErrores.precio = "El precio debe ser mayor a 0"
+    if (!nuevaVenta.cliente)
+      nuevosErrores.cliente = 'El nombre del cliente es obligatorio'
+    if (!nuevaVenta.producto)
+      nuevosErrores.producto = 'El nombre del producto es obligatorio'
+    if (!nuevaVenta.cantidad || nuevaVenta.cantidad <= 0)
+      nuevosErrores.cantidad = 'La cantidad debe ser mayor a 0'
+    if (!nuevaVenta.precio || nuevaVenta.precio <= 0)
+      nuevosErrores.precio = 'El precio debe ser mayor a 0'
     if (!nuevaVenta.fecha) {
-      nuevosErrores.fecha = "La fecha es obligatoria"
+      nuevosErrores.fecha = 'La fecha es obligatoria'
     } else if (!esFechaValida(nuevaVenta.fecha)) {
-      nuevosErrores.fecha = "La fecha no puede ser posterior al día actual"
+      nuevosErrores.fecha = 'La fecha no puede ser posterior al día actual'
     }
     setErrores(nuevosErrores)
     return Object.keys(nuevosErrores).length === 0
@@ -111,13 +151,17 @@ export default function ManualSales() {
 
   const manejarCambioInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setNuevaVenta(prev => ({ ...prev, [name]: name === 'cantidad' || name === 'precio' ? Number(value) : value }))
+    setNuevaVenta((prev) => ({
+      ...prev,
+      [name]: name === 'cantidad' || name === 'precio' ? Number(value) : value
+    }))
   }
 
   const manejarEnvio = (e: React.FormEvent) => {
     e.preventDefault()
     if (validarFormulario()) {
-      const id = ventas.length > 0 ? Math.max(...ventas.map(v => v.id)) + 1 : 1
+      const id =
+        ventas.length > 0 ? Math.max(...ventas.map((v) => v.id)) + 1 : 1
       setVentas([...ventas, { id, ...nuevaVenta }])
       setModalAbierto(false)
       setNuevaVenta({
@@ -127,7 +171,7 @@ export default function ManualSales() {
         precio: 0,
         fecha: new Date().toISOString().split('T')[0]
       })
-      setNotificacion("Venta registrada exitosamente")
+      setNotificacion('Venta registrada exitosamente')
       setTimeout(() => setNotificacion(null), 3000)
     }
   }
@@ -140,7 +184,10 @@ export default function ManualSales() {
       </Button>
 
       {notificacion && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+        <div
+          className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4"
+          role="alert"
+        >
           <span className="block sm:inline">{notificacion}</span>
         </div>
       )}
@@ -148,19 +195,28 @@ export default function ManualSales() {
       <Table>
         <TableHeader>
           <TableRow>
-            {([
-              { key: 'cliente', label: 'Cliente' },
-              { key: 'producto', label: 'Producto' },
-              { key: 'cantidad', label: 'Cantidad' },
-              { key: 'precio', label: 'Precio' },
-              { key: 'fecha', label: 'Fecha' }
-            ] as const).map(({ key, label }) => (
-              <TableHead key={key} className="cursor-pointer" onClick={() => solicitarOrdenamiento(key)}>
+            {(
+              [
+                { key: 'cliente', label: 'Cliente' },
+                { key: 'producto', label: 'Producto' },
+                { key: 'cantidad', label: 'Cantidad' },
+                { key: 'precio', label: 'Precio' },
+                { key: 'fecha', label: 'Fecha' }
+              ] as const
+            ).map(({ key, label }) => (
+              <TableHead
+                key={key}
+                className="cursor-pointer"
+                onClick={() => solicitarOrdenamiento(key)}
+              >
                 <div className="flex items-center">
                   {label}
-                  {configuracionOrden.clave === key && (
-                    configuracionOrden.direccion === 'asc' ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />
-                  )}
+                  {configuracionOrden.clave === key &&
+                    (configuracionOrden.direccion === 'asc' ? (
+                      <ChevronUp className="ml-2 h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="ml-2 h-4 w-4" />
+                    ))}
                 </div>
               </TableHead>
             ))}
@@ -194,7 +250,9 @@ export default function ManualSales() {
                 onChange={manejarCambioInput}
                 placeholder="Nombre del cliente"
               />
-              {errores.cliente && <p className="text-red-500 text-sm">{errores.cliente}</p>}
+              {errores.cliente && (
+                <p className="text-red-500 text-sm">{errores.cliente}</p>
+              )}
             </div>
             <div>
               <Label htmlFor="producto">Producto</Label>
@@ -205,7 +263,9 @@ export default function ManualSales() {
                 onChange={manejarCambioInput}
                 placeholder="Nombre del producto"
               />
-              {errores.producto && <p className="text-red-500 text-sm">{errores.producto}</p>}
+              {errores.producto && (
+                <p className="text-red-500 text-sm">{errores.producto}</p>
+              )}
             </div>
             <div>
               <Label htmlFor="cantidad">Cantidad</Label>
@@ -217,7 +277,9 @@ export default function ManualSales() {
                 onChange={manejarCambioInput}
                 placeholder="Cantidad"
               />
-              {errores.cantidad && <p className="text-red-500 text-sm">{errores.cantidad}</p>}
+              {errores.cantidad && (
+                <p className="text-red-500 text-sm">{errores.cantidad}</p>
+              )}
             </div>
             <div>
               <Label htmlFor="precio">Precio por unidad</Label>
@@ -229,7 +291,9 @@ export default function ManualSales() {
                 onChange={manejarCambioInput}
                 placeholder="Precio por unidad"
               />
-              {errores.precio && <p className="text-red-500 text-sm">{errores.precio}</p>}
+              {errores.precio && (
+                <p className="text-red-500 text-sm">{errores.precio}</p>
+              )}
             </div>
             <div>
               <Label htmlFor="fecha">Fecha</Label>
@@ -241,7 +305,9 @@ export default function ManualSales() {
                 onChange={manejarCambioInput}
                 max={new Date().toISOString().split('T')[0]}
               />
-              {errores.fecha && <p className="text-red-500 text-sm">{errores.fecha}</p>}
+              {errores.fecha && (
+                <p className="text-red-500 text-sm">{errores.fecha}</p>
+              )}
             </div>
             <DialogFooter>
               <Button type="submit">Guardar venta</Button>

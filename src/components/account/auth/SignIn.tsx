@@ -10,7 +10,7 @@ const SignIn = () => {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  
+
   useEffect(() => {
     const auth = getAuth()
     console.log('Usuario autenticado:', auth.currentUser)
@@ -33,7 +33,7 @@ const SignIn = () => {
       setError('Error al iniciar sesión. Verifica tu correo y contraseña.')
       console.error('Error al iniciar sesión:', error)
     }
-  } 
+  }
 
   if (isLoading) {
     return <div>Cargando...</div>
