@@ -15,9 +15,14 @@ import { useRouter } from 'next/navigation'
 
 export default function UserAvatar() {
   const router = useRouter()
+
   const handleLogOut = () => {
     logOut()
     router.push('/')
+  }
+  const handleSettings = () => {
+    logOut()
+    router.push('/profile')
   }
 
   return (
@@ -34,7 +39,7 @@ export default function UserAvatar() {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Settings</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleSettings}>Settings</DropdownMenuItem>
           <DropdownMenuItem>Support</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogOut}>Logout</DropdownMenuItem>
