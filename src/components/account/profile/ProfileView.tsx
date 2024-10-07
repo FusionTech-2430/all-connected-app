@@ -1,7 +1,34 @@
-'use-client'
-import React from 'react'
+'use client'
+
+import { useState } from 'react'
 
 export default function ProfileView() {
+  /* USER TYPE
+    id_user: string
+    fullname: string
+    username: string
+    mail: string
+    photo_url: string
+    roles: string[]
+    organizations: string[] | null
+    active: boolean
+  */
+
+  const [profile, setProfile] = useState({
+    fullName: 'Sara Brrum',
+    username: 'valesco_1001',
+    email: 'svalentinasierra@javeriana.edu.co',
+    password: '',
+  })
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setProfile({
+      ...profile,
+      [name]: value,
+    })
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Contenedor general */}
@@ -44,8 +71,10 @@ export default function ProfileView() {
             </label>
             <input
               type="text"
+              name="fullName"
               className="w-3/5 border border-gray-300 rounded-lg p-2"
-              value="Sara Valentina Sierra Escobar"
+              value={profile.fullName}
+              onChange={handleChange}
             />
           </div>
           <div>
@@ -57,8 +86,10 @@ export default function ProfileView() {
             </label>
             <input
               type="text"
+              name="username"
               className="w-3/5 border border-gray-300 rounded-lg p-2"
-              value="valesco_1001"
+              value={profile.username}
+              onChange={handleChange}
             />
           </div>
           <div>
@@ -70,8 +101,10 @@ export default function ProfileView() {
             </label>
             <input
               type="email"
+              name="email"
               className="w-3/5 border border-gray-300 rounded-lg p-2"
-              value="svalentinasierra@javeriana.edu.co"
+              value={profile.email}
+              onChange={handleChange}
             />
           </div>
           <div>
@@ -83,7 +116,10 @@ export default function ProfileView() {
             </label>
             <input
               type="password"
+              name="password"
               className="w-3/5 border border-gray-300 rounded-lg p-2"
+              value={profile.password}
+              onChange={handleChange}
               placeholder="Introduce una nueva contraseña"
             />
           </div>
