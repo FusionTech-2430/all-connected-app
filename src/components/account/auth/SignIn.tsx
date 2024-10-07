@@ -2,21 +2,24 @@ import React, { useState } from 'react'
 import NavBar from '@/components/ui-own/NavBar'
 import Footer from '@/components/layout/FooterApp'
 import Image from 'next/image'
-import { signIn, getCurrentUser } from '@/lib/firebase/auth'
+import { signIn } from '@/lib/firebase/auth'
+import { useRouter } from 'next/navigation'
 
 const SignIn = () => {
+  // Form state
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  // Router
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     try {
-      console.log('auth:', getCurrentUser())
       const user = await signIn(email, password)
       console.log('Usuario autenticado:', user)
-      window.location.href = '/my-business'
+      router.push('/my-business')
     } catch (error) {
       setError('Error al iniciar sesión. Verifica tu correo y contraseña.')
       console.error('Error al iniciar sesión:', error)

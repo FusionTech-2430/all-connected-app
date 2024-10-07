@@ -7,3 +7,14 @@ export interface UserCreation {
   photo?: File
   roles: string[]
 }
+
+export interface User {
+  id_user: string
+  fullname: string
+  username: string
+  mail: string
+  photo_url: string
+  roles: string[]
+  organizations: string[] | null
+  active: boolean
+}
