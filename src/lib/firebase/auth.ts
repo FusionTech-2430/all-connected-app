@@ -15,7 +15,7 @@ export const signIn = async (email: string, password: string) => {
       email,
       password
     )
-    return userCredential.user
+    return userCredential
   } catch (error) {
     throw error
   }
