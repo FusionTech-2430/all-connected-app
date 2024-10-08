@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,58 +28,144 @@ import {
   DialogFooter,
   DialogClose
 } from '@/components/ui/dialog'
-import { Select } from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
-interface Ally {
-  id: string
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+
+interface Business {
+  id_business: string
   name: string
-  email: string
+  organizations: string[]
+  owner_id: string
+  logo_url: string
 }
 
-// Mock data for allies
-const initialAllies: Ally[] = [
-  { id: 'CN', name: 'Camilo Nossa', email: 'camilonossa@fusiontech.com' },
-  { id: 'VE', name: 'Valentina Escobar', email: 'valen_e@fusiontech.com' },
-  { id: 'DP', name: 'Diego Pardo', email: 'pardiego@fusiontech.com' },
-  { id: 'CR', name: 'Carlos Rojas', email: 'carlosroj@fusiontech.com' },
-  { id: 'ES', name: 'Esteban Salazar', email: 'estebans@fusiontech.com' }
-]
+interface Member {
+  id: {
+    idUser: string
+    idBusiness: string
+  }
+  idBusiness: {
+    name: string
+    owner_id: string
+    organization: string
+  }
+  joinDate: string
+}
+
+interface User {
+  id_user: string
+  fullname: string
+  username: string
+  mail: string
+  photo_url: string
+  roles: string[]
+  organizations: string[] | null
+  active: boolean
+}
+
+interface Ally extends User {
+  joinDate: string
+  isOwner?: boolean
+}
 
 export default function BusinessDashboard() {
-  const [allies, setAllies] = useState<Ally[]>(initialAllies)
+  const [business, setBusiness] = useState<Business | null>(null)
+  const [allies, setAllies] = useState<Ally[]>([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [businessImage, setBusinessImage] = useState(
-    '/placeholder.svg?height=48&width=48'
-  )
   const [isOwnershipModalOpen, setIsOwnershipModalOpen] = useState(false)
   const [isAddAllyModalOpen, setIsAddAllyModalOpen] = useState(false)
   const [isViewAllyModalOpen, setIsViewAllyModalOpen] = useState(false)
   const [isDeleteAllyModalOpen, setIsDeleteAllyModalOpen] = useState(false)
+  const [isChangeImageModalOpen, setIsChangeImageModalOpen] = useState(false)
   const [selectedAlly, setSelectedAlly] = useState<Ally | null>(null)
   const [newOwner, setNewOwner] = useState('')
   const [temporaryToken, setTemporaryToken] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [imageError, setImageError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    const filteredAllies = initialAllies.filter(
-      (ally) =>
-        ally.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ally.email.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    setAllies(filteredAllies)
-  }, [searchTerm])
-
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (e: ProgressEvent<FileReader>) => {
-        if (e.target?.result) {
-          setBusinessImage(e.target.result as string)
+    const fetchBusinessData = async () => {
+      try {
+        const response = await fetch(`${API_URL}/businesses-service/api/v1/businesses/2ebec1f5-5473-4c52-ad85-27c09fb0e83f`)
+        if (!response.ok) {
+          throw new Error('Failed to fetch business data')
         }
+        const data = await response.json()
+        setBusiness(data)
+        return data
+      } catch (err) {
+        setError('Error al cargar la información del negocio')
+        console.error(err)
       }
-      reader.readAsDataURL(file)
     }
-  }
+
+    const fetchAlliesData = async (businessData: Business) => {
+      try {
+        const membersResponse = await fetch(`${API_URL}/businesses-service/api/v1/businesses/${businessData.id_business}/members`)
+        if (!membersResponse.ok) {
+          throw new Error('Failed to fetch members data')
+        }
+        const membersData: Member[] = await membersResponse.json()
+
+        const alliesPromises = membersData.map(async (member) => {
+          const userResponse = await fetch(`${API_URL}/users-service/api/v1/users/${member.id.idUser}`)
+          if (!userResponse.ok) {
+            throw new Error(`Failed to fetch user data for ${member.id.idUser}`)
+          }
+          const userData: User = await userResponse.json()
+          return { 
+            ...userData, 
+            joinDate: member.joinDate,
+            isOwner: member.id.idUser === businessData.owner_id
+          }
+        })
+
+        const alliesData = await Promise.all(alliesPromises)
+        
+        // Ensure owner is in the list
+        if (!alliesData.some(ally => ally.id_user === businessData.owner_id)) {
+          const ownerResponse = await fetch(`${API_URL}/users-service/api/v1/users/${businessData.owner_id}`)
+          if (ownerResponse.ok) {
+            const ownerData: User = await ownerResponse.json()
+            alliesData.push({
+              ...ownerData,
+              joinDate: new Date().toISOString(), // Use current date as join date for owner
+              isOwner: true
+            })
+          }
+        }
+
+        setAllies(alliesData)
+      } catch (err) {
+        setError('Error al cargar la información de los aliados')
+        console.error(err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchBusinessData().then(businessData => {
+      if (businessData) {
+        fetchAlliesData(businessData)
+      }
+    })
+  }, [])
+
+  useEffect(() => {
+    if (!isLoading && allies.length > 0) {
+      const filteredAllies = allies.filter(
+        (ally) =>
+          ally.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          ally.mail.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      setAllies(filteredAllies)
+    }
+  }, [searchTerm, isLoading])
 
   const openViewAllyModal = (ally: Ally) => {
     setSelectedAlly(ally)
@@ -91,16 +177,126 @@ export default function BusinessDashboard() {
     setIsDeleteAllyModalOpen(true)
   }
 
-  const deleteAlly = () => {
-    if (selectedAlly) {
-      setAllies(allies.filter((a) => a.id !== selectedAlly.id))
-      setIsDeleteAllyModalOpen(false)
+  const deleteAlly = async () => {
+    if (selectedAlly && business) {
+      try {
+        const response = await fetch(`${API_URL}/businesses-service/api/v1/businesses/${business.id_business}/members/${selectedAlly.id_user}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            // Asegúrate de incluir aquí cualquier token de autenticación necesario
+            // 'Authorization': `Bearer ${yourAuthToken}`
+          },
+        });
+  
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          throw new Error(`Failed to delete ally: ${response.status} ${response.statusText}${errorData ? ` - ${JSON.stringify(errorData)}` : ''}`);
+        }
+  
+        // Si la eliminación fue exitosa, actualizamos el estado local
+        setAllies(allies.filter((a) => a.id_user !== selectedAlly.id_user));
+        setIsDeleteAllyModalOpen(false);
+      } catch (error) {
+        console.error('Error deleting ally:', error);
+        // Aquí mostramos un mensaje de error más detallado
+        setError(`Error al eliminar al aliado: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
     }
-  }
+  };
+
+  const transferOwnership = async () => {
+    if (business && newOwner) {
+      try {
+        const response = await fetch(`${API_URL}/businesses-service/api/v1/businesses/${business.id_business}/members/${newOwner}/owner-requests`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            // Asegúrate de incluir aquí cualquier token de autenticación necesario
+            // 'Authorization': `Bearer ${yourAuthToken}`
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          throw new Error(`Failed to transfer ownership: ${response.status} ${response.statusText}${errorData ? ` - ${JSON.stringify(errorData)}` : ''}`);
+        }
+
+        // Actualizar el estado local
+        setAllies(allies.map(ally => ({
+          ...ally,
+          isOwner: ally.id_user === newOwner
+        })));
+        setBusiness({
+          ...business,
+          owner_id: newOwner
+        });
+        setIsOwnershipModalOpen(false);
+        setNewOwner('');
+      } catch (error) {
+        console.error('Error transferring ownership:', error);
+        setError(`Error al transferir la propiedad: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }
+  };
 
   const generateToken = () => {
     const token = Math.random().toString(36).substr(2, 8)
     setTemporaryToken(token)
+  }
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      if (file.type.startsWith('image/')) {
+        setSelectedImage(file)
+        setPreviewUrl(URL.createObjectURL(file))
+        setImageError(null)
+      } else {
+        setImageError('El archivo seleccionado no es una imagen. Por favor, seleccione una imagen.')
+        setSelectedImage(null)
+        setPreviewUrl(null)
+      }
+    }
+  }
+
+  const handleImageUpload = async () => {
+    if (selectedImage && business) {
+      const formData = new FormData()
+      formData.append('logo_url', selectedImage)
+
+      try {
+        const response = await fetch(`${API_URL}/businesses-service/api/v1/businesses/${business.id_business}`, {
+          method: 'PUT',
+          body: formData,
+          // Asegúrate de incluir aquí cualquier token de autenticación necesario
+          // headers: {
+          //   'Authorization': `Bearer ${yourAuthToken}`
+          // },
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to update business logo')
+        }
+
+        const updatedBusiness = await response.json()
+        setBusiness(updatedBusiness)
+        setIsChangeImageModalOpen(false)
+        setSelectedImage(null)
+        setPreviewUrl(null)
+      } catch (error) {
+        console.error('Error updating business logo:', error)
+        setError('Error al actualizar el logo del negocio')
+      }
+    }
+  }
+
+  if (error) {
+    return <div className="container mx-auto p-6">{error}</div>
+  }
+
+  if (isLoading || !business) {
+    return <div className="container mx-auto p-6">Cargando...</div>
   }
 
   return (
@@ -111,31 +307,21 @@ export default function BusinessDashboard() {
         <div className="flex items-center space-x-4">
           <Avatar className="w-12 h-12">
             <img
-              src={businessImage}
-              alt="Pontigomitas logo"
+              src={business.logo_url}
+              alt={`${business.name} logo`}
               className="w-full h-full object-cover"
             />
           </Avatar>
           <div>
-            <h2 className="font-semibold">Pontigomitas</h2>
-            <p className="text-sm text-gray-500">Dueña</p>
+            <h2 className="font-semibold">{business.name}</h2>
+            <p className="text-sm text-gray-500">ID: {business.id_business}</p>
           </div>
         </div>
         <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            onClick={() => document.getElementById('imageUpload')?.click()}
-          >
+          <Button variant="outline" onClick={() => setIsChangeImageModalOpen(true)}>
             <Upload className="w-4 h-4 mr-2" />
             Cambiar imagen
           </Button>
-          <input
-            id="imageUpload"
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleImageChange}
-          />
           <Button
             variant="outline"
             onClick={() => setIsOwnershipModalOpen(true)}
@@ -165,21 +351,25 @@ export default function BusinessDashboard() {
         <TableHeader>
           <TableRow>
             <TableHead>Nombre</TableHead>
+            <TableHead>Fecha de unión</TableHead>
             <TableHead>Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {allies.map((ally) => (
-            <TableRow key={ally.id}>
+            <TableRow key={ally.id_user}>
               <TableCell className="font-medium">
                 <div className="flex items-center space-x-3">
-                  <Avatar className="w-8 h-8">{ally.id}</Avatar>
+                  <Avatar className="w-8 h-8">
+                    <img src={ally.photo_url} alt={ally.fullname} className="w-full h-full object-cover" />
+                  </Avatar>
                   <div>
-                    <p>{ally.name}</p>
-                    <p className="text-sm text-gray-500">{ally.email}</p>
+                    <p>{ally.fullname} {ally.isOwner && <span className="text-sm font-normal text-gray-500">(Propietario)</span>}</p>
+                    <p className="text-sm text-gray-500">{ally.mail}</p>
                   </div>
                 </div>
               </TableCell>
+              <TableCell>{new Date(ally.joinDate).toLocaleDateString()}</TableCell>
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -192,10 +382,12 @@ export default function BusinessDashboard() {
                       <Eye className="mr-2 h-4 w-4" />
                       Visualizar
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => openDeleteAllyModal(ally)}>
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Eliminar
-                    </DropdownMenuItem>
+                    {!ally.isOwner && (
+                      <DropdownMenuItem onClick={() => openDeleteAllyModal(ally)}>
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Eliminar
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>
@@ -210,6 +402,7 @@ export default function BusinessDashboard() {
 
       {/* Ownership Transfer Modal */}
       <Dialog
+        
         open={isOwnershipModalOpen}
         onOpenChange={setIsOwnershipModalOpen}
       >
@@ -221,20 +414,19 @@ export default function BusinessDashboard() {
             </DialogDescription>
           </DialogHeader>
           <Select value={newOwner} onValueChange={setNewOwner}>
-            <option value="">Seleccione un aliado</option>
-            {allies.map((ally) => (
-              <option key={ally.id} value={ally.id}>
-                {ally.name}
-              </option>
-            ))}
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccione un aliado" />
+            </SelectTrigger>
+            <SelectContent>
+              {allies.filter(ally => !ally.isOwner).map((ally) => (
+                <SelectItem key={ally.id_user} value={ally.id_user}>
+                  {ally.fullname}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
           <DialogFooter>
-            <Button
-              onClick={() => {
-                // Logic to change ownership
-                setIsOwnershipModalOpen(false)
-              }}
-            >
+            <Button onClick={transferOwnership} disabled={!newOwner}>
               Guardar Cambios
             </Button>
           </DialogFooter>
@@ -276,10 +468,23 @@ export default function BusinessDashboard() {
           {selectedAlly && (
             <div>
               <p>
-                <strong>Nombre:</strong> {selectedAlly.name}
+                <strong>Nombre completo:</strong> {selectedAlly.fullname}
+                {selectedAlly.isOwner && " (Propietario)"}
               </p>
               <p>
-                <strong>Email:</strong> {selectedAlly.email}
+                <strong>Nombre de usuario:</strong> {selectedAlly.username}
+              </p>
+              <p>
+                <strong>Email:</strong> {selectedAlly.mail}
+              </p>
+              <p>
+                <strong>Fecha de unión:</strong> {new Date(selectedAlly.joinDate).toLocaleDateString()}
+              </p>
+              <p>
+                <strong>Roles:</strong> {selectedAlly.roles.join(', ')}
+              </p>
+              <p>
+                <strong>Estado:</strong> {selectedAlly.active ? 'Activo' : 'Inactivo'}
               </p>
             </div>
           )}
@@ -301,16 +506,58 @@ export default function BusinessDashboard() {
               ¿Está seguro de que desea eliminar a este aliado?
             </DialogDescription>
           </DialogHeader>
-          {selectedAlly && <p>Aliado a eliminar: {selectedAlly.name}</p>}
+          {selectedAlly && <p>Aliado a eliminar: {selectedAlly.fullname}</p>}
+          {error && <p className="text-red-500">{error}</p>}
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setIsDeleteAllyModalOpen(false)}
+              onClick={() => {
+                setIsDeleteAllyModalOpen(false);
+                setError(null);
+              }}
             >
               Cancelar
             </Button>
             <Button variant="destructive" onClick={deleteAlly}>
               Confirmar Eliminación
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Change Image Modal */}
+      <Dialog open={isChangeImageModalOpen} onOpenChange={setIsChangeImageModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cambiar imagen del negocio</DialogTitle>
+            <DialogDescription>
+              Seleccione una nueva imagen para su negocio.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Button onClick={() => fileInputRef.current?.click()}>
+              Seleccionar imagen desde los archivos
+            </Button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              accept="image/*"
+              style={{ display: 'none' }}
+            />
+            {imageError && <p className="text-red-500">{imageError}</p>}
+            {previewUrl && (
+              <div className="mt-4">
+                <img src={previewUrl} alt="Preview" className="max-w-full h-auto" />
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsChangeImageModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleImageUpload} disabled={!selectedImage}>
+              Confirmar cambio de imagen
             </Button>
           </DialogFooter>
         </DialogContent>
