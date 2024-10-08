@@ -18,3 +18,11 @@ export interface User {
   organizations: string[] | null
   active: boolean
 }
+
+export interface UserUpdate {
+  fullname: string
+  username: string
+  password: string
+  mail: string
+  photo?: File
+}

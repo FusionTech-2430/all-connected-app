@@ -1,25 +1,39 @@
 'use client'
 
-import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { useState, useRef } from 'react'
+import Image from 'next/image'
+import { type User, type UserUpdate } from '@/types/users/user'
+import { useRouter } from 'next/navigation'
+import { updateUser } from '@/services/userService'
+
+function getInitials(name: string): string {
+  const initials = name.split(' ').slice(0, 2).map(word => word.toUpperCase()[0]).join('');
+  return initials.toUpperCase();
+}
 
 export default function ProfileView() {
-  /* USER TYPE
-    id_user: string
-    fullname: string
-    username: string
-    mail: string
-    photo_url: string
-    roles: string[]
-    organizations: string[] | null
-    active: boolean
-  */
+  const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const user: User | null = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user') as string) : null
+  console.log('Usuario:', user)
+
+  if(!user) {
+    router.push('/')
+  }
 
   const [profile, setProfile] = useState({
-    fullName: 'Sara Brrum',
-    username: 'valesco_1001',
-    email: 'svalentinasierra@javeriana.edu.co',
+    fullName: user?.fullname || '',
+    username: user?.username || '',
+    email: user?.mail || '',
     password: '',
+    photo_url: user?.photo_url || ''
   })
+
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [file, setFile] = useState<File | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -27,6 +41,48 @@ export default function ProfileView() {
       ...profile,
       [name]: value,
     })
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    console.log('Form submitted:', profile)
+
+    const updatedUser: UserUpdate = {
+      fullname: profile.fullName,
+      username: profile.username,
+      mail: profile.email,
+      password: profile.password,
+      photo: file? file : undefined,
+    };
+    console.log('Updated user object:', updatedUser);
+
+    const formPayload = new FormData()
+    formPayload.append('fullname', updatedUser.fullname)
+    formPayload.append('username', updatedUser.username)
+    formPayload.append('mail', updatedUser.mail)
+    if(updatedUser.password !== ''){
+      formPayload.append('password', updatedUser.password)
+    }
+    if(updatedUser.photo != undefined){
+      console.log('Se va a actualizar la foto')
+      formPayload.append('photo', updatedUser.photo)
+    }
+
+    const newUser = updateUser(user?.id_user || '', formPayload);
+    sessionStorage.setItem('user', JSON.stringify(newUser));
+    router.push('/profile');
   }
 
   return (
@@ -51,83 +107,114 @@ export default function ProfileView() {
 
         {/* Sección Derecha */}
         <div className="w-full md:w-3/5 space-y-4">
-          <div className="flex flex-col items-start space-y-2 mt-12">
-            <label
-              className="block text-gray-700 font-bold"
-              style={{ color: '#0C4A6E' }}
-            >
-              Avatar
-            </label>
-            <div className="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center">
-              SS
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="flex flex-col items-start space-y-2 mt-12">
+              <label
+                className="block text-gray-700 font-bold"
+                style={{ color: '#0C4A6E' }}
+              >
+                Avatar
+              </label>
+              <Button 
+                variant="ghost" 
+                size="default" 
+                className="p-0 h-auto"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Avatar className="w-28 h-28">
+                  {previewUrl || profile.photo_url ? (
+                    <div className="relative w-full h-full">
+                      <Image 
+                        src={previewUrl || profile.photo_url} 
+                        alt="User Avatar" 
+                        layout="fill"
+                        objectFit="cover"
+                        className="rounded-full"
+                      />
+                    </div>
+                  ) : (
+                    <AvatarFallback className="text-4xl">{getInitials(profile.fullName)}</AvatarFallback>
+                  )}
+                </Avatar>
+                <span className="sr-only">Change avatar</span>
+              </Button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
             </div>
-          </div>
-          <div>
-            <label
-              className="block text-gray-700 font-bold"
-              style={{ color: '#0C4A6E' }}
-            >
-              Nombre Completo
-            </label>
-            <input
-              type="text"
-              name="fullName"
-              className="w-3/5 border border-gray-300 rounded-lg p-2"
-              value={profile.fullName}
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <label
-              className="block text-gray-700 font-bold"
-              style={{ color: '#0C4A6E' }}
-            >
-              Usuario
-            </label>
-            <input
-              type="text"
-              name="username"
-              className="w-3/5 border border-gray-300 rounded-lg p-2"
-              value={profile.username}
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <label
-              className="block text-gray-700 font-bold"
-              style={{ color: '#0C4A6E' }}
-            >
-              Correo Electrónico
-            </label>
-            <input
-              type="email"
-              name="email"
-              className="w-3/5 border border-gray-300 rounded-lg p-2"
-              value={profile.email}
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <label
-              className="block text-gray-700 font-bold"
-              style={{ color: '#0C4A6E' }}
-            >
-              Contraseña
-            </label>
-            <input
-              type="password"
-              name="password"
-              className="w-3/5 border border-gray-300 rounded-lg p-2"
-              value={profile.password}
-              onChange={handleChange}
-              placeholder="Introduce una nueva contraseña"
-            />
-          </div>
-          <div className="flex justify-end">
-            <button className="bg-[#0284C7] text-white py-2 px-4 rounded-lg hover:bg-blue-700">
-              Guardar Cambios
-            </button>
-          </div>
+            <div>
+              <label
+                className="block text-gray-700 font-bold"
+                style={{ color: '#0C4A6E' }}
+              >
+                Nombre Completo
+              </label>
+              <input
+                type="text"
+                name="fullName"
+                className="w-full md:w-3/5 border border-gray-300 rounded-lg p-2"
+                value={profile.fullName}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label
+                className="block text-gray-700 font-bold"
+                style={{ color: '#0C4A6E' }}
+              >
+                Usuario
+              </label>
+              <input
+                type="text"
+                name="username"
+                className="w-full md:w-3/5 border border-gray-300 rounded-lg p-2"
+                value={profile.username}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label
+                className="block text-gray-700 font-bold"
+                style={{ color: '#0C4A6E' }}
+              >
+                Correo Electrónico
+              </label>
+              <input
+                type="email"
+                name="email"
+                className="w-full md:w-3/5 border border-gray-300 rounded-lg p-2"
+                value={profile.email}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label
+                className="block text-gray-700 font-bold"
+                style={{ color: '#0C4A6E' }}
+              >
+                Contraseña
+              </label>
+              <input
+                type="password"
+                name="password"
+                className="w-full md:w-3/5 border border-gray-300 rounded-lg p-2"
+                value={profile.password}
+                onChange={handleChange}
+                placeholder="Introduce una nueva contraseña"
+              />
+            </div>
+            <div className="flex justify-end">
+              <Button 
+                type="submit"
+                className="bg-[#0284C7] text-white py-2 px-4 rounded-lg hover:bg-blue-700">
+                Guardar Cambios
+              </Button>
+            </div>
+          </form>
         </div>
       </div>
 

@@ -44,3 +44,27 @@ export const getUser = async (userId: string) => {
     throw error
   }
 }
+
+export const updateUser = async (userId: string, userData: FormData) => {
+  try {
+    const response = await fetch(
+      API_URL + '/users-service/api/v1/users/' + userId,
+      {
+        method: 'PUT',
+        body: userData,
+        headers: {
+          Accept: 'application/json'
+        },
+      }
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.message || 'Error inesperado en el servidor')
+    }
+    return await response.json()
+  } catch (error) {
+    console.error('Error updating user:', error)
+    throw error
+  }
+}
