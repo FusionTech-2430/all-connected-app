@@ -14,6 +14,7 @@ import { logOut } from '@/lib/firebase'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { type User } from '@/types/users/user'
+import { useEffect, useState } from 'react'
 
 function getInitials(name: string): string {
   const initials = name.split(' ').slice(0, 2).map(word => word.toUpperCase()[0]).join('');
@@ -22,34 +23,42 @@ function getInitials(name: string): string {
 
 export default function UserAvatar() {
   const router = useRouter()
+  const [user, setUser] = useState<User | null>(null)
 
-  const user: User | null = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user') as string) : null
-  console.log('Usuario:', user)
-
-  if(!user) {
-    router.push('/')
-  }
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedUser = sessionStorage.getItem('user')
+      if (storedUser) {
+        setUser(JSON.parse(storedUser))
+      } else {
+        router.push('/')
+      }
+    }
+  }, [router])
 
   const handleLogOut = () => {
     logOut()
-    sessionStorage.removeItem('id-user')
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('id-user')
+    }
     router.push('/')
   }
+
   const handleSettings = () => {
-    logOut()
     router.push('/profile')
   }
-  const photoUrl = user?.photo_url || ''
+
   const userName = user?.fullname || ''
+  const photoUrl = user?.photo_url || ''
 
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full">
-            <Avatar>
+          <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+            <Avatar className="h-8 w-8">
               {photoUrl ? (
-                <Image src={photoUrl} alt="User Avatar" width={50} height={50} />
+                <Image src={photoUrl} alt="User Avatar" />
               ) : (
                 <AvatarFallback>{getInitials(userName)}</AvatarFallback>
               )}

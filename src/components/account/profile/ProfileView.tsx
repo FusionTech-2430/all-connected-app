@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { type User, type UserUpdate } from '@/types/users/user'
 import { useRouter } from 'next/navigation'
@@ -16,24 +16,37 @@ function getInitials(name: string): string {
 export default function ProfileView() {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const user: User | null = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user') as string) : null
-  console.log('Usuario:', user)
-
-  if(!user) {
-    router.push('/')
-  }
-
+  const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState({
-    fullName: user?.fullname || '',
-    username: user?.username || '',
-    email: user?.mail || '',
+    fullName: '',
+    username: '',
+    email: '',
     password: '',
-    photo_url: user?.photo_url || ''
+    photo_url: ''
   })
-
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [file, setFile] = useState<File | null>(null)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedUser = sessionStorage.getItem('user')
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser)
+        setUser(parsedUser)
+        setProfile({
+          fullName: parsedUser.fullname || '',
+          username: parsedUser.username || '',
+          email: parsedUser.mail || '',
+          password: '',
+          photo_url: parsedUser.photo_url || ''
+        })
+      } else {
+        router.push('/')
+      }
+    }
+  }, [router])
+
+  console.log('Usuario:', user)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -55,7 +68,7 @@ export default function ProfileView() {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     console.log('Form submitted:', profile)
 
@@ -64,7 +77,7 @@ export default function ProfileView() {
       username: profile.username,
       mail: profile.email,
       password: profile.password,
-      photo: file? file : undefined,
+      photo: file ? file : undefined,
     };
     console.log('Updated user object:', updatedUser);
 
@@ -72,17 +85,19 @@ export default function ProfileView() {
     formPayload.append('fullname', updatedUser.fullname)
     formPayload.append('username', updatedUser.username)
     formPayload.append('mail', updatedUser.mail)
-    if(updatedUser.password !== ''){
+    if (updatedUser.password !== '') {
       formPayload.append('password', updatedUser.password)
     }
-    if(updatedUser.photo != undefined){
+    if (updatedUser.photo != undefined) {
       console.log('Se va a actualizar la foto')
       formPayload.append('photo', updatedUser.photo)
     }
 
-    const newUser = updateUser(user?.id_user || '', formPayload);
-    sessionStorage.setItem('user', JSON.stringify(newUser));
-    router.push('/profile');
+    const newUser = await updateUser(user?.id_user || '', formPayload)
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('user', JSON.stringify(newUser))
+    }
+    router.push('/profile')
   }
 
   return (
