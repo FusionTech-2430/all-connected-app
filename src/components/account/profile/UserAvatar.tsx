@@ -18,6 +18,7 @@ export default function UserAvatar() {
 
   const handleLogOut = () => {
     logOut()
+    sessionStorage.removeItem('id-user')
     router.push('/')
   }
   const handleSettings = () => {
