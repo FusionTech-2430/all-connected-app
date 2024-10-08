@@ -1,13 +1,11 @@
-name: Next.js CI
+name: Build
 
 on:
-  push:
-    branches: [main, develop]
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, release]
 
 jobs:
-  build:
+  Build:
     runs-on: ubuntu-latest
 
     steps:

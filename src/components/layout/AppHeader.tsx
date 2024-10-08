@@ -11,12 +11,12 @@ import {
   SheetTitle,
   SheetTrigger
 } from '@/components/ui/sheet'
-import NavItem from './nav-item'
-import { ThemeToggle } from '@/components/theme-toggle'
-import NavBar from './nav-bar'
+import NavItem from '../ui-own/nav-item'
+import { ThemeToggle } from '@/components/theme/ThemeToggle'
+import NavBar from '../ui-own/nav-bar'
 import Link from 'next/link'
 
-import UserAvatar from '@/components/user-avatar'
+import UserAvatar from '@/components/account/profile/UserAvatar'
 
 type HeaderProps = React.ComponentProps<'header'>
 

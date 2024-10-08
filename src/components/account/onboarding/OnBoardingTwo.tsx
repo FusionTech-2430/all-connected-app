@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from 'react'
-import Footer from '@/components/FooterApp'
+import Footer from '@/components/layout/FooterApp'
 import Image from 'next/image'
 
 const OnboardingTwo = () => {

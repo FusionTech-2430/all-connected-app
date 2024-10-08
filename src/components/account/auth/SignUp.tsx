@@ -2,8 +2,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import NavBar from '@/components/NavBar'
-import Footer from '@/components/FooterApp'
+import NavBar from '@/components/ui-own/NavBar'
+import Footer from '@/components/layout/FooterApp'
 import { createUser } from '@/services/userService'
 
 const SignUp = () => {

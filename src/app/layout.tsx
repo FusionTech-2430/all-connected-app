@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Manrope } from 'next/font/google'
 
 import '@/styles/globals.css'
-import { ThemeProvider } from '@/components/theme-provider'
+import { ThemeProvider } from '@/components/theme/ThemeProvider'
 
 const manrope = Manrope({
   subsets: ['latin'],
@@ -36,7 +36,7 @@ export default function RootLayout({
       <body className={`${manrope.variable}`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >

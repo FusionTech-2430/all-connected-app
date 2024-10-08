@@ -27,10 +27,10 @@ import {
   ChevronsLeft,
   ChevronsRight
 } from 'lucide-react'
-import { AddServiceModal } from '@/components/add-service-modal'
-import { EditServiceModal } from '@/components/edit-service-modal'
-import { ViewServiceModal } from '@/components/view-service-modal'
-import { DeleteServiceModal } from '@/components/delete-service-modal'
+import { AddServiceModal } from '@/components/dashboard/services/modals/AddServiceModal'
+import { EditServiceModal } from '@/components/dashboard/services/modals/EditServiceModal'
+import { ViewServiceModal } from '@/components/dashboard/services/modals/ViewServiceModal'
+import { DeleteServiceModal } from '@/components/dashboard/services/modals/DeleteServiceModal'
 import {
   DropdownMenu,
   DropdownMenuContent,

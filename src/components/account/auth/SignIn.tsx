@@ -1,25 +1,49 @@
-import React, { useState } from 'react'
-import NavBar from '@/components/NavBar'
-import Footer from '@/components/FooterApp'
+import React, { useState, useEffect } from 'react'
+import NavBar from '@/components/ui-own/NavBar'
+import Footer from '@/components/layout/FooterApp'
 import Image from 'next/image'
-import { signIn } from '@/lib/firebase/auth' // Importa la función signIn
+import { signIn } from '@/lib/firebase/auth'
+import { useRouter } from 'next/navigation'
+import { getUser } from '@/services/userService'
 
 const SignIn = () => {
+  // Form state
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false) // Estado de carga
+  // Router
+  const router = useRouter()
+
+  useEffect(() => {
+    if (sessionStorage.getItem('id-user')) {
+      router.push('/my-business')
+    }
+  }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-
+    setLoading(true)
     try {
-      const user = await signIn(email, password)
-      console.log('Usuario autenticado:', user)
-      window.location.href = '/my-business'
-    } catch (error) {
+      const userCredentials = await signIn(email, password)
+      const fbUser = userCredentials.user
+      sessionStorage.setItem('id-user', fbUser.uid)
+      const user = await getUser(fbUser.uid)
+      if (user) {
+        sessionStorage.setItem('user', JSON.stringify(user))
+        console.log('Usuario:', user)
+        router.push('/my-business')
+        setLoading(false)
+      }
+      else{
+        setError('Usuario no encontrado')
+        setLoading(false)
+      }
+    } catch (error : unknown) {
       setError('Error al iniciar sesión. Verifica tu correo y contraseña.')
       console.error('Error al iniciar sesión:', error)
+      setLoading(false)
     }
   }
 
@@ -45,6 +69,7 @@ const SignIn = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Tu dirección de correo electrónico"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none"
+                disabled={loading} // Deshabilitar mientras carga
               />
             </div>
             <div>
@@ -55,14 +80,16 @@ const SignIn = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Tu contraseña"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none"
+                disabled={loading} // Deshabilitar mientras carga
               />
             </div>
             <div className="text-center">
               <button
                 type="submit"
                 className="w-full bg-[#0284C7] text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700"
+                disabled={loading} // Deshabilitar mientras carga
               >
-                Iniciar Sesión
+                {loading ? 'Cargando...' : 'Iniciar Sesión'}
               </button>
             </div>
           </form>

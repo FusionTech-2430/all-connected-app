@@ -1,6 +1,6 @@
-'use-client'
-import Component from '@/components/profileview'
+'use client'
+import ProfileView from '@/components/account/profile/ProfileView'
 
 export default function ProfilePage() {
-  return <Component />
+  return <ProfileView />
 }
