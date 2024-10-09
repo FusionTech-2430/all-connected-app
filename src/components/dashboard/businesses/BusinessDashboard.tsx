@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -29,6 +29,7 @@ import {
   DialogClose
 } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
 
@@ -72,6 +73,7 @@ interface Ally extends User {
 export default function BusinessDashboard() {
   const [business, setBusiness] = useState<Business | null>(null)
   const [allies, setAllies] = useState<Ally[]>([])
+  const [filteredAllies, setFilteredAllies] = useState<Ally[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [isOwnershipModalOpen, setIsOwnershipModalOpen] = useState(false)
   const [isAddAllyModalOpen, setIsAddAllyModalOpen] = useState(false)
@@ -81,6 +83,7 @@ export default function BusinessDashboard() {
   const [selectedAlly, setSelectedAlly] = useState<Ally | null>(null)
   const [newOwner, setNewOwner] = useState('')
   const [temporaryToken, setTemporaryToken] = useState('')
+  const [tokenError, setTokenError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
@@ -141,6 +144,7 @@ export default function BusinessDashboard() {
         }
 
         setAllies(alliesData)
+        setFilteredAllies(alliesData)
       } catch (err) {
         setError('Error al cargar la información de los aliados')
         console.error(err)
@@ -156,16 +160,22 @@ export default function BusinessDashboard() {
     })
   }, [])
 
+  const filterAllies = useCallback(() => {
+    const filtered = allies.filter(
+      (ally) =>
+        ally.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ally.mail.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    setFilteredAllies(filtered)
+  }, [allies, searchTerm])
+
   useEffect(() => {
-    if (!isLoading && allies.length > 0) {
-      const filteredAllies = allies.filter(
-        (ally) =>
-          ally.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          ally.mail.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      setAllies(filteredAllies)
-    }
-  }, [searchTerm, isLoading])
+    filterAllies()
+  }, [filterAllies, searchTerm])
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value)
+  }
 
   const openViewAllyModal = (ally: Ally) => {
     setSelectedAlly(ally)
@@ -195,7 +205,9 @@ export default function BusinessDashboard() {
         }
   
         // Si la eliminación fue exitosa, actualizamos el estado local
-        setAllies(allies.filter((a) => a.id_user !== selectedAlly.id_user));
+        const updatedAllies = allies.filter((a) => a.id_user !== selectedAlly.id_user);
+        setAllies(updatedAllies);
+        setFilteredAllies(updatedAllies);
         setIsDeleteAllyModalOpen(false);
       } catch (error) {
         console.error('Error deleting ally:', error);
@@ -223,10 +235,12 @@ export default function BusinessDashboard() {
         }
 
         // Actualizar el estado local
-        setAllies(allies.map(ally => ({
+        const updatedAllies = allies.map(ally => ({
           ...ally,
           isOwner: ally.id_user === newOwner
-        })));
+        }));
+        setAllies(updatedAllies);
+        setFilteredAllies(updatedAllies);
         setBusiness({
           ...business,
           owner_id: newOwner
@@ -240,9 +254,35 @@ export default function BusinessDashboard() {
     }
   };
 
-  const generateToken = () => {
-    const token = Math.random().toString(36).substr(2, 8)
-    setTemporaryToken(token)
+  const generateToken = async () => {
+    if (!business) {
+      setTokenError('No se pudo generar el token: información del negocio no disponible')
+      return
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/businesses-service/api/v1/businesses/${business.id_business}/join-token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add any necessary authentication headers here
+        },
+      })
+
+      const data = await response.json()
+
+      if (data.code === 200) {
+        setTemporaryToken(data.message)
+        setTokenError(null)
+      } else {
+        setTokenError(`Error al generar el token: ${data.message}`)
+        setTemporaryToken('')
+      }
+    } catch (error) {
+      console.error('Error generating token:', error)
+      setTokenError('Error al generar el token. Por favor, inténtelo de nuevo.')
+      setTemporaryToken('')
+    }
   }
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -338,9 +378,7 @@ export default function BusinessDashboard() {
           className="flex-grow"
           placeholder="Buscar por nombre o correo..."
           value={searchTerm}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setSearchTerm(e.target.value)
-          }
+          onChange={handleSearchChange}
         />
         <Button onClick={() => setIsAddAllyModalOpen(true)}>
           Añadir Aliado
@@ -356,7 +394,7 @@ export default function BusinessDashboard() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {allies.map((ally) => (
+          {filteredAllies.map((ally) => (
             <TableRow key={ally.id_user}>
               <TableCell className="font-medium">
                 <div className="flex items-center space-x-3">
@@ -379,12 +417,12 @@ export default function BusinessDashboard() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
                     <DropdownMenuItem onClick={() => openViewAllyModal(ally)}>
-                      <Eye className="mr-2 h-4 w-4" />
+                      <Eye className="mr-2 h-4 w-4 text-blue-500" />
                       Visualizar
                     </DropdownMenuItem>
                     {!ally.isOwner && (
                       <DropdownMenuItem onClick={() => openDeleteAllyModal(ally)}>
-                        <Trash2 className="mr-2 h-4 w-4" />
+                        <Trash2 className="mr-2 h-4 w-4 text-red-500" />
                         Eliminar
                       </DropdownMenuItem>
                     )}
@@ -397,12 +435,11 @@ export default function BusinessDashboard() {
       </Table>
 
       <div className="mt-4">
-        <p className="text-sm text-gray-500">Total: {allies.length} aliados.</p>
+        <p className="text-sm text-gray-500">Total: {filteredAllies.length} aliados.</p>
       </div>
 
       {/* Ownership Transfer Modal */}
       <Dialog
-        
         open={isOwnershipModalOpen}
         onOpenChange={setIsOwnershipModalOpen}
       >
@@ -434,6 +471,7 @@ export default function BusinessDashboard() {
       </Dialog>
 
       {/* Add Ally Modal */}
+      {/* Add Ally Modal */}
       <Dialog open={isAddAllyModalOpen} onOpenChange={setIsAddAllyModalOpen}>
         <DialogContent>
           <DialogHeader>
@@ -442,55 +480,93 @@ export default function BusinessDashboard() {
               Genere un token temporal para invitar a un nuevo aliado.
             </DialogDescription>
           </DialogHeader>
-          <Button onClick={generateToken}>Generar y enviar un token</Button>
+          <Button onClick={generateToken} disabled={!business}>
+            Generar y enviar un token
+          </Button>
           {temporaryToken && (
-            <div>
-              <p>Token generado: {temporaryToken}</p>
-              <Button
-                onClick={() => navigator.clipboard.writeText(temporaryToken)}
-              >
-                Copiar Token
-              </Button>
-            </div>
+            <Alert>
+              <AlertTitle>Token generado exitosamente</AlertTitle>
+              <AlertDescription>
+                <p className="mt-2 font-mono bg-gray-100 p-2 rounded">
+                  {temporaryToken}
+                </p>
+                <Button
+                  onClick={() => navigator.clipboard.writeText(temporaryToken)}
+                  className="mt-2"
+                  variant="outline"
+                >
+                  Copiar Token
+                </Button>
+              </AlertDescription>
+            </Alert>
           )}
-          <DialogClose asChild>
-            <Button variant="outline">Cerrar</Button>
-          </DialogClose>
+          {tokenError && (
+            <Alert variant="destructive">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{tokenError}</AlertDescription>
+            </Alert>
+          )}
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cerrar</Button>
+            </DialogClose>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* View Ally Modal */}
       <Dialog open={isViewAllyModalOpen} onOpenChange={setIsViewAllyModalOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Información del Aliado</DialogTitle>
           </DialogHeader>
           {selectedAlly && (
-            <div>
-              <p>
-                <strong>Nombre completo:</strong> {selectedAlly.fullname}
-                {selectedAlly.isOwner && " (Propietario)"}
-              </p>
-              <p>
-                <strong>Nombre de usuario:</strong> {selectedAlly.username}
-              </p>
-              <p>
-                <strong>Email:</strong> {selectedAlly.mail}
-              </p>
-              <p>
-                <strong>Fecha de unión:</strong> {new Date(selectedAlly.joinDate).toLocaleDateString()}
-              </p>
-              <p>
-                <strong>Roles:</strong> {selectedAlly.roles.join(', ')}
-              </p>
-              <p>
-                <strong>Estado:</strong> {selectedAlly.active ? 'Activo' : 'Inactivo'}
-              </p>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-4">
+                <Avatar className="w-16 h-16">
+                  {selectedAlly.photo_url ? (
+                    <img 
+                      src={selectedAlly.photo_url} 
+                      alt={`Foto de ${selectedAlly.fullname}`} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-2xl">{selectedAlly.fullname.charAt(0)}</span>
+                  )}
+                </Avatar>
+                <div>
+                  <p className="font-semibold text-lg">
+                    {selectedAlly.fullname}
+                    {selectedAlly.isOwner && <span className="ml-2 text-sm font-normal text-gray-500">(Propietario)</span>}
+                  </p>
+                  <p className="text-sm text-gray-500">{selectedAlly.username}</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div>
+                  <p className="font-semibold">Email:</p>
+                  <p className="break-all">{selectedAlly.mail}</p>
+                </div>
+                <div>
+                  <p className="font-semibold">Fecha de unión:</p>
+                  <p>{new Date(selectedAlly.joinDate).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <p className="font-semibold">Roles:</p>
+                  <p>{selectedAlly.roles.join(', ')}</p>
+                </div>
+                <div>
+                  <p className="font-semibold">Estado:</p>
+                  <p>{selectedAlly.active ? 'Activo' : 'Inactivo'}</p>
+                </div>
+              </div>
             </div>
           )}
-          <DialogClose asChild>
-            <Button variant="outline">Cerrar</Button>
-          </DialogClose>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cerrar</Button>
+            </DialogClose>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
