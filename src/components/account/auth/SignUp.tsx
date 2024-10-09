@@ -1,10 +1,11 @@
 // components/SignUp.tsx
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import NavBar from '@/components/ui-own/NavBar'
 import Footer from '@/components/layout/FooterApp'
 import { createUser } from '@/services/userService'
+import { useRouter } from 'next/navigation'
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -17,9 +18,17 @@ const SignUp = () => {
     roles: ['customer']
   })
 
+  
+  const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false) // Estado de carga
 
+  useEffect(() => {
+    if (sessionStorage.getItem('id-user')) {
+      router.push('/my-business')
+    }
+  }, [router])
+  
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData({
@@ -74,16 +83,22 @@ const SignUp = () => {
     setError(null) // Limpiar errores antes de la solicitud
 
     try {
-      await createUser(formPayload)
-      window.location.href = '/sign-up/OnBoarding'
+      const user = await createUser(formPayload)
+      console.log(user)
+
+      if(user){
+        sessionStorage.setItem('id-user', user?.id_user || '')
+        sessionStorage.setItem('user', JSON.stringify(user))
+      }
+      router.push('/sign-up/OnBoarding')
+      setIsLoading(false)
     } catch (error) {
       setError(
         error instanceof Error
           ? error.message
           : 'Error al crear la cuenta. Inténtalo de nuevo.'
       )
-    } finally {
-      setIsLoading(false) // Desactivar el estado de carga después de la respuesta
+      setIsLoading(false)
     }
   }
 
