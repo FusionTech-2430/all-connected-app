@@ -6,7 +6,6 @@ import NavBar from '@/components/ui-own/NavBar'
 import Footer from '@/components/layout/FooterApp'
 import { createUser } from '@/services/userService'
 import { useRouter } from 'next/navigation'
-import { User } from '@/types/users/user'
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -23,14 +22,10 @@ const SignUp = () => {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false) // Estado de carga
-  const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedUser = sessionStorage.getItem('user')
-      if (storedUser) {
-        router.push('/my-business')
-      }
+    if (sessionStorage.getItem('id-user')) {
+      router.push('/my-business')
     }
   }, [router])
   
@@ -88,18 +83,22 @@ const SignUp = () => {
     setError(null) // Limpiar errores antes de la solicitud
 
     try {
-      setUser(await createUser(formPayload))
-      sessionStorage.setItem('id-user', user?.id_user || '')
-      sessionStorage.setItem('user', JSON.stringify(user))
+      const user = await createUser(formPayload)
+      console.log(user)
+
+      if(user){
+        sessionStorage.setItem('id-user', user?.id_user || '')
+        sessionStorage.setItem('user', JSON.stringify(user))
+      }
       router.push('/sign-up/OnBoarding')
+      setIsLoading(false)
     } catch (error) {
       setError(
         error instanceof Error
           ? error.message
           : 'Error al crear la cuenta. Inténtalo de nuevo.'
       )
-    } finally {
-      setIsLoading(false) // Desactivar el estado de carga después de la respuesta
+      setIsLoading(false)
     }
   }
 
