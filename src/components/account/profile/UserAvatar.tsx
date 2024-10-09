@@ -58,7 +58,7 @@ export default function UserAvatar() {
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8">
               {photoUrl ? (
-                <Image src={photoUrl} alt="User Avatar" />
+                <Image src={photoUrl} alt="User Avatar" width={80} height={80} />
               ) : (
                 <AvatarFallback>{getInitials(userName)}</AvatarFallback>
               )}

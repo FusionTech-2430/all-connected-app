@@ -1,0 +1,254 @@
+[33mcommit 356a8076f55be5acea39aa0299c2be6d93ce33c3[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdevelop[m[33m)[m
+Merge: 40e3b4e 474ea67
+Author: GianlucaGav <gianlucagav@gmail.com>
+Date:   Tue Oct 8 15:24:00 2024 -0500
+
+    Merge branch 'feature/Integración_mi_emprendimiento' into develop
+
+[33mcommit 474ea67d9ce37196111f3d25da03cf150b80cbb9[m
+Author: GianlucaGav <gianlucagav@gmail.com>
+Date:   Tue Oct 8 15:23:14 2024 -0500
+
+    :sparkles: My Business Integration
+
+[33mcommit 40e3b4e2e3770a00ff5f6640982d7248fbec14c2[m
+Merge: b3e4d60 2ad389f
+Author: Esteban Salazar <68300629+Estebans441@users.noreply.github.com>
+Date:   Mon Oct 7 12:26:45 2024 -0500
+
+    🔀 Merge pull request #3 from FusionTech-2430/Feature/auth-implementation
+    
+    :rocket: project refactor
+
+[33mcommit 2ad389f1b3343b51c7f46eab193cdbc6c2a78535[m
+Author: Estebans441 <salazaraesteban@javeriana.edu.co>
+Date:   Mon Oct 7 12:23:58 2024 -0500
+
+    :rocket: add deploy scripts
+
+[33mcommit d781c3826d0eb62167d72e5e7cb1d98b4a1d6650[m
+Author: Estebans441 <salazaraesteban@javeriana.edu.co>
+Date:   Mon Oct 7 12:02:55 2024 -0500
+
+    :recycle: run npm format
+
+[33mcommit cadb3f593184fe10126a5886149ecfc26972ebca[m
+Author: Estebans441 <salazaraesteban@javeriana.edu.co>
+Date:   Mon Oct 7 12:00:06 2024 -0500
+
+    :recycle: improve components structure
+
+[33mcommit 2959e520b919cca3cc36652fde421020855f15f5[m
+Author: Estebans441 <salazaraesteban@javeriana.edu.co>
+Date:   Mon Oct 7 11:59:00 2024 -0500
+
+    🙈 update gitignore
+
+[33mcommit 14b441925f0198086a9541be826ace127eb61f3f[m
+Merge: 3793bac 3046bf7
+Author: Estebans441 <salazaraesteban@javeriana.edu.co>
+Date:   Mon Oct 7 11:20:05 2024 -0500
+
+    🔀 Merge remote-tracking branch 'origin/Feature/mybusiness_fix_and_new_manual-sales_component' into Feature/auth-implementation
+
+[33mcommit 3793bacd20fd44564ce211dc08a303bc1c4980f6[m
+Author: Estebans441 <salazaraesteban@javeriana.edu.co>
+Date:   Mon Oct 7 08:03:40 2024 -0500
+
+    🚧 partial implementation of auth
+
+[33mcommit 3046bf7f044352ff6385e1d19b80416f9af42ab6[m[33m ([m[1;32mFeature/mybusiness_fix_and_new_manual-sales_component[m[33m)[m
+Author: GianlucaGav <gianlucagav@gmail.com>
+Date:   Fri Oct 4 21:00:01 2024 -0500
+
+    :ambulance: Delete unused variable
+
+[33mcommit 903a6884a5e7ba041bdef81be236065a696a5415[m
+Author: GianlucaGav <gianlucagav@gmail.com>
+Date:   Fri Oct 4 20:57:10 2024 -0500
+
+    :ambulance: Variable fix
+
+[33mcommit 083c9fa6b3bcadf3839c39dc6301794b63efb311[m
+Author: GianlucaGav <gianlucagav@gmail.com>
+Date:   Fri Oct 4 20:51:08 2024 -0500
+
+    :sparkles: Manual sales component
+
+[33mcommit eb4aff3864263a70128f0a9ebcc63dfe17b3a2dc[m
+Author: GianlucaGav <gianlucagav@gmail.com>
+Date:   Fri Oct 4 20:49:28 2024 -0500
+
+    :pencil2: My business fixes
+
+[33mcommit b3e4d60644094ae5ea167c114ed7bbf6a3f9489f[m
+Author: Estebans441 <salazaraesteban@javeriana.edu.co>
+Date:   Fri Oct 4 07:51:37 2024 -0500
+
+    :construction_worker: add ci scripts
+
+[33mcommit 28a5c586d74f8633fea04096e513f1c84f3133dd[m
+Author: Estebans441 <salazaraesteban@javeriana.edu.co>
+Date:   Wed Sep 25 01:47:42 2024 -0500
+
+    ♻️ run npm format for formatting code
+
+[33mcommit b1f0c6a11a8bb53386459153acb7866af3a50662[m
+Author: Estebans441 <salazaraesteban@javeriana.edu.co>
+Date:   Wed Sep 25 01:39:02 2024 -0500
+
+    🚸 add onboarding navigation
+
+[33mcommit 97d8e8637a05dfd972d4ed0af2a32c46c326f23e[m
+Merge: 698848e b28827f
+Author: Estebans441 <salazaraesteban@javeriana.edu.co>
+Date:   Wed Sep 25 01:15:19 2024 -0500
+
+    🔀 Merge branch 'feature/user-auth' into develop
+
+[33mcommit b28827fe69b05e97dad105848cee0efadfef4aa5[m
+Author: Estebans441 <salazaraesteban@javeriana.edu.co>
+Date:   Wed Sep 25 01:15:01 2024 -0500
+
+    ✨ Add user sign in
+
+[33mcommit 698848e59ef5fdf6bf057daffb96a25931a34c9a[m
+Merge: 3815882 771bc51
+Author: Stiven Ortiz Noreña <stivenestortiz@gmail.com>
+Date:   Tue Sep 24 23:28:41 2024 -0500
+
+    🔀 Merge branch 'feature/business' into develop
+
+[33mcommit 771bc51968709eac69d28f09afabdf1d25607cdb[m
+Author: Stiven Ortiz Noreña <stivenestortiz@gmail.com>
+Date:   Tue Sep 24 23:21:23 2024 -0500
+
+    ✨ Add business dashboard page
+
+[33mcommit 0e55ab97b62ca06a46daba090de0ff86732ab907[m
+Author: Stiven Ortiz Noreña <stivenestortiz@gmail.com>
+Date:   Tue Sep 24 23:19:15 2024 -0500
+
+    ✨ Add business creation page
+
+[33mcommit 3815882abcc4226e81dfaab854d3eff611c15741[m
+Author: Estebans441 <salazaraesteban@javeriana.edu.co>
+Date:   Tue Sep 24 19:04:49 2024 -0500
+
+    :construction_worker: add deploy QA script
+
+[33mcommit ae2b0ebe588c4aab0bc28e2fefd45d8a856faa73[m
+Author: Camilo Nossa <calejandro_noss@outlook.com>
+Date:   Tue Sep 24 16:52:06 2024 -0500
+
+    👷 Update ci.yml
+
+[33mcommit 57061c599c5ec53d213d9821fbfd1c59e2ad66b8[m
+Author: Camilo Nossa <calejandro_noss@outlook.com>
+Date:   Tue Sep 24 16:43:21 2024 -0500
+
+    👷 Update ci.yml
+
+[33mcommit 855804469920436250bd9516109f17b9a88bb976[m
+Author: Esteban Salazar <68300629+Estebans441@users.noreply.github.com>
+Date:   Tue Sep 24 16:41:09 2024 -0500
+
+    :construction_worker: Update ci.yml
+
+[33mcommit bab5a36589fc57bb0903daf031b8e116330c299d[m
+Author: Esteban Salazar <68300629+Estebans441@users.noreply.github.com>
+Date:   Tue Sep 24 16:32:30 2024 -0500
+
+    :construction_worker: Update ci.yml
+
+[33mcommit 5735439d92ce37f435399154bcef4fb9d01fe1c6[m
+Author: Estebans441 <salazaraesteban@javeriana.edu.co>
+Date:   Tue Sep 24 16:21:57 2024 -0500
+
+    ✨ add create user integration
+
+[33mcommit d36deee1de4574641cfdb7d0ed89e2634a70a340[m
+Author: Camilo Nossa <calejandro_noss@outlook.com>
+Date:   Tue Sep 24 15:52:51 2024 -0500
+
+    👷 Update ci.yml
+
+[33mcommit e40d168f4555e3b8d859cf841039fc7034c7a5e3[m
+Author: Camilo Nossa <calejandro_noss@outlook.com>
+Date:   Tue Sep 24 15:10:21 2024 -0500
+
+    📝 Add references
+
+[33mcommit ff3289fec0fff2a28577cbd169be0f6ba138d5f6[m
+Author: Camilo Nossa <calejandro_noss@outlook.com>
+Date:   Tue Sep 24 15:04:28 2024 -0500
+
+    📝 Update in the environment variables
+
+[33mcommit 4216b1a597d29d5505d4264d9c404abe8ef111ad[m
+Author: Camilo Nossa <calejandro_noss@outlook.com>
+Date:   Tue Sep 24 14:59:14 2024 -0500
+
+    📝Add conventions.md file
+
+[33mcommit bea1fa592ded03afc340468f0e4920fe6bd3c967[m
+Author: Camilo Nossa <calejandro_noss@outlook.com>
+Date:   Tue Sep 24 14:09:13 2024 -0500
+
+    🏷️ Add typescript support to environment variables
+
+[33mcommit df065088b258a18940825724f802a67d59d3b206[m
+Author: Camilo Nossa <calejandro_noss@outlook.com>
+Date:   Tue Sep 24 14:06:04 2024 -0500
+
+    🚚Move custom component from /components/ui  to /components
+
+[33mcommit d33dfcf37e236441c9a0ae39c516e994527f4bfb[m
+Author: Camilo Nossa <calejandro_noss@outlook.com>
+Date:   Tue Sep 24 12:29:23 2024 -0500
+
+    🚨 Replace <img/> to <Image> from Next.js
+
+[33mcommit 4d7e385cd904db68155adcdf44b4b54458d61740[m
+Author: Camilo Nossa <calejandro_noss@outlook.com>
+Date:   Tue Sep 24 12:17:37 2024 -0500
+
+    🚚 Update paths
+
+[33mcommit 0157ab125aa59c5fcc770dea34bb29ae2ec79a6b[m
+Author: Camilo Nossa <calejandro_noss@outlook.com>
+Date:   Tue Sep 24 12:16:59 2024 -0500
+
+    ✨ Add firebase lib module
+
+[33mcommit 97bb31c1089db909d83430d4819e5bb19cd96159[m
+Author: Camilo Nossa <calejandro_noss@outlook.com>
+Date:   Tue Sep 24 12:16:31 2024 -0500
+
+    ♻️ Update utils module
+
+[33mcommit 2226fdcb1d7b4fa797c4e3ccc1c635ebe0c23b5e[m
+Author: Camilo Nossa <calejandro_noss@outlook.com>
+Date:   Tue Sep 24 12:15:58 2024 -0500
+
+    🔥Remove unused file
+
+[33mcommit eaf2986251c792ea411db60ba9076a1e72a9c174[m
+Author: Camilo Nossa <calejandro_noss@outlook.com>
+Date:   Tue Sep 24 12:13:32 2024 -0500
+
+    ➕ Add autoprefixer dependency
+
+[33mcommit 4cda0ca4980df7162664a3bf11f2051155aec854[m
+Author: Camilo Nossa <calejandro_noss@outlook.com>
+Date:   Tue Sep 24 12:12:55 2024 -0500
+
+    🚨 Disable no-unused-vars ESLint rule
+
+[33mcommit 5292a42afc3a280b795c435e9434638e5b3226e8[m
+Author: Camilo Nossa <calejandro_noss@outlook.com>
+Date:   Tue Sep 24 11:49:33 2024 -0500
+
+    🏷️ Add typescript support for firebase configuration
+
+[33mcommit acfec8efa90ed7c4d0bee84a

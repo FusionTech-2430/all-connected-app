@@ -68,3 +68,26 @@ export const updateUser = async (userId: string, userData: FormData) => {
     throw error
   }
 }
+
+export const deleteUser = async (userId: string) => {
+  try {
+    const response = await fetch(
+      API_URL + '/users-service/api/v1/users/' + userId,
+      {
+        method: 'DELETE',
+        headers: {
+          Accept: 'application/json'
+        }
+      }
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.message || 'Error inesperado en el servidor')
+    }
+    return await response.json()
+  } catch (error) {
+    console.error('Error deleting user:', error)
+    throw error
+  }
+}

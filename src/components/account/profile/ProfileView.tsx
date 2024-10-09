@@ -6,7 +6,7 @@ import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { type User, type UserUpdate } from '@/types/users/user'
 import { useRouter } from 'next/navigation'
-import { updateUser } from '@/services/userService'
+import { updateUser, deleteUser } from '@/services/userService'
 
 function getInitials(name: string): string {
   const initials = name.split(' ').slice(0, 2).map(word => word.toUpperCase()[0]).join('');
@@ -54,6 +54,15 @@ export default function ProfileView() {
       ...profile,
       [name]: value,
     })
+  }
+
+  const handleDelete = async () => {
+    await deleteUser(user?.id_user || '')
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('id-user')
+      sessionStorage.removeItem('user')
+    }
+    router.push('/')
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -241,7 +250,7 @@ export default function ProfileView() {
             Cierra todas las sesiones activas.
           </p>
         </div>
-        <button className="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700">
+        <button onClick={handleDelete} className="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700">
           Eliminar Cuenta
         </button>
       </div>

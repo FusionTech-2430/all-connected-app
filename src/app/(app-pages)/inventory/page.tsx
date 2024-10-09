@@ -1,7 +1,5 @@
-export default function Page() {
-  return (
-    <>
-      <p>This is the inventory page</p>
-    </>
-  )
+import Component from '@/components/dashboard/businesses/InventoryDashboard'
+
+export default function InventoryDashboard() {
+  return <Component />
 }
