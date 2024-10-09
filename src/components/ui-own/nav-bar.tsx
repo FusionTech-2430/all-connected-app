@@ -8,7 +8,8 @@ import {
   Package,
   ShoppingCart,
   Users,
-  NotebookPen
+  NotebookPen,
+  Wallet
 } from 'lucide-react'
 
 const navBarItems = [
@@ -29,6 +30,12 @@ const navBarItems = [
     href: '/my-business',
     title: 'Mi emprendimiento',
     icon: <Package size={20} />
+  },
+  {
+    uid: 'manual-sales',
+    href: '/manual-sales',
+    title: 'Ventas Manuales',
+    icon: <Wallet size={20} />
   },
   {
     uid: 'messages',
