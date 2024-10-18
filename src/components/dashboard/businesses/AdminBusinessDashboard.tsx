@@ -54,6 +54,11 @@ interface Empredimiento {
   description: string
 }
 
+const truncateText = (text: string, maxLength: number) => {
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength) + '...';
+};
+
 export default function EmpredimientosManagement() {
   const [empredimientos, setEmpredimientos] = useState<Empredimiento[]>([
     { id: '1', abbreviation: 'PG', name: 'Pontioomitas', category: 'Category 1', description: 'Description 1' },
@@ -131,6 +136,8 @@ export default function EmpredimientosManagement() {
         <TableHeader>
           <TableRow>
             <TableHead>Nombre</TableHead>
+            <TableHead>Categoría</TableHead>
+            <TableHead>Descripción</TableHead>
             <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -145,6 +152,8 @@ export default function EmpredimientosManagement() {
                   {emp.name}
                 </div>
               </TableCell>
+              <TableCell>{emp.category}</TableCell>
+              <TableCell title={emp.description}>{truncateText(emp.description, 30)}</TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
