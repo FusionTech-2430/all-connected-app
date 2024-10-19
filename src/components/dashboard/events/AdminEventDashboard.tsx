@@ -136,15 +136,15 @@ export default function EventManagement() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => handleView(event)}>
-                      <Eye className="mr-2 h-4 w-4" />
+                      <Eye className="mr-2 h-4 w-4 text-blue-500" /> {/* Change color to blue */}
                       Visualizar
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleOpenDialog(event)}>
-                      <Pencil className="mr-2 h-4 w-4" />
+                      <Pencil className="mr-2 h-4 w-4 text-yellow-500" /> {/* Change color to yellow */}
                       Modificar
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleDelete(event)}>
-                      <Trash2 className="mr-2 h-4 w-4" />
+                      <Trash2 className="mr-2 h-4 w-4 text-red-500" /> {/* Change color to red */}
                       Eliminar
                     </DropdownMenuItem>
                   </DropdownMenuContent>

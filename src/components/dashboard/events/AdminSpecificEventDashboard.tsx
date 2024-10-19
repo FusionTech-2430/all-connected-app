@@ -203,11 +203,11 @@ export default function AdminSpecificEventDashboard({ id }: AdminSpecificEventDa
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => handleOpenDialog(item)}>
-                          <Pencil className="mr-2 h-4 w-4" />
+                          <Pencil className="mr-2 h-4 w-4 text-yellow-500" /> {/* Change color to yellow */}
                           Modificar
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDelete(item)}>
-                          <Trash2 className="mr-2 h-4 w-4" />
+                          <Trash2 className="mr-2 h-4 w-4 text-red-500" /> {/* Change color to red */}
                           Eliminar
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -252,11 +252,11 @@ export default function AdminSpecificEventDashboard({ id }: AdminSpecificEventDa
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => handleOpenDialog(item)}>
-                          <Pencil className="mr-2 h-4 w-4" />
+                          <Pencil className="mr-2 h-4 w-4 text-yellow-500" /> {/* Change color to yellow */}
                           Modificar
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDelete(item)}>
-                          <Trash2 className="mr-2 h-4 w-4" />
+                          <Trash2 className="mr-2 h-4 w-4 text-red-500" /> {/* Change color to red */}
                           Eliminar
                         </DropdownMenuItem>
                       </DropdownMenuContent>

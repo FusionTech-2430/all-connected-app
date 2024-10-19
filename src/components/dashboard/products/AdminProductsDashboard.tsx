@@ -89,11 +89,11 @@ export default function ProductManagement() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => handleView(product)}>
-                        <Eye className="mr-2 h-4 w-4" />
+                        <Eye className="mr-2 h-4 w-4 text-blue-500" /> {/* Change color to blue */}
                         Visualizar
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleDelete(product)}>
-                        <Trash2 className="mr-2 h-4 w-4" />
+                        <Trash2 className="mr-2 h-4 w-4 text-red-500" /> {/* Change color to red */}
                         Eliminar
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -140,7 +140,7 @@ export default function ProductManagement() {
                 <TableCell>{product.date}</TableCell>
                 <TableCell>
                   <Button variant="ghost" size="sm" onClick={() => handleView(product)}>
-                    <Eye className="mr-2 h-4 w-4" />
+                    <Eye className="mr-2 h-4 w-4 text-blue-500" /> {/* Change color to blue */}
                     Visualizar
                   </Button>
                 </TableCell>
@@ -155,9 +155,6 @@ export default function ProductManagement() {
           <DialogHeader>
             <DialogTitle className="flex justify-between items-center">
               Visualizar producto
-              <Button variant="ghost" size="icon" onClick={() => setIsViewDialogOpen(false)}>
-                <X className="h-4 w-4" />
-              </Button>
             </DialogTitle>
           </DialogHeader>
           <div className="text-sm text-muted-foreground mb-4">

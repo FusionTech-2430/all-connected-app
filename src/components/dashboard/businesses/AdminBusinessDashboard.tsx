@@ -44,7 +44,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { MoreHorizontal, X } from "lucide-react"
+import { MoreHorizontal, Pencil, Trash2, X } from "lucide-react"
 
 interface Empredimiento {
   id: string
@@ -164,16 +164,11 @@ export default function EmpredimientosManagement() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem className="flex items-center cursor-pointer" onClick={() => handleOpenDialog(emp)}>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
-                        <path d="M16.5 3.5L20.5 7.5L7 21H3V17L16.5 3.5Z" fill="#FFB800" stroke="#FFB800" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+                      <Pencil className="mr-2 h-4 w-4 text-yellow-500" />
                       Modificar
                     </DropdownMenuItem>
                     <DropdownMenuItem className="flex items-center cursor-pointer" onClick={() => handleDelete(emp)}>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
-                        <path d="M3 6H5H21" stroke="#FF0000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="#FF0000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+                      <Trash2 className="mr-2 h-4 w-4 text-red-500" /> 
                       Eliminar
                     </DropdownMenuItem>
                   </DropdownMenuContent>
