@@ -16,6 +16,7 @@ type Product = {
   user: string
   reason: string
   date: string
+  category: 'productos' | 'servicios'
 }
 
 const truncateText = (text: string, maxLength: number) => {
@@ -25,17 +26,19 @@ const truncateText = (text: string, maxLength: number) => {
 
 export default function ProductManagement() {
   const [products, setProducts] = useState<Product[]>([
-    { id: '1', name: 'Choco galletas', user: 'Carlos Rojas', reason: 'Las Galletas parece que... aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', date: '10/02/2024' },
-    { id: '2', name: 'Brownies de arequipe', user: 'Camilo Nossa', reason: 'El arequipe de baja calidad...', date: '16/03/2024' },
-    { id: '3', name: 'Vapes', user: 'Steven Ortiz', reason: 'Producto sin supervisión...', date: '22/03/2024' },
-    { id: '4', name: 'Stickers', user: 'Carlos Rojas', reason: 'Varios stickers parecen...', date: '1/04/2024' },
-    { id: '5', name: 'Calculadora', user: 'Carlos Rojas', reason: 'Algunas operaciones muestran...', date: '12/04/2024' },
+    { id: '1', name: 'Choco galletas', user: 'Carlos Rojas', reason: 'Las Galletas parece que... aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', date: '10/02/2024', category: 'productos' },
+    { id: '2', name: 'Brownies de arequipe', user: 'Camilo Nossa', reason: 'El arequipe de baja calidad...', date: '16/03/2024', category: 'productos' },
+    { id: '3', name: 'Vapes', user: 'Steven Ortiz', reason: 'Producto sin supervisión...', date: '22/03/2024', category: 'productos' },
+    { id: '4', name: 'Diseño de logo', user: 'Carlos Rojas', reason: 'Varios stickers parecen...', date: '1/04/2024', category: 'servicios' },
+    { id: '5', name: 'Consultoría', user: 'Carlos Rojas', reason: 'Algunas operaciones muestran...', date: '12/04/2024', category: 'servicios' },
   ])
 
   const [deletedProducts, setDeletedProducts] = useState<Product[]>([])
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<'todos' | 'productos' | 'servicios'>('todos')
+  const [deletedSelectedCategory, setDeletedSelectedCategory] = useState<'todos' | 'productos' | 'servicios'>('todos')
 
   const handleView = (product: Product) => {
     setSelectedProduct(product)
@@ -55,31 +58,61 @@ export default function ProductManagement() {
     }
   }
 
+  const filteredProducts = products.filter(product => 
+    selectedCategory === 'todos' || product.category === selectedCategory
+  )
+
+  const filteredDeletedProducts = deletedProducts.filter(product => 
+    deletedSelectedCategory === 'todos' || product.category === deletedSelectedCategory
+  )
+
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold mb-4">Gestión reportes de productos</h2>
+        <h2 className="text-2xl font-bold mb-4">Gestión reportes de productos y servicios</h2>
         <div className="mb-4 relative">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Buscar por nombre..." className="pl-8" />
         </div>
+        <div className="mb-4 flex space-x-2">
+          <Button 
+            variant={selectedCategory === 'todos' ? 'default' : 'outline'}
+            onClick={() => setSelectedCategory('todos')}
+          >
+            Todos
+          </Button>
+          <Button 
+            variant={selectedCategory === 'productos' ? 'default' : 'outline'}
+            onClick={() => setSelectedCategory('productos')}
+          >
+            Productos
+          </Button>
+          <Button 
+            variant={selectedCategory === 'servicios' ? 'default' : 'outline'}
+            onClick={() => setSelectedCategory('servicios')}
+          >
+            Servicios
+          </Button>
+        </div>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Producto</TableHead>
+              <TableHead>Item</TableHead>
               <TableHead>Usuario</TableHead>
               <TableHead>Motivo</TableHead>
               <TableHead>Fecha</TableHead>
+              <TableHead>Categoría</TableHead>
               <TableHead>Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products.map((product) => (
+            {filteredProducts.map((product) => (
               <TableRow key={product.id}>
                 <TableCell>{product.name}</TableCell>
                 <TableCell>{product.user}</TableCell>
                 <TableCell title={product.reason}>{truncateText(product.reason, 30)}</TableCell>
                 <TableCell>{product.date}</TableCell>
+                <TableCell>{product.category}</TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -89,11 +122,11 @@ export default function ProductManagement() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => handleView(product)}>
-                        <Eye className="mr-2 h-4 w-4 text-blue-500" /> {/* Change color to blue */}
+                        <Eye className="mr-2 h-4 w-4 text-blue-500" />
                         Visualizar
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleDelete(product)}>
-                        <Trash2 className="mr-2 h-4 w-4 text-red-500" /> {/* Change color to red */}
+                        <Trash2 className="mr-2 h-4 w-4 text-red-500" />
                         Eliminar
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -104,7 +137,7 @@ export default function ProductManagement() {
           </TableBody>
         </Table>
         <div className="flex items-center justify-between mt-4">
-          <div>Total: {products.length} eventos</div>
+          <div>Total: {filteredProducts.length} eventos</div>
           <div className="flex items-center space-x-2">
             <Button variant="outline" size="sm">&lt;&lt;</Button>
             <Button variant="outline" size="sm">&lt;</Button>
@@ -116,31 +149,53 @@ export default function ProductManagement() {
       </div>
 
       <div>
-        <h2 className="text-2xl font-bold mb-4">Historial de productos eliminados</h2>
+        <h2 className="text-2xl font-bold mb-4">Historial de productos y servicios eliminados</h2>
         <div className="mb-4 relative">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Buscar por nombre..." className="pl-8" />
         </div>
+        <div className="mb-4 flex space-x-2">
+          <Button 
+            variant={deletedSelectedCategory === 'todos' ? 'default' : 'outline'}
+            onClick={() => setDeletedSelectedCategory('todos')}
+          >
+            Todos
+          </Button>
+          <Button 
+            variant={deletedSelectedCategory === 'productos' ? 'default' : 'outline'}
+            onClick={() => setDeletedSelectedCategory('productos')}
+          >
+            Productos
+          </Button>
+          <Button 
+            variant={deletedSelectedCategory === 'servicios' ? 'default' : 'outline'}
+            onClick={() => setDeletedSelectedCategory('servicios')}
+          >
+            Servicios
+          </Button>
+        </div>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Producto</TableHead>
+              <TableHead>Item</TableHead>
               <TableHead>Usuario</TableHead>
               <TableHead>Motivo</TableHead>
               <TableHead>Fecha</TableHead>
+              <TableHead>Categoría</TableHead>
               <TableHead>Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {deletedProducts.map((product) => (
+            {filteredDeletedProducts.map((product) => (
               <TableRow key={product.id}>
                 <TableCell>{product.name}</TableCell>
                 <TableCell>{product.user}</TableCell>
                 <TableCell title={product.reason}>{truncateText(product.reason, 30)}</TableCell>
                 <TableCell>{product.date}</TableCell>
+                <TableCell>{product.category}</TableCell>
                 <TableCell>
                   <Button variant="ghost" size="sm" onClick={() => handleView(product)}>
-                    <Eye className="mr-2 h-4 w-4 text-blue-500" /> {/* Change color to blue */}
+                    <Eye className="mr-2 h-4 w-4 text-blue-500" />
                     Visualizar
                   </Button>
                 </TableCell>
@@ -148,6 +203,9 @@ export default function ProductManagement() {
             ))}
           </TableBody>
         </Table>
+        <div className="flex items-center justify-between mt-4">
+          <div>Total: {filteredDeletedProducts.length} eventos eliminados</div>
+        </div>
       </div>
 
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
@@ -202,6 +260,17 @@ export default function ProductManagement() {
                 <Input
                   id="date"
                   value={selectedProduct.date}
+                  readOnly
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="category" className="text-right">
+                  Categoría
+                </Label>
+                <Input
+                  id="category"
+                  value={selectedProduct.category}
                   readOnly
                   className="col-span-3"
                 />

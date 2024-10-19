@@ -4,12 +4,9 @@ import NavItem from './nav-item'
 import {
   Calendar,
   House,
-  LineChart,
   Package,
-  ShoppingCart,
   Users,
   NotebookPen,
-  Wallet
 } from 'lucide-react'
 
 const navBarItems = [
@@ -28,7 +25,7 @@ const navBarItems = [
   {
     uid: 'products',
     href: '/admin/products',
-    title: 'Productos',
+    title: 'Productos y servicios',
     icon: <House size={20} />
   },
   {
