@@ -1,8 +1,4 @@
-'use-client'
-
-import React from 'react'
-
-const Footer = () => {
+export default function Footer() {
   return (
     <footer className="flex justify-between items-center px-6 py-4 bg-white text-gray-500 text-sm">
       <p>
@@ -21,5 +17,3 @@ const Footer = () => {
     </footer>
   )
 }
-
-export default Footer
