@@ -2,7 +2,7 @@
 const nextConfig = {
     output:'standalone',
     images: {
-        domains: ['storage.googleapis.com'],
+        remotePatterns: ['storage.googleapis.com'],
     },
 };
 
