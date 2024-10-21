@@ -94,7 +94,7 @@ export default function BusinessDashboard() {
   useEffect(() => {
     const fetchBusinessData = async () => {
       try {
-        const response = await fetch(`${API_URL}/businesses-service/api/v1/businesses/2ebec1f5-5473-4c52-ad85-27c09fb0e83f`)
+        const response = await fetch(`${API_URL}/businesses-service/api/v1/businesses/1cf3dfe8-8687-4d34-b5ea-e5d09af8f139`)
         if (!response.ok) {
           throw new Error('Failed to fetch business data')
         }

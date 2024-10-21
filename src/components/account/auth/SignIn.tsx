@@ -19,7 +19,7 @@ const SignIn = () => {
 
   useEffect(() => {
     if (sessionStorage.getItem('id-user')) {
-      router.push('/my-business')
+      router.push('/home')
     }
   }, [router])
 
@@ -35,7 +35,7 @@ const SignIn = () => {
       if (user) {
         sessionStorage.setItem('user', JSON.stringify(user))
         console.log('Usuario:', user)
-        router.push('/my-business')
+        router.push('/home')
         setLoading(false)
       }
       else{
