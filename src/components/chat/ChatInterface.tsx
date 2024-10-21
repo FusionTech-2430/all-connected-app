@@ -1,29 +1,12 @@
-'use client'
+'use client';
 
-import { useState, useRef, useEffect } from 'react'
-import { ref, push, onValue } from 'firebase/database'
-import {
-  uploadBytesResumable,
-  getDownloadURL,
-  ref as storageRef
-} from 'firebase/storage'
-import { database, storage } from '@/lib/firebase/config'
-import { Send, Paperclip, ArrowLeft, File, X } from 'lucide-react'
-import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
-import Image from 'next/image'
-
-type Message = {
-  id: number
-  text: string
-  sender: 'user' | 'client'
-  time: string
-  file?: {
-    name: string
-    url: string
-    type: 'image' | 'document'
-  }
-}
+import { useState, useRef, useEffect } from 'react';
+import { Send, Paperclip, ArrowLeft, File, X } from 'lucide-react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import Image from 'next/image';
+import { loadChatName, loadMessages, sendMessage, uploadFileAndSendMessage } from '@/services/chatService';
+import { Message } from '@/types/chat/Message';
 
 // Modal Component Definition
 function Modal({
@@ -31,11 +14,11 @@ function Modal({
   onClose,
   children
 }: {
-  isOpen: boolean
-  onClose: () => void
-  children: React.ReactNode
+  isOpen: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
 }) {
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
@@ -52,110 +35,47 @@ function Modal({
         {children}
       </div>
     </div>
-  )
+  );
 }
 
 export default function ChatInterface() {
-  const searchParams = useSearchParams()
-  const id = searchParams.get('id')
-  const [messages, setMessages] = useState<Message[]>([])
-  const [inputMessage, setInputMessage] = useState('')
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [modalImage, setModalImage] = useState<string | null>(null)
-  const [chatName, setChatName] = useState('Cliente All Connected') // Valor por defecto
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputMessage, setInputMessage] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [modalImage, setModalImage] = useState<string | null>(null);
+  const [chatName, setChatName] = useState('Cliente All Connected');
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // Cargar nombre del chat desde Firebase o usar valor por defecto
+  useEffect(() => {
+    const id_user = sessionStorage.getItem('id-user');
+    setCurrentUserId(id_user);
+  }, []);
+
   useEffect(() => {
     if (id) {
-      const chatRef = ref(database, `chats/${id}/name`)
-      onValue(chatRef, (snapshot) => {
-        const data = snapshot.val()
-        if (data) {
-          setChatName(data)
-        } else {
-          setChatName('Cliente All Connected') // Si no existe el nombre, mostrar predeterminado
-        }
-      })
+      loadChatName(id, setChatName);
+      loadMessages(id, setMessages);
     }
-  }, [id])
-
-  // Cargar mensajes desde Firebase cuando el componente se monte
-  useEffect(() => {
-    if (id) {
-      const chatRef = ref(database, `chats/${id}/messages`)
-      onValue(chatRef, (snapshot) => {
-        const data = snapshot.val()
-        if (data) {
-          const chatMessages = Object.values(data)
-          setMessages(chatMessages as Message[])
-        }
-      })
-    }
-  }, [id])
+  }, [id]);
 
   const handleSendMessage = () => {
-    if (inputMessage.trim() !== '') {
-      const newMessage: Message = {
-        id: Date.now(),
-        text: inputMessage,
-        sender: 'user',
-        time: new Date().toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true
-        })
-      }
-
-      const chatRef = ref(database, `chats/${id}/messages`)
-      push(chatRef, newMessage)
-      setInputMessage('')
+    const id_user = sessionStorage.getItem('id-user');
+    if (id && id_user) {
+      sendMessage(id, inputMessage, id_user);
+      setInputMessage('');
     }
-  }
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      const fileRef = storageRef(storage, `chats/${id}/${file.name}`)
-      const uploadTask = uploadBytesResumable(fileRef, file)
-
-      // Inicia la subida del archivo
-      uploadTask.on(
-        'state_changed',
-        (snapshot) => {
-          const progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-          console.log(`Upload is ${progress}% done`)
-        },
-        (error) => {
-          console.error('Error al subir archivo:', error)
-        },
-        () => {
-          // Obtener la URL de descarga cuando la subida se complete
-          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-            const isImage = file.type.startsWith('image/')
-            const newMessage: Message = {
-              id: Date.now(),
-              text: isImage ? '' : `Archivo: ${file.name}`,
-              sender: 'user',
-              time: new Date().toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true
-              }),
-              file: {
-                name: file.name,
-                url: downloadURL,
-                type: isImage ? 'image' : 'document'
-              }
-            }
-
-            const chatRef = ref(database, `chats/${id}/messages`)
-            push(chatRef, newMessage)
-          })
-        }
-      )
+    const file = event.target.files?.[0];
+    const id_user = sessionStorage.getItem('id-user'); // Obtener el ID del usuario actual
+    if (file && id && id_user) {
+      uploadFileAndSendMessage(id, file, id_user, (error: string) => console.error(error));
     }
-  }
+  };
+  
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-gray-100 dark:bg-gray-900">
@@ -181,11 +101,13 @@ export default function ChatInterface() {
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`mb-4 ${message.sender === 'user' ? 'text-right' : 'text-left'}`}
+                className={`mb-4 ${
+                  message.sender === currentUserId ? 'text-right' : 'text-left'
+                }`}
               >
                 <div
                   className={`inline-block p-2 rounded-lg ${
-                    message.sender === 'user'
+                    message.sender === currentUserId
                       ? 'bg-blue-500 text-white'
                       : 'bg-gray-200 dark:bg-gray-700 dark:text-white'
                   }`}
@@ -216,7 +138,11 @@ export default function ChatInterface() {
                   )}
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {message.time}
+                  {new Date(message.time).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                  })}
                 </div>
               </div>
             ))}
@@ -232,7 +158,7 @@ export default function ChatInterface() {
               className="flex-1 border rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
               onKeyPress={(e) => {
                 if (e.key === 'Enter') {
-                  handleSendMessage()
+                  handleSendMessage();
                 }
               }}
             />
@@ -270,5 +196,5 @@ export default function ChatInterface() {
         )}
       </Modal>
     </div>
-  )
+  );
 }
