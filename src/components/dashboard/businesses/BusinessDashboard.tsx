@@ -681,6 +681,7 @@ export default function BusinessDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Join Business Modal */}
       <Dialog open={isJoinBusinessModalOpen} onOpenChange={setIsJoinBusinessModalOpen}>
   <DialogContent>
     <DialogHeader>
