@@ -18,17 +18,14 @@ const ProductsPage = () => {
 
   return (
     <div>
-      {/* Header (barra de navegación) */}
       <NavBar />
 
-      {/* Título de Productos */}
       <section className="bg-[#0C4A6E] text-white py-20 mt-10">
         <h1 className="text-4xl font-bold text-center">Productos</h1>
       </section>
 
-      {/* Contenido principal */}
       <div className="flex mt-5">
-        {/* Filtro de productos */}
+
         <aside className="w-1/5 p-5">
         <h3 className="font-bold mb-4 text-[#0C4A6E]">Filtro de productos</h3>
             <div className="space-y-2">
@@ -42,18 +39,18 @@ const ProductsPage = () => {
           </div>
         </aside>
 
-        {/* Lista de productos */}
         <section className="w-4/5 p-5">
-          <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center mb-4">
             <p>Mostrando 1-24 de {filteredProducts.length} resultados</p>
             <input
-              type="text"
-              placeholder="Buscar productos..."
-              className="p-2 border rounded"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+            type="text"
+            placeholder="Buscar productos..."
+            className="p-2 border rounded w-1/3" 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             />
-          </div>
+        </div>
+
           <div className="grid grid-cols-4 gap-4">
             {filteredProducts.map((product, index) => (
               <div key={index} className="border p-4 text-center">
