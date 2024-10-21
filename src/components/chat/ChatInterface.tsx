@@ -17,7 +17,7 @@ type Message = {
   id: number
   text: string
   sender: 'user' | 'client'
-  time: string
+  time: number
   file?: {
     name: string
     url: string
@@ -73,7 +73,7 @@ export default function ChatInterface() {
         if (data) {
           setChatName(data)
         } else {
-          setChatName('Cliente All Connected') // Si no existe el nombre, mostrar predeterminado
+          setChatName('Cliente All Connected')
         }
       })
     }
@@ -99,15 +99,11 @@ export default function ChatInterface() {
         id: Date.now(),
         text: inputMessage,
         sender: 'user',
-        time: new Date().toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true
-        })
+        time: Date.now()
       }
 
-      const chatRef = ref(database, `chats/${id}/messages`)
-      push(chatRef, newMessage)
+      const messagesRef = ref(database, `chats/${id}/messages`)
+      push(messagesRef, newMessage)
       setInputMessage('')
     }
   }
@@ -137,11 +133,7 @@ export default function ChatInterface() {
               id: Date.now(),
               text: isImage ? '' : `Archivo: ${file.name}`,
               sender: 'user',
-              time: new Date().toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true
-              }),
+              time: Date.now(),
               file: {
                 name: file.name,
                 url: downloadURL,

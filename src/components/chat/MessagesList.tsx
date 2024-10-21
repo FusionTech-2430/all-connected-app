@@ -1,14 +1,77 @@
 'use client'
 import { Send } from 'lucide-react'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { ref, onValue } from 'firebase/database'
+import { database } from '@/lib/firebase/config'
+import { useRouter } from 'next/navigation'
+import { formatFriendlyDate } from '@/utils/date-utils'
 
-const messages = [
-  { id: 1, name: 'Esteban Salazar', date: '2024-05-01' },
-  { id: 2, name: 'Victor Joel Vasquez', date: '2024-06-10' },
-  { id: 3, name: 'Alejandra Romero', date: '2024-08-03' }
-]
+// Interfaz del mensaje
+interface Message {
+  id: string;
+  name: string;
+  date: string;
+}
 
-export default function MessagesList() {
+const MessagesList = () => {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        if (typeof window !== 'undefined') {
+          const id_user = sessionStorage.getItem('id-user');
+          if (!id_user) {
+            router.push('/');
+            return;
+          }
+
+          // Referencia a la colección 'chats'
+          const chatsRef = ref(database, 'chats');
+          
+          // Escuchar cambios en la colección 'chats'
+          onValue(chatsRef, (snapshot) => {
+            const chatsData = snapshot.val();
+            const userChats: Message[] = [];
+
+            // Filtrar los chats donde el usuario actual está presente
+            for (const chatId in chatsData) {
+              const chat = chatsData[chatId];
+              const usersInChat = chat.users;
+
+              // Verificar si el usuario actual está en este chat
+              if (Object.values(usersInChat).includes(id_user)) {
+                const otherUserId = Object.values(usersInChat).find((uid) => uid !== id_user);
+                const messages = chat.messages || {};
+                const messageKeys = Object.keys(messages);
+
+                let lastMessageDate = 'Sin mensajes';
+                // Si hay mensajes en el chat
+                if (messageKeys.length > 0) {
+                  const lastMessageKey = messageKeys[messageKeys.length - 1];
+                  const lastMessage = messages[lastMessageKey];
+                  lastMessageDate = formatFriendlyDate(lastMessage.time); // Aplicar formato amigable a la fecha
+                }
+
+                userChats.push({
+                  id: chatId,
+                  name: typeof otherUserId === 'string' ? otherUserId : 'Desconocido',
+                  date: lastMessageDate
+                });
+              }
+            }
+
+            setMessages(userChats);
+          });
+        }
+      } catch (error) {
+        console.error('Error getting chats:', error);
+      }
+    };
+    fetchMessages();
+  }, [router]);
   return (
     <>
       <section className="flex flex-col">
@@ -67,5 +130,7 @@ export default function MessagesList() {
         </div>
       </section>
     </>
-  )
+  );
 }
+
+export default MessagesList;
