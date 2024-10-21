@@ -48,6 +48,10 @@ export default function UserAvatar() {
     router.push('/profile')
   }
 
+  const handleToken = () => {
+    router.push('/use-token')
+  }
+
   const userName = user?.fullname || ''
   const photoUrl = user?.photo_url || ''
 
@@ -69,8 +73,9 @@ export default function UserAvatar() {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleSettings}>Settings</DropdownMenuItem>
-          <DropdownMenuItem>Support</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleSettings}>Ajustes</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleToken}>Usar Token</DropdownMenuItem>
+          <DropdownMenuItem>Soporte</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogOut}>Logout</DropdownMenuItem>
         </DropdownMenuContent>

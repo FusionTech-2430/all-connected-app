@@ -40,13 +40,15 @@ export function AppHeader({ children, ...props }: HeaderProps) {
               </SheetDescription>
             </SheetHeader>
             <div className="flex flex-col h-full gap-6">
-              <Image
-                src={'/all-connected-banner.png'}
-                alt="All Connected banner"
-                width={192}
-                height={192}
-                priority
-              />
+              <Link href="/home">
+                <Image
+                  src={'/all-connected-banner.png'}
+                  alt="All Connected banner"
+                  width={192}
+                  height={192}
+                  priority
+                />
+              </Link>
 
               <NavBar className="grid gap-2 text-lg" />
 

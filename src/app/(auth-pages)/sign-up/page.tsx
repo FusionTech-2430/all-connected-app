@@ -1,4 +1,3 @@
-import React from 'react'
 import SignUp from '@/components/account/auth/SignUp'
 
 export default function UsersPage() {
