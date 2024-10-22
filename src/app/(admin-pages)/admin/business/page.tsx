@@ -1,12 +1,7 @@
 import { CreateBusinessButton } from '@/components/business/create-business-button'
 import AdminBusinessDashboard from '@/components/dashboard/businesses/AdminBusinessDashboard'
 import SearchInput from '@/components/shared/search-input'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { getBusinesses } from '@/lib/api/business'
-
-
 
 export default async function AdminBusiness() {
 

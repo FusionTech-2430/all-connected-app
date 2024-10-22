@@ -1,12 +1,12 @@
 'use server'
 
-import { Business, CreateBusinessData } from "@/types/business";
+import { CreateBusinessData, Business } from "@/types/business";
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/businesses-service/api/v1`;
 
 async function fetcher<T>(url: string, options: RequestInit): Promise<T> {
   try {
-    const response = await fetch(`${API_URL}${url}`, options);
+    const response = await fetch(API_URL + url, options);
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Unexpected server error');
@@ -41,10 +41,9 @@ export const getBusiness = (businessId: string) => {
   });
 }
 
-export async function createBusiness(data: CreateBusinessData) {
+export async function createBusiness(data: CreateBusinessData): Promise<Business> {
   const formData = new FormData();
-  console.log('API_URL:', API_URL);
-
+  
   // Append only string values
   formData.append('name', data.name);
   formData.append('owner_id', data.owner_id);
@@ -54,15 +53,17 @@ export async function createBusiness(data: CreateBusinessData) {
     formData.append('logo_url', data.logo_url);
   }
 
-  return fetcher('/businesses', {
+  return fetcher<Business>('/businesses', {
     method: 'POST',
     body: formData,
   });
 }
 
-  // Delete a business
-  export async function deleteBusiness(businessId: string) {
-    return fetcher(`/businesses/${businessId}`, {
-      method: 'DELETE',
-    });
-  }
+export async function deleteBusiness(businessId: string) {
+  return fetcher<void>(`/businesses/${businessId}`, {
+    method: 'DELETE',
+    headers: {
+      Accept: 'application/json'
+    }
+  });
+}

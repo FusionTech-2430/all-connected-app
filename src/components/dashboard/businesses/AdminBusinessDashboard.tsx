@@ -5,13 +5,6 @@ import Image from 'next/image'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
   Table,
   TableBody,
   TableCell,
@@ -44,22 +37,23 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { MoreHorizontal, Pencil, Trash2, X } from "lucide-react"
 import { Business } from '@/types/business'
-import { Organizations } from '@/types/organizations'
 import { getOrganizationById } from '@/lib/api/organizations'
+import { deleteBusiness } from '@/lib/api/business'
+import { CreateBusinessButton } from '@/components/business/create-business-button'
 
 interface BusinessManagementProps {
   businesses: Business[]
 }
 
-export default function BusinessManagement({ businesses }: BusinessManagementProps) {
+export default function BusinessManagement({ businesses: initialBusinesses }: BusinessManagementProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [currentBusiness, setCurrentBusiness] = useState<Business | null>(null)
   const [organizations, setOrganizations] = useState<{ [key: string]: string }>({})
   const [isLoading, setIsLoading] = useState(true)
+  const [businesses, setBusinesses] = useState<Business[]>(initialBusinesses)
 
   useEffect(() => {
     const fetchOrganizations = async () => {
@@ -102,9 +96,26 @@ export default function BusinessManagement({ businesses }: BusinessManagementPro
     setIsDeleteDialogOpen(true)
   }
 
+  const handleDeleteBusiness = async (businessId: string) => {
+    try {
+      await deleteBusiness(businessId)
+      // Update the UI to reflect the deletion
+      setBusinesses(businesses.filter(business => business.id_business !== businessId))
+      setCurrentBusiness(null)
+      setIsDeleteDialogOpen(false)
+    } catch (error) {
+      console.error('Failed to delete business:', error)
+    }
+  }
+
   const confirmDelete = () => {
-    // Handle delete logic here
-    setIsDeleteDialogOpen(false)
+    if (currentBusiness) {
+      handleDeleteBusiness(currentBusiness.id_business)
+    }
+  }
+
+  const handleBusinessCreated = (newBusiness: Business) => {
+    setBusinesses([...businesses, newBusiness])
   }
 
   if (isLoading) {
