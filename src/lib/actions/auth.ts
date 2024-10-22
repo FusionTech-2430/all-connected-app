@@ -30,6 +30,7 @@ export async function signIn(formData: FormData) {
 export async function signUp(formData: FormData) {
   const mail = formData.get('mail')
   const password = formData.get('password')
+  formData.append('roles', 'customer')
 
   console.log(formData)
 
@@ -43,8 +44,6 @@ export async function signUp(formData: FormData) {
   cookies().set('refresh-token', userCredential.user.refreshToken, {
     httpOnly: true
   })
-
-  formData.append('roles', 'customer')
 
   // TODO: In backend, the service is creating the user into firebase also
   // so the duplicate email error is thrown
