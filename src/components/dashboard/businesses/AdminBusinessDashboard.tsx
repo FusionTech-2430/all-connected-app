@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -46,77 +47,68 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { MoreHorizontal, Pencil, Trash2, X } from "lucide-react"
 import { Business } from '@/types/business'
+import { Organizations } from '@/types/organizations'
+import { getOrganizationById } from '@/lib/api/organizations'
 
-interface businessredimiento {
-  id: string
-  abbreviation: string
-  name: string
-  category: string
-  description: string
-}
-
-const truncateText = (text: string, maxLength: number) => {
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength) + '...';
-};
-
-interface businessredimientosManagementProps {
+interface BusinessManagementProps {
   businesses: Business[]
 }
 
-export default function businessredimientosManagement({ businesses }: businessredimientosManagementProps) {
-  const [businessredimientos, setbusinessredimientos] = useState<businessredimiento[]>([
-    { id: '1', abbreviation: 'PG', name: 'Pontioomitas', category: 'Category 1', description: 'Description 1' },
-    { id: '2', abbreviation: 'DP', name: 'Danicostres', category: 'Category 2', description: 'Description 2' },
-    { id: '3', abbreviation: 'PA', name: 'GolocinasPA1TO', category: 'Category 3', description: 'Description 3' },
-    { id: '4', abbreviation: 'PC', name: 'PromotoresCuerna', category: 'Category 4', description: 'Description 4' },
-    { id: '5', abbreviation: 'DC', name: 'DondeCris', category: 'Category 5', description: 'Description 5' },
-  ])
+export default function BusinessManagement({ businesses }: BusinessManagementProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [currentbusinessredimiento, setCurrentbusinessredimiento] = useState<businessredimiento | null>(null)
+  const [currentBusiness, setCurrentBusiness] = useState<Business | null>(null)
+  const [organizations, setOrganizations] = useState<{ [key: string]: string }>({})
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchOrganizations = async () => {
+      const orgs: { [key: string]: string } = {}
+      for (const business of businesses) {
+        if (business.organizations) {
+          for (const orgId of business.organizations) {
+            if (!orgs[orgId]) {
+              console.log(`Fetching organization with ID: ${orgId}`)
+              const organization = await getOrganizationById(orgId)
+              orgs[orgId] = organization.name
+            }
+          }
+        }
+      }
+      setOrganizations(orgs)
+      setIsLoading(false)
+    }
+    fetchOrganizations()
+  }, [businesses])
 
   const handleOpenDialog = (business: Business | null = null) => {
-    // setCurrentbusinessredimiento(business)
+    setCurrentBusiness(business)
     setIsDialogOpen(true)
   }
 
   const handleCloseDialog = () => {
-    setCurrentbusinessredimiento(null)
+    setCurrentBusiness(null)
     setIsDialogOpen(false)
   }
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const formData = new FormData(event.currentTarget)
-    const newbusinessredimiento: businessredimiento = {
-      id: currentbusinessredimiento?.id || String(businessredimientos.length + 1),
-      abbreviation: formData.get('name')?.toString().substring(0, 2).toUpperCase() || '',
-      name: formData.get('name')?.toString() || '',
-      category: formData.get('category')?.toString() || '',
-      description: formData.get('description')?.toString() || '',
-    }
-
-    if (currentbusinessredimiento) {
-      setbusinessredimientos(businessredimientos.map(business => business.id === currentbusinessredimiento.id ? newbusinessredimiento : business))
-    } else {
-      setbusinessredimientos([...businessredimientos, newbusinessredimiento])
-    }
-
+    // Handle form submission logic here
     handleCloseDialog()
   }
 
   const handleDelete = (business: Business) => {
-    // setCurrentbusinessredimiento(business)
+    setCurrentBusiness(business)
     setIsDeleteDialogOpen(true)
   }
 
   const confirmDelete = () => {
-    if (currentbusinessredimiento) {
-      setbusinessredimientos(businessredimientos.filter(business => business.id !== currentbusinessredimiento.id))
-      setCurrentbusinessredimiento(null)
-    }
+    // Handle delete logic here
     setIsDeleteDialogOpen(false)
+  }
+
+  if (isLoading) {
+    return <div>Loading...</div>
   }
 
   return (
@@ -125,8 +117,8 @@ export default function businessredimientosManagement({ businesses }: businessre
         <TableHeader>
           <TableRow>
             <TableHead>Nombre</TableHead>
-            <TableHead>Categoría</TableHead>
-            <TableHead>Descripción</TableHead>
+            <TableHead>Dueño</TableHead>
+            <TableHead>Organización</TableHead>
             <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -134,12 +126,22 @@ export default function businessredimientosManagement({ businesses }: businessre
           {businesses.map((business) => (
             <TableRow key={business.id_business}>
               <TableCell>
-                <div className="flex items-center">
-                  {business.name}
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 relative flex-shrink-0">
+                    <Image
+                      src={business.logo_url || "/placeholder.svg"}
+                      alt={`${business.name} logo`}
+                      layout="fill"
+                      objectFit="contain"
+                    />
+                  </div>
+                  <span>{business.name}</span>
                 </div>
               </TableCell>
               <TableCell>{business.owner_id}</TableCell>
-              <TableCell title={business.owner_id}>{truncateText(business.owner_id, 30)}</TableCell>
+              <TableCell>
+                {business.organizations?.map((orgId) => organizations[orgId] || orgId).join(', ')}
+              </TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -165,7 +167,7 @@ export default function businessredimientosManagement({ businesses }: businessre
         </TableBody>
       </Table>
       <div className="flex justify-between items-center mt-4">
-        <p className="text-sm text-gray-500">Total: {businessredimientos.length} emprendimientos.</p>
+        <p className="text-sm text-gray-500">Total: {businesses.length} emprendimientos.</p>
         <div className="flex gap-2">
           <Button variant="outline" size="sm">&lt;&lt;</Button>
           <Button variant="outline" size="sm">&lt;</Button>
@@ -178,38 +180,38 @@ export default function businessredimientosManagement({ businesses }: businessre
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="flex justify-between items-center">
-              {currentbusinessredimiento ? 'Editar businessredimiento' : 'Crea un nuevo businessredimiento'}
+              {currentBusiness ? 'Editar negocio' : 'Crear un nuevo negocio'}
               <Button variant="ghost" size="icon" onClick={handleCloseDialog}>
                 <X className="h-4 w-4" />
               </Button>
             </DialogTitle>
             <DialogDescription>
-              {currentbusinessredimiento ? 'Modifica la información del businessredimiento' : 'Llena el formulario con la información del businessredimiento'}
+              {currentBusiness ? 'Modifica la información del negocio' : 'Llena el formulario con la información del negocio'}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Nombre</Label>
-              <Input id="name" name="name" placeholder="Nombre del gasto" defaultValue={currentbusinessredimiento?.name} />
+              <Input id="name" name="name" placeholder="Nombre del negocio" defaultValue={currentBusiness?.name} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="category">Categoría</Label>
-              <Input id="category" name="category" placeholder="Nombre de la categoría" defaultValue={currentbusinessredimiento?.category} />
+              <Label htmlFor="owner">Dueño</Label>
+              <Input id="owner" name="owner" placeholder="ID del dueño" defaultValue={currentBusiness?.owner_id} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Descripción</Label>
-              <Textarea id="description" name="description" placeholder="Breve descripción del businessredimiento" defaultValue={currentbusinessredimiento?.description} />
+              <Label htmlFor="organization">Organización</Label>
+              <Input id="organization" name="organization" placeholder="Organización" defaultValue={currentBusiness?.organizations} />
             </div>
-            <Button type="submit" className="w-full">{currentbusinessredimiento ? 'Guardar cambios' : 'Crear businessredimiento'}</Button>
+            <Button type="submit" className="w-full">{currentBusiness ? 'Guardar cambios' : 'Crear negocio'}</Button>
           </form>
         </DialogContent>
       </Dialog>
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro de que quieres eliminar este businessredimiento?</AlertDialogTitle>
+            <AlertDialogTitle>¿Estás seguro de que quieres eliminar este empredimiento?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Esto eliminará permanentemente el businessredimiento y eliminará los datos de nuestros servidores.
+              Esta acción no se puede deshacer. Esto eliminará permanentemente el empredimiento y eliminará los datos de nuestros servidores.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

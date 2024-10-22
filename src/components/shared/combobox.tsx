@@ -1,11 +1,8 @@
 "use client"
 
 import { Check, ChevronsUpDown } from "lucide-react"
-
 import { cn } from "@/utils"
-
 import { Button } from "@/components/ui/button"
-
 import {
   Command,
   CommandEmpty,
@@ -14,13 +11,11 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command"
-
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-
 import { Key, useState } from "react"
 
 interface ComboboxProps {
@@ -28,16 +23,29 @@ interface ComboboxProps {
     key: Key
     value: string
     label: string
-  } []
+  }[]
   placeholder: string
   emptyMessage: string
+  onChange: (value: string | null) => void
+  required?: boolean
 }
 
-export function Combobox(
-  { items, placeholder, emptyMessage }: ComboboxProps
-) {
+export function Combobox({
+  items,
+  placeholder,
+  emptyMessage,
+  onChange,
+  required,
+}: ComboboxProps) {
   const [open, setOpen] = useState(false)
   const [value, setValue] = useState("")
+
+  const handleSelect = (currentValue: string) => {
+    const newValue = currentValue === value ? "" : currentValue
+    setValue(newValue)
+    onChange(newValue || null)
+    setOpen(false)
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -64,10 +72,7 @@ export function Combobox(
                 <CommandItem
                   key={item.value}
                   value={item.value}
-                  onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue)
-                    setOpen(false)
-                  }}
+                  onSelect={handleSelect}
                 >
                   <Check
                     className={cn(
