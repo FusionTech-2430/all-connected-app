@@ -52,6 +52,10 @@ export default function UserAvatar() {
     router.push('/use-token')
   }
 
+  const handlePedidos = () => {
+    router.push('/my-orders')
+  }
+
   const userName = user?.fullname || ''
   const photoUrl = user?.photo_url || ''
 
@@ -75,6 +79,7 @@ export default function UserAvatar() {
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleSettings}>Ajustes</DropdownMenuItem>
           <DropdownMenuItem onClick={handleToken}>Usar Token</DropdownMenuItem>
+          <DropdownMenuItem onClick={handlePedidos}>Mis Pedidos</DropdownMenuItem>
           <DropdownMenuItem>Soporte</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogOut}>Logout</DropdownMenuItem>
