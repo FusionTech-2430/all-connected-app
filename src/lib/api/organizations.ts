@@ -1,6 +1,6 @@
 'use server'
 
-import { Organizations, CreateOrganizationData } from "@/types/organizations";
+import { Organizations } from "@/types/organizations";
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/organizations-service/api/v1`;
 
