@@ -1,9 +1,9 @@
+// components/dashboard/businesses/AdminBusinessDashboard.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -15,37 +15,29 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
-import { MoreHorizontal, Pencil, Trash2, X } from 'lucide-react'
+import { MoreHorizontal } from 'lucide-react'
 import { Business } from '@/types/business'
 import { getOrganizationById } from '@/lib/api/organizations'
 import { DeleteButton } from '@/components/business/delete-business-button'
 import { EditButton } from '@/components/business/edit-business-button'
 
-interface BusinessManagementProps {
+interface AdminBusinessDashboardProps {
   businesses: Business[]
+  onBusinessUpdated: (updatedBusiness: Business) => void
+  onBusinessDeleted: (businessId: string) => void
 }
 
-export default function BusinessManagement({
-  businesses: initialBusinesses
-}: BusinessManagementProps) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [currentBusiness, setCurrentBusiness] = useState<Business | null>(null)
+export default function AdminBusinessDashboard({
+  businesses,
+  onBusinessUpdated,
+  onBusinessDeleted
+}: AdminBusinessDashboardProps) {
   const [organizations, setOrganizations] = useState<{ [key: string]: string }>(
     {}
   )
   const [isLoading, setIsLoading] = useState(true)
-  const [businesses, setBusinesses] = useState<Business[]>(initialBusinesses)
 
   useEffect(() => {
     const fetchOrganizations = async () => {
@@ -66,28 +58,12 @@ export default function BusinessManagement({
     fetchOrganizations()
   }, [businesses])
 
-  const handleOpenDialog = (business: Business | null = null) => {
-    setCurrentBusiness(business)
-    setIsDialogOpen(true)
-  }
-
-  const handleCloseDialog = () => {
-    setCurrentBusiness(null)
-    setIsDialogOpen(false)
-  }
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    // Handle form submission logic here
-    handleCloseDialog()
-  }
-
   if (isLoading) {
     return <div>Loading...</div>
   }
 
   return (
-    <>
+    <div className="container mx-auto p-4">
       <Table>
         <TableHeader>
           <TableRow>
@@ -130,25 +106,11 @@ export default function BusinessManagement({
                   <DropdownMenuContent align="end">
                     <EditButton
                       business={business}
-                      onEditSuccess={(updatedBusiness) => {
-                        setBusinesses(
-                          businesses.map((b) =>
-                            b.id_business === updatedBusiness.id_business
-                              ? updatedBusiness
-                              : b
-                          )
-                        )
-                      }}
+                      onEditSuccess={onBusinessUpdated}
                     />
                     <DeleteButton
                       business={business}
-                      onDeleteSuccess={(businessId) => {
-                        setBusinesses(
-                          businesses.filter(
-                            (business) => business.id_business !== businessId
-                          )
-                        )
-                      }}
+                      onDeleteSuccess={onBusinessDeleted}
                     />
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -177,55 +139,6 @@ export default function BusinessManagement({
           </Button>
         </div>
       </div>
-      <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="flex justify-between items-center">
-              {currentBusiness ? 'Editar negocio' : 'Crear un nuevo negocio'}
-              <Button variant="ghost" size="icon" onClick={handleCloseDialog}>
-                <X className="h-4 w-4" />
-              </Button>
-            </DialogTitle>
-            <DialogDescription>
-              {currentBusiness
-                ? 'Modifica la información del negocio'
-                : 'Llena el formulario con la información del negocio'}
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nombre</Label>
-              <Input
-                id="name"
-                name="name"
-                placeholder="Nombre del negocio"
-                defaultValue={currentBusiness?.name}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="owner">Dueño</Label>
-              <Input
-                id="owner"
-                name="owner"
-                placeholder="ID del dueño"
-                defaultValue={currentBusiness?.owner_id}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="organization">Organización</Label>
-              <Input
-                id="organization"
-                name="organization"
-                placeholder="Organización"
-                defaultValue={currentBusiness?.organizations}
-              />
-            </div>
-            <Button type="submit" className="w-full">
-              {currentBusiness ? 'Guardar cambios' : 'Crear negocio'}
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </>
+    </div>
   )
 }
