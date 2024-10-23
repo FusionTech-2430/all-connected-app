@@ -5,7 +5,6 @@ import {
   logOut,
   signUp as firebaseSignUp
 } from '@/lib/firebase/auth'
-import { createUser } from '@/lib/actions/users'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 

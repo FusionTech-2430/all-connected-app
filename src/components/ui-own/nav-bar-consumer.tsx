@@ -1,5 +1,3 @@
-'use client';
-
 import Image from 'next/image';
 import { Bell } from 'lucide-react';
 import Link from 'next/link';
