@@ -27,6 +27,7 @@ interface ComboboxProps {
   placeholder: string
   emptyMessage: string
   onChange: (value: string | null) => void
+  defaultValue?: string
   required?: boolean
 }
 
@@ -35,10 +36,11 @@ export function Combobox({
   placeholder,
   emptyMessage,
   onChange,
+  defaultValue = "",
   required,
 }: ComboboxProps) {
   const [open, setOpen] = useState(false)
-  const [value, setValue] = useState("")
+  const [value, setValue] = useState(defaultValue)
 
   const handleSelect = (currentValue: string) => {
     const newValue = currentValue === value ? "" : currentValue
@@ -78,7 +80,7 @@ export function Combobox({
                     className={cn(
                       "mr-2 h-4 w-4",
                       value === item.value ? "opacity-100" : "opacity-0"
-                    )}
+                    )} 
                   />
                   {item.label}
                 </CommandItem>
