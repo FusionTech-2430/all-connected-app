@@ -41,7 +41,7 @@ import { MoreHorizontal, Pencil, Trash2, X } from "lucide-react"
 import { Business } from '@/types/business'
 import { getOrganizationById } from '@/lib/api/organizations'
 import { deleteBusiness } from '@/lib/api/business'
-import { CreateBusinessButton } from '@/components/business/create-business-button'
+import { DeleteButton } from '@/components/business/delete-business-button'
 
 interface BusinessManagementProps {
   businesses: Business[]
@@ -49,7 +49,6 @@ interface BusinessManagementProps {
 
 export default function BusinessManagement({ businesses: initialBusinesses }: BusinessManagementProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [currentBusiness, setCurrentBusiness] = useState<Business | null>(null)
   const [organizations, setOrganizations] = useState<{ [key: string]: string }>({})
   const [isLoading, setIsLoading] = useState(true)
@@ -62,7 +61,6 @@ export default function BusinessManagement({ businesses: initialBusinesses }: Bu
         if (business.organizations) {
           for (const orgId of business.organizations) {
             if (!orgs[orgId]) {
-              console.log(`Fetching organization with ID: ${orgId}`)
               const organization = await getOrganizationById(orgId)
               orgs[orgId] = organization.name
             }
@@ -93,7 +91,7 @@ export default function BusinessManagement({ businesses: initialBusinesses }: Bu
 
   const handleDelete = (business: Business) => {
     setCurrentBusiness(business)
-    setIsDeleteDialogOpen(true)
+
   }
 
   const handleDeleteBusiness = async (businessId: string) => {
@@ -102,7 +100,7 @@ export default function BusinessManagement({ businesses: initialBusinesses }: Bu
       // Update the UI to reflect the deletion
       setBusinesses(businesses.filter(business => business.id_business !== businessId))
       setCurrentBusiness(null)
-      setIsDeleteDialogOpen(false)
+
     } catch (error) {
       console.error('Failed to delete business:', error)
     }
@@ -162,15 +160,17 @@ export default function BusinessManagement({ businesses: initialBusinesses }: Bu
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem className="flex items-center cursor-pointer" onClick={() => handleOpenDialog(business)}>
-                      <Pencil className="mr-2 h-4 w-4 text-yellow-500" />
-                      Modificar
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="flex items-center cursor-pointer" onClick={() => handleDelete(business)}>
-                      <Trash2 className="mr-2 h-4 w-4 text-red-500" /> 
-                      Eliminar
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
+  <DropdownMenuItem className="flex items-center cursor-pointer" onClick={() => handleOpenDialog(business)}>
+    <Pencil className="mr-2 h-4 w-4 text-yellow-500" />
+    Modificar
+  </DropdownMenuItem>
+  <DeleteButton 
+    business={business}
+    onDeleteSuccess={(businessId) => {
+      setBusinesses(businesses.filter(business => business.id_business !== businessId))
+    }}
+  />
+</DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>
             </TableRow>
@@ -217,20 +217,7 @@ export default function BusinessManagement({ businesses: initialBusinesses }: Bu
           </form>
         </DialogContent>
       </Dialog>
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro de que quieres eliminar este empredimiento?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción no se puede deshacer. Esto eliminará permanentemente el empredimiento y eliminará los datos de nuestros servidores.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Eliminar</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+
     </>
   )
 }
