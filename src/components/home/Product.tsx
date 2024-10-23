@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { CheckCircle, ArrowLeft, Minus, Plus } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { CheckCircle, ArrowLeft, Minus, Plus, Star, Loader2 } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,6 +19,7 @@ interface Product {
   price: number
   status: string
   labels: string[]
+  rating?: number
 }
 
 interface Business {
@@ -31,36 +33,66 @@ interface User {
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
 
 export default function ProductPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const productId = searchParams.get('id')
+
   const [product, setProduct] = useState<Product | null>(null)
   const [business, setBusiness] = useState<Business | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [quantity, setQuantity] = useState(1)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const response = await fetch(`${API_URL}/products-service/api/v1/products/1`)
-        const data = await response.json()
-        setProduct(data)
-
-        const businessResponse = await fetch(`${API_URL}/businesses-service/api/v1/businesses/${data.idBusiness}`)
-        const businessData = await businessResponse.json()
-        setBusiness(businessData)
-      } catch (error) {
-        console.error('Error fetching product:', error)
-      }
+    if (productId) {
+      fetchProduct(parseInt(productId))
     }
-
-    fetchProduct()
 
     // Fetch user data from sessionStorage
     const storedUser = sessionStorage.getItem('user')
     if (storedUser) {
       setUser(JSON.parse(storedUser))
     }
-  }, [])
+  }, [productId])
+
+  const fetchProduct = async (id: number) => {
+    try {
+      const response = await fetch(`${API_URL}/products-service/api/v1/products/${id}`)
+      if (!response.ok) {
+        throw new Error('Failed to fetch product')
+      }
+      const data = await response.json()
+      setProduct(data)
+
+      const businessResponse = await fetch(`${API_URL}/businesses-service/api/v1/businesses/${data.idBusiness}`)
+      if (!businessResponse.ok) {
+        throw new Error('Failed to fetch business')
+      }
+      const businessData = await businessResponse.json()
+      setBusiness(businessData)
+
+      const ratingResponse = await fetch(`${API_URL}/products-service/api/v1/products/rating/${id}/average`)
+      if (ratingResponse.ok) {
+        const ratingData = await ratingResponse.json()
+        if (ratingData.code === 200 && ratingData.message) {
+          const ratingMatch = ratingData.message.match(/(\d+(\.\d+)?)/)
+          if (ratingMatch) {
+            setProduct(prev => ({ ...prev!, rating: parseFloat(ratingMatch[1]) }))
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching product:', error)
+      toast({
+        title: "Error",
+        description: "No se pudo cargar el producto",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleQuantityChange = (amount: number) => {
     setQuantity(prev => Math.max(1, Math.min(prev + amount, product?.stock || 1)))
@@ -127,7 +159,28 @@ export default function ProductPage() {
     }
   }
 
-  if (!product || !business) return <div>Loading...</div>
+  const renderStars = (rating: number) => {
+    return (
+      <div className="flex">
+        {[...Array(5)].map((_, index) => (
+          <Star
+            key={index}
+            className={`w-5 h-5 ${index < Math.round(rating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+          />
+        ))}
+      </div>
+    )
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    )
+  }
+
+  if (!product || !business) return <div>Producto no encontrado</div>
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -136,10 +189,11 @@ export default function ProductPage() {
       </header>
 
       <main className="flex-grow bg-white p-4 max-w-4xl mx-auto w-full">
-        <a href="#" className="text-blue-500 mb-6 inline-flex items-center">
+        <button onClick={() => router.back()} className="text-blue-500 mb-6 inline-flex items-center">
           <ArrowLeft className="mr-2" size={16} />
+
           Vuelve a todos los productos
-        </a>
+        </button>
 
         <div className="flex flex-col md:flex-row gap-8">
           <div className="md:w-1/2">
@@ -150,13 +204,12 @@ export default function ProductPage() {
             <p className="text-gray-500 mb-1 text-sm">{business.name}</p>
             <h2 className="text-2xl font-bold mb-2 text-[#0c4a6e]">{product.name}</h2>
 
-            <div className="flex items-center mb-4">
-              {[1, 2, 3, 4, 4.5].map((star, index) => (
-                <svg key={index} className={`w-5 h-5 ${star > 4 ? 'fill-gray-300' : 'fill-yellow-400'}`} viewBox="0 0 24 24">
-                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                </svg>
-              ))}
-            </div>
+            {product.rating && (
+              <div className="flex items-center mb-4">
+                {renderStars(product.rating)}
+                <span className="ml-2 text-sm text-gray-600">({product.rating.toFixed(1)})</span>
+              </div>
+            )}
 
             <p className="text-gray-700 mb-4">{product.description}</p>
 

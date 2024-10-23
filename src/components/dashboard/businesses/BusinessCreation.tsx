@@ -16,6 +16,10 @@ interface Organization {
   name: string
 }
 
+interface User {
+  id_user: string
+}
+
 const BusinessCreation = () => {
   const router = useRouter()
   const [name, setName] = useState('')
@@ -24,9 +28,14 @@ const BusinessCreation = () => {
   const [file, setFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
     fetchOrganizations()
+    const storedUser = sessionStorage.getItem('user')
+    if (storedUser) {
+      setUser(JSON.parse(storedUser))
+    }
   }, [])
 
   const fetchOrganizations = async () => {
@@ -63,10 +72,20 @@ const BusinessCreation = () => {
     event.preventDefault()
     setIsLoading(true)
 
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "Usuario no autenticado",
+        variant: "destructive",
+      })
+      setIsLoading(false)
+      return
+    }
+
     try {
       const formData = new FormData()
       formData.append('name', name)
-      formData.append('owner_id', getUserId())
+      formData.append('owner_id', user.id_user)
       formData.append('organization', selectedOrganization)
       if (file) {
         formData.append('logo_url', file)
@@ -96,17 +115,6 @@ const BusinessCreation = () => {
     } finally {
       setIsLoading(false)
     }
-  }
-
-  const getUserId = () => {
-    if (typeof window !== 'undefined') {
-      const storedUser = sessionStorage.getItem('user')
-      if (storedUser) {
-        const parsedUser = JSON.parse(storedUser)
-        return parsedUser.id_user
-      }
-    }
-    return ''
   }
 
   return (

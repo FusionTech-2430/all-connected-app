@@ -21,7 +21,7 @@ export default function HomeContent() {
             </p>
           </CardContent>
           <CardFooter>
-            <Link href="/landing" passHref>
+            <Link href="/consumer" passHref>
               <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                 Ir a Landing Page
               </Button>

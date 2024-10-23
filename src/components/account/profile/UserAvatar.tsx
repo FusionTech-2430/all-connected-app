@@ -71,6 +71,11 @@ export default async function UserAvatar() {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
+            <Link className="w-full" href="/my-orders">
+              Mis Pedidos
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
             <Link className="w-full" href="/use-token">
               Usar Token
             </Link>

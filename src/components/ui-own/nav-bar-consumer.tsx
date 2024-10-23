@@ -22,10 +22,10 @@ const NavBar = () => {
           {/* Links de navegación */}
           <div className="hidden sm:flex sm:space-x-8">
           <Link
-              href="/comprar"
+              href="/home"
               className="text-gray-500 inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 hover:text-[#0C4A6E] hover:border-[#0C4A6E]"
             >
-              Comprar
+              Home
             </Link>
             <Link
               href="/tiquetera"

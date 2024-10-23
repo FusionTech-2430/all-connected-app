@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -18,34 +19,70 @@ interface Business {
   logo_url: string | null
 }
 
+interface User {
+  id_user: string
+}
+
 export default function BusinessList() {
-  const [businesses, setBusinesses] = useState<Business[]>([])
+  const router = useRouter()
+  const [ownedBusinesses, setOwnedBusinesses] = useState<Business[]>([])
+  const [memberBusinesses, setMemberBusinesses] = useState<Business[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
-    fetchBusinesses()
-  }, [])
+    const storedUser = sessionStorage.getItem('user')
+    if (storedUser) {
+      setUser(JSON.parse(storedUser))
+    } else {
+      router.push('/login')
+    }
+  }, [router])
+
+  useEffect(() => {
+    if (user) {
+      fetchBusinesses()
+    }
+  }, [user])
 
   const fetchBusinesses = async () => {
+    if (!user) return
+
+    setIsLoading(true)
+    setError(null)
+
     try {
-      const response = await fetch(`${API_URL}/businesses-service/api/v1/businesses`)
-      if (!response.ok) {
+      const [ownedResponse, memberResponse] = await Promise.all([
+        fetch(`${API_URL}/businesses-service/api/v1/businesses/owner/${user.id_user}`),
+        fetch(`${API_URL}/businesses-service/api/v1/businesses/member/${user.id_user}`)
+      ])
+
+      if (!ownedResponse.ok || !memberResponse.ok) {
         throw new Error('Failed to fetch businesses')
       }
-      const data = await response.json()
-      setBusinesses(data)
-      setIsLoading(false)
+
+      const ownedData = await ownedResponse.json()
+      const memberData = await memberResponse.json()
+
+      setOwnedBusinesses(ownedData)
+      setMemberBusinesses(memberData)
     } catch (err) {
       console.error('Error fetching businesses:', err)
       setError('Error al cargar los emprendimientos')
-      setIsLoading(false)
       toast({
         title: "Error",
         description: "No se pudieron cargar los emprendimientos",
         variant: "destructive",
       })
+    } finally {
+      setIsLoading(false)
     }
+  }
+
+  const handleViewDashboard = (businessId: string) => {
+    sessionStorage.setItem('currentBusinessId', businessId)
+    router.push('/my-business')
   }
 
   if (isLoading) {
@@ -73,31 +110,63 @@ export default function BusinessList() {
           <Button>Crear Emprendimiento</Button>
         </Link>
       </div>
-      {businesses.length === 0 ? (
-        <p className="text-center text-gray-500">No tienes emprendimientos registrados.</p>
+
+      <h2 className="text-2xl font-semibold mb-4">Emprendimientos propios</h2>
+      {ownedBusinesses.length === 0 ? (
+        <p className="text-center text-gray-500">No tienes emprendimientos propios registrados.</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {ownedBusinesses.map((business) => (
+            <Card key={business.id_business} className="hover:shadow-lg transition-shadow duration-300">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-4">
+                  <Avatar className="w-12 h-12">
+                    <AvatarImage src={business.logo_url || undefined} alt={business.name} />
+                    <AvatarFallback>{business.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <span>{business.name}</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-500">ID: {business.id_business}</p>
+                <p className="text-sm text-gray-500">Organizaciones: {business.organizations.length}</p>
+              </CardContent>
+              <CardFooter>
+                <Button className="w-full" onClick={() => handleViewDashboard(business.id_business)}>
+                  Ver dashboard
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      <h2 className="text-2xl font-semibold mb-4">Emprendimientos como miembro</h2>
+      {memberBusinesses.length === 0 ? (
+        <p className="text-center text-gray-500">No eres miembro de ningún emprendimiento.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {businesses.map((business) => (
-            <Link href={`/my-business`} key={business.id_business} className="block">
-              <Card className="hover:shadow-lg transition-shadow duration-300">
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-4">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={business.logo_url || undefined} alt={business.name} />
-                      <AvatarFallback>{business.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <span>{business.name}</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-500">ID: {business.id_business}</p>
-                  <p className="text-sm text-gray-500">Organizaciones: {business.organizations.length}</p>
-                </CardContent>
-                <CardFooter>
-                  <p className="text-sm text-blue-600">Ver dashboard →</p>
-                </CardFooter>
-              </Card>
-            </Link>
+          {memberBusinesses.map((business) => (
+            <Card key={business.id_business} className="hover:shadow-lg transition-shadow duration-300">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-4">
+                  <Avatar className="w-12 h-12">
+                    <AvatarImage src={business.logo_url || undefined} alt={business.name} />
+                    <AvatarFallback>{business.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <span>{business.name}</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-500">ID: {business.id_business}</p>
+                <p className="text-sm text-gray-500">Organizaciones: {business.organizations.length}</p>
+              </CardContent>
+              <CardFooter>
+                <Button className="w-full" onClick={() => handleViewDashboard(business.id_business)}>
+                  Ver dashboard
+                </Button>
+              </CardFooter>
+            </Card>
           ))}
         </div>
       )}
