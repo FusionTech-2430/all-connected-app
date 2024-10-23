@@ -1,12 +1,18 @@
-'use client';
+'use client'
 
-import { useState, useRef, useEffect } from 'react';
-import { Send, Paperclip, ArrowLeft, File, X } from 'lucide-react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import Image from 'next/image';
-import { loadChatName, loadMessages, sendMessage, uploadFileAndSendMessage } from '@/services/chatService';
-import { Message } from '@/types/chat/Message';
+import { useState, useRef, useEffect } from 'react'
+import { Send, Paperclip, ArrowLeft, File, X } from 'lucide-react'
+import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
+import Image from 'next/image'
+import {
+  loadChatName,
+  loadMessages,
+  sendMessage,
+  uploadFileAndSendMessage
+} from '@/services/chatService'
+import { Message } from '@/types/chat/Message'
+import { useUserId } from '@/hooks/use-user-id'
 
 // Modal Component Definition
 function Modal({
@@ -14,11 +20,11 @@ function Modal({
   onClose,
   children
 }: {
-  isOpen: boolean;
-  onClose: () => void;
-  children: React.ReactNode;
+  isOpen: boolean
+  onClose: () => void
+  children: React.ReactNode
 }) {
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
@@ -35,47 +41,47 @@ function Modal({
         {children}
       </div>
     </div>
-  );
+  )
 }
 
 export default function ChatInterface() {
-  const searchParams = useSearchParams();
-  const id = searchParams.get('id');
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [inputMessage, setInputMessage] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [modalImage, setModalImage] = useState<string | null>(null);
-  const [chatName, setChatName] = useState('Cliente All Connected');
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const searchParams = useSearchParams()
+  const id = searchParams.get('id')
+  const [messages, setMessages] = useState<Message[]>([])
+  const [inputMessage, setInputMessage] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [modalImage, setModalImage] = useState<string | null>(null)
+  const [chatName, setChatName] = useState('Cliente All Connected')
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+
+  const userId = useUserId()
 
   useEffect(() => {
-    const id_user = sessionStorage.getItem('id-user');
-    setCurrentUserId(id_user);
-  }, []);
+    setCurrentUserId(userId)
+  }, [])
 
   useEffect(() => {
     if (id) {
-      loadChatName(id, setChatName);
-      loadMessages(id, setMessages);
+      loadChatName(id, setChatName)
+      loadMessages(id, setMessages)
     }
-  }, [id]);
+  }, [id])
 
   const handleSendMessage = () => {
-    const id_user = sessionStorage.getItem('id-user');
-    if (id && id_user) {
-      sendMessage(id, inputMessage, id_user);
-      setInputMessage('');
+    if (id && userId) {
+      sendMessage(id, inputMessage, userId)
+      setInputMessage('')
     }
-  };
+  }
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    const id_user = sessionStorage.getItem('id-user'); // Obtener el ID del usuario actual
-    if (file && id && id_user) {
-      uploadFileAndSendMessage(id, file, id_user, (error: string) => console.error(error));
+    const file = event.target.files?.[0]
+    if (file && id && userId) {
+      uploadFileAndSendMessage(id, file, userId, (error: string) =>
+        console.error(error)
+      )
     }
-  };
-  
+  }
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-gray-100 dark:bg-gray-900">
@@ -158,7 +164,7 @@ export default function ChatInterface() {
               className="flex-1 border rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
               onKeyPress={(e) => {
                 if (e.key === 'Enter') {
-                  handleSendMessage();
+                  handleSendMessage()
                 }
               }}
             />
@@ -196,5 +202,5 @@ export default function ChatInterface() {
         )}
       </Modal>
     </div>
-  );
+  )
 }

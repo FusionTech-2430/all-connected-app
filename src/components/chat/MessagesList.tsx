@@ -5,30 +5,29 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { fetchUserChats } from '@/services/chatService'
 import { Chat } from '@/types/chat/Message'
+import { useUserId } from '@/hooks/use-user-id'
 
 const MessagesList = () => {
-  const [messages, setMessages] = useState<Chat[]>([]);
-  const router = useRouter();
+  const [messages, setMessages] = useState<Chat[]>([])
+  const router = useRouter()
+
+  const userId = useUserId()
 
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        if (typeof window !== 'undefined') {
-          const id_user = sessionStorage.getItem('id-user');
-          if (!id_user) {
-            router.push('/');
-            return;
-          }
-
-          // Obtener los chats del usuario
-          fetchUserChats(id_user, setMessages);
+        if (!userId) {
+          router.push('/')
+          return
         }
+
+        fetchUserChats(userId, setMessages)
       } catch (error) {
-        console.error('Error getting chats:', error);
+        console.error('Error getting chats:', error)
       }
-    };
-    fetchMessages();
-  }, [router]);
+    }
+    fetchMessages()
+  }, [router])
 
   return (
     <section className="flex flex-col">
@@ -44,8 +43,12 @@ const MessagesList = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700">
-                  <th className="text-left py-2 text-gray-600 dark:text-gray-300">Cliente</th>
-                  <th className="text-left py-2 text-gray-600 dark:text-gray-300">Fecha</th>
+                  <th className="text-left py-2 text-gray-600 dark:text-gray-300">
+                    Cliente
+                  </th>
+                  <th className="text-left py-2 text-gray-600 dark:text-gray-300">
+                    Fecha
+                  </th>
                   <th className="py-2">
                     <span className="sr-only">Acciones</span>
                   </th>
@@ -53,13 +56,25 @@ const MessagesList = () => {
               </thead>
               <tbody>
                 {messages.map((message) => (
-                  <tr key={message.id} className="border-b border-gray-200 dark:border-gray-700">
-                    <td className="py-2 text-gray-900 dark:text-white">{message.name}</td>
-                    <td className="py-2 text-gray-900 dark:text-white">{message.date}</td>
+                  <tr
+                    key={message.id}
+                    className="border-b border-gray-200 dark:border-gray-700"
+                  >
+                    <td className="py-2 text-gray-900 dark:text-white">
+                      {message.name}
+                    </td>
+                    <td className="py-2 text-gray-900 dark:text-white">
+                      {message.date}
+                    </td>
                     <td className="py-2 text-right">
-                      <Link href={`/chat?id=${message.id}`} className="inline-block text-blue-500 hover:text-blue-600 transition-colors">
+                      <Link
+                        href={`/chat?id=${message.id}`}
+                        className="inline-block text-blue-500 hover:text-blue-600 transition-colors"
+                      >
                         <Send className="h-5 w-5" />
-                        <span className="sr-only">Ver mensaje de {message.name}</span>
+                        <span className="sr-only">
+                          Ver mensaje de {message.name}
+                        </span>
                       </Link>
                     </td>
                   </tr>
@@ -70,7 +85,7 @@ const MessagesList = () => {
         </div>
       </div>
     </section>
-  );
-};
+  )
+}
 
-export default MessagesList;
+export default MessagesList

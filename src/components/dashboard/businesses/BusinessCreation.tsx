@@ -6,8 +6,15 @@ import Image from 'next/image'
 import NavBar from '@/components/ui-own/NavBar'
 import Footer from '@/components/layout/FooterApp'
 import { Upload } from 'lucide-react'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { toast } from "@/components/ui/use-toast"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
+import { toast } from '@/components/ui/use-toast'
+import { useUserId } from '@/hooks/use-user-id'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
 
@@ -15,6 +22,7 @@ interface Organization {
   id_organization: string
   name: string
 }
+
 
 const BusinessCreation = () => {
   const router = useRouter()
@@ -25,13 +33,17 @@ const BusinessCreation = () => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
+  const userId = useUserId()
+
   useEffect(() => {
     fetchOrganizations()
   }, [])
 
   const fetchOrganizations = async () => {
     try {
-      const response = await fetch(`${API_URL}/organizations-service/api/v1/organizations`)
+      const response = await fetch(
+        `${API_URL}/organizations-service/api/v1/organizations`
+      )
       if (!response.ok) {
         throw new Error('Failed to fetch organizations')
       }
@@ -40,9 +52,9 @@ const BusinessCreation = () => {
     } catch (error) {
       console.error('Error fetching organizations:', error)
       toast({
-        title: "Error",
-        description: "No se pudieron cargar las organizaciones",
-        variant: "destructive",
+        title: 'Error',
+        description: 'No se pudieron cargar las organizaciones',
+        variant: 'destructive'
       })
     }
   }
@@ -63,50 +75,52 @@ const BusinessCreation = () => {
     event.preventDefault()
     setIsLoading(true)
 
+    if (!userId) {
+      toast({
+        title: 'Error',
+        description: 'Usuario no autenticado',
+        variant: 'destructive'
+      })
+      setIsLoading(false)
+      return
+    }
+
     try {
       const formData = new FormData()
       formData.append('name', name)
-      formData.append('owner_id', getUserId())
+      formData.append('owner_id', userId)
       formData.append('organization', selectedOrganization)
       if (file) {
         formData.append('logo_url', file)
       }
 
-      const response = await fetch(`${API_URL}/businesses-service/api/v1/businesses`, {
-        method: 'POST',
-        body: formData,
-      })
+      const response = await fetch(
+        `${API_URL}/businesses-service/api/v1/businesses`,
+        {
+          method: 'POST',
+          body: formData
+        }
+      )
 
       if (!response.ok) {
         throw new Error('Failed to create business')
       }
 
       toast({
-        title: "Éxito",
-        description: "Emprendimiento creado correctamente",
+        title: 'Éxito',
+        description: 'Emprendimiento creado correctamente'
       })
       router.push('/businesses')
     } catch (error) {
       console.error('Error creating business:', error)
       toast({
-        title: "Error",
-        description: "Error al crear el emprendimiento",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Error al crear el emprendimiento',
+        variant: 'destructive'
       })
     } finally {
       setIsLoading(false)
     }
-  }
-
-  const getUserId = () => {
-    if (typeof window !== 'undefined') {
-      const storedUser = sessionStorage.getItem('user')
-      if (storedUser) {
-        const parsedUser = JSON.parse(storedUser)
-        return parsedUser.id_user
-      }
-    }
-    return ''
   }
 
   return (
@@ -158,7 +172,10 @@ const BusinessCreation = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {organizations.map((org) => (
-                    <SelectItem key={org.id_organization} value={org.id_organization}>
+                    <SelectItem
+                      key={org.id_organization}
+                      value={org.id_organization}
+                    >
                       {org.name}
                     </SelectItem>
                   ))}
@@ -187,7 +204,11 @@ const BusinessCreation = () => {
                   htmlFor="file-upload"
                   className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
                 >
-                  <span>{previewUrl ? 'Cambiar logo' : 'Subir foto o logo de la empresa'}</span>
+                  <span>
+                    {previewUrl
+                      ? 'Cambiar logo'
+                      : 'Subir foto o logo de la empresa'}
+                  </span>
                   <input
                     id="file-upload"
                     name="file-upload"

@@ -9,19 +9,26 @@ import {
   TableHead,
   TableHeader,
   TableRow
-} from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+} from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
-} from "@/components/ui/select"
-import { toast } from "@/components/ui/use-toast"
+} from '@/components/ui/select'
+import { toast } from '@/components/ui/use-toast'
 import { Loader2, ArrowUpDown } from 'lucide-react'
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
+import { useUserId } from '@/hooks/use-user-id'
 
 interface Order {
   id: string
@@ -32,10 +39,6 @@ interface Order {
   products: Record<string, number>
 }
 
-interface User {
-  id_user: string
-}
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
 
 export default function MyOrders() {
@@ -44,41 +47,40 @@ export default function MyOrders() {
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [user, setUser] = useState<User | null>(null)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [sortField, setSortField] = useState<keyof Order>("creationDate")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [sortField, setSortField] = useState<keyof Order>('creationDate')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
 
-  useEffect(() => {
-    const storedUser = sessionStorage.getItem('user')
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
-    } else {
-      router.push('/login')
-    }
-  }, [router])
+  const userId = useUserId()
+
+  if (!userId) {
+    router.push('/')
+  }
+
 
   useEffect(() => {
-    if (user) {
+    if (userId) {
       fetchOrders()
     }
-  }, [user])
+  }, [userId])
 
   useEffect(() => {
     filterAndSortOrders()
   }, [orders, searchTerm, statusFilter, sortField, sortOrder])
 
   const fetchOrders = async () => {
-    if (!user) return
+    if (!userId) return
 
     setIsLoading(true)
     setError(null)
 
     try {
-      const response = await fetch(`${API_URL}/orders-service/api/v1/orders/${user.id_user}/user`)
+      const response = await fetch(
+        `${API_URL}/orders-service/api/v1/orders/${userId}/user`
+      )
       if (!response.ok) {
         throw new Error('Failed to fetch orders')
       }
@@ -87,9 +89,9 @@ export default function MyOrders() {
     } catch (err) {
       setError('Error al cargar las órdenes')
       toast({
-        title: "Error",
-        description: "No se pudieron cargar las órdenes",
-        variant: "destructive",
+        title: 'Error',
+        description: 'No se pudieron cargar las órdenes',
+        variant: 'destructive'
       })
     } finally {
       setIsLoading(false)
@@ -101,26 +103,26 @@ export default function MyOrders() {
 
     // Filter by search term
     if (searchTerm) {
-      result = result.filter(order =>
-        Object.keys(order.products).some(productName =>
+      result = result.filter((order) =>
+        Object.keys(order.products).some((productName) =>
           productName.toLowerCase().includes(searchTerm.toLowerCase())
         )
       )
     }
 
     // Filter by status
-    if (statusFilter !== "all") {
-      result = result.filter(order => order.status === statusFilter)
+    if (statusFilter !== 'all') {
+      result = result.filter((order) => order.status === statusFilter)
     }
 
     // Sort
     result.sort((a, b) => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
-      if (a[sortField] < b[sortField]) return sortOrder === "asc" ? -1 : 1
+      if (a[sortField] < b[sortField]) return sortOrder === 'asc' ? -1 : 1
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
-      if (a[sortField] > b[sortField]) return sortOrder === "asc" ? 1 : -1
+      if (a[sortField] > b[sortField]) return sortOrder === 'asc' ? 1 : -1
       return 0
     })
 
@@ -128,7 +130,7 @@ export default function MyOrders() {
   }
 
   const handleSort = (field: keyof Order) => {
-    setSortOrder(current => current === "asc" ? "desc" : "asc")
+    setSortOrder((current) => (current === 'asc' ? 'desc' : 'asc'))
     setSortField(field)
   }
 
@@ -141,29 +143,36 @@ export default function MyOrders() {
     if (!selectedOrderId) return
 
     try {
-      const response = await fetch(`${API_URL}/orders-service/api/v1/orders/${selectedOrderId}/confirmed`, {
-        method: 'PUT',
-      })
+      const response = await fetch(
+        `${API_URL}/orders-service/api/v1/orders/${selectedOrderId}/confirmed`,
+        {
+          method: 'PUT'
+        }
+      )
 
       if (!response.ok) {
         throw new Error('Failed to confirm order')
       }
 
       // Update the order status locally
-      setOrders(orders.map(order =>
-        order.id === selectedOrderId ? { ...order, status: 'confirmed' } : order
-      ))
+      setOrders(
+        orders.map((order) =>
+          order.id === selectedOrderId
+            ? { ...order, status: 'confirmed' }
+            : order
+        )
+      )
 
       toast({
-        title: "Éxito",
-        description: "Orden confirmada correctamente",
+        title: 'Éxito',
+        description: 'Orden confirmada correctamente'
       })
     } catch (error) {
       console.error('Error confirming order:', error)
       toast({
-        title: "Error",
-        description: "No se pudo confirmar la orden",
-        variant: "destructive",
+        title: 'Error',
+        description: 'No se pudo confirmar la orden',
+        variant: 'destructive'
       })
     } finally {
       setIsConfirmModalOpen(false)
@@ -211,24 +220,25 @@ export default function MyOrders() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[200px]">
-                Productos
-              </TableHead>
+              <TableHead className="w-[200px]">Productos</TableHead>
               <TableHead>
-                <Button variant="ghost" onClick={() => handleSort("creationDate")}>
+                <Button
+                  variant="ghost"
+                  onClick={() => handleSort('creationDate')}
+                >
                   Fecha de Creación
                   <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
               </TableHead>
               <TableHead>Fecha de Entrega</TableHead>
               <TableHead>
-                <Button variant="ghost" onClick={() => handleSort("total")}>
+                <Button variant="ghost" onClick={() => handleSort('total')}>
                   Total
                   <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
               </TableHead>
               <TableHead>
-                <Button variant="ghost" onClick={() => handleSort("status")}>
+                <Button variant="ghost" onClick={() => handleSort('status')}>
                   Estado
                   <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
@@ -240,11 +250,17 @@ export default function MyOrders() {
             {filteredOrders.map((order) => (
               <TableRow key={order.id}>
                 <TableCell className="font-medium">
-                  {Object.entries(order.products).map(([productName, quantity]) => (
-                    <div key={productName}>{productName}: {quantity}</div>
-                  ))}
+                  {Object.entries(order.products).map(
+                    ([productName, quantity]) => (
+                      <div key={productName}>
+                        {productName}: {quantity}
+                      </div>
+                    )
+                  )}
                 </TableCell>
-                <TableCell>{new Date(order.creationDate).toLocaleDateString()}</TableCell>
+                <TableCell>
+                  {new Date(order.creationDate).toLocaleDateString()}
+                </TableCell>
                 <TableCell>
                   {order.deliveryDate
                     ? new Date(order.deliveryDate).toLocaleDateString()
@@ -252,12 +268,21 @@ export default function MyOrders() {
                 </TableCell>
                 <TableCell>${order.total.toFixed(2)}</TableCell>
                 <TableCell>
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold
-                    ${order.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                    order.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-blue-100 text-blue-800'}`}>
-                    {order.status === 'in_progress' ? 'En progreso' :
-                      order.status === 'confirmed' ? 'Confirmado' : 'Entregado'}
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-semibold
+                    ${
+                      order.status === 'confirmed'
+                        ? 'bg-green-100 text-green-800'
+                        : order.status === 'in_progress'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-blue-100 text-blue-800'
+                    }`}
+                  >
+                    {order.status === 'in_progress'
+                      ? 'En progreso'
+                      : order.status === 'confirmed'
+                        ? 'Confirmado'
+                        : 'Entregado'}
                   </span>
                 </TableCell>
                 <TableCell>
@@ -289,7 +314,12 @@ export default function MyOrders() {
           </DialogHeader>
           <p>¿Está seguro que desea confirmar esta orden?</p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsConfirmModalOpen(false)}>Cancelar</Button>
+            <Button
+              variant="outline"
+              onClick={() => setIsConfirmModalOpen(false)}
+            >
+              Cancelar
+            </Button>
             <Button onClick={confirmOrder}>Confirmar</Button>
           </DialogFooter>
         </DialogContent>
