@@ -16,7 +16,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { MoreHorizontal } from 'lucide-react'
+import { MoreHorizontal, ImageIcon } from 'lucide-react'
 import { Organizations } from '@/types/organizations'
 import { DeleteOrganizationButton } from '@/components/organization/DeleteOrganizationButton'
 import { EditOrganizationButton } from '@/components/organization/EditOrganizationButton'
@@ -27,7 +27,7 @@ interface AdminOrganizationsDashboardProps {
   onOrganizationDeleted: (organizationId: string) => void
 }
 
-export default function AdminOrganizationsDashboard({
+export default function Component({
   organizations,
   onOrganizationUpdated,
   onOrganizationDeleted
@@ -59,13 +59,23 @@ export default function AdminOrganizationsDashboard({
             <TableRow key={organization.id_organization}>
               <TableCell>
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 relative flex-shrink-0">
-                    <Image
-                      src={organization.photo_url || '/placeholder.svg'}
-                      alt={`${organization.name} logo`}
-                      layout="fill"
-                      objectFit="contain"
-                    />
+                  <div className="w-8 h-8 relative flex-shrink-0 bg-gray-100 rounded-full overflow-hidden">
+                    {organization.photo_url ? (
+                      <Image
+                        src={organization.photo_url}
+                        alt={`${organization.name} logo`}
+                        width={32}
+                        height={32}
+                        className="object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = '/placeholder.svg'
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ImageIcon className="w-4 h-4 text-gray-400" />
+                      </div>
+                    )}
                   </div>
                   <span>{organization.name}</span>
                 </div>

@@ -1,6 +1,6 @@
 'use server'
 
-import { Organizations } from "@/types/organizations";
+import { Organizations, CreateOrganizationData } from "@/types/organizations";
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/organizations-service/api/v1`;
 
@@ -46,36 +46,49 @@ export const getOrganizationById = async (organizationId: string) => {
     throw new Error('Failed to fetch organization. Please try again later.');
   }
 }
-
 export async function createOrganization(data: FormData): Promise<Organizations> {
   try {
-    const response = await fetch(`/organizations`, {
+    const url = `${API_URL}/organizations`;
+    console.log(`Fetching URL: ${url}`);
+
+    // Convert FormData entries to an array before iterating
+    const entries = Array.from(data.entries());
+    entries.forEach(([key, value]) => {
+      console.log(`${key}: ${value}`);
+    });
+
+    const response = await fetch(url, {
       method: 'POST',
       body: data,
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(`Failed to create organization: ${response.status} ${response.statusText}. ${JSON.stringify(errorData)}`);
+      throw new Error(`Network response was not ok: ${response.status} ${response.statusText}. ${JSON.stringify(errorData)}`);
     }
 
-    return await response.json();
+    const createdOrganization = await response.json();
+    
+    // Print the fetched data
+    console.log('Fetched data:', createdOrganization);
+
+    // Ensure the photo_url is correctly set from the response
+    if (createdOrganization.photoUrl) {
+      createdOrganization.photo_url = createdOrganization.photoUrl;
+    }
+
+    return createdOrganization;
   } catch (error) {
     console.error('Error creating organization:', error);
-    throw new Error('Failed to create organization. Please try again later.');
+    throw error;
   }
 }
 
 export async function updateOrganization(organizationId: string, data: FormData): Promise<Organizations> {
-  try {
-    return await fetcher<Organizations>(`/organizations/${organizationId}`, {
-      method: 'PUT',
-      body: data,
-    });
-  } catch (error) {
-    console.error(`Error updating organization with id ${organizationId}:`, error);
-    throw new Error('Failed to update organization. Please try again later.');
-  }
+  return fetcher<Organizations>(`/organizations/${organizationId}`, {
+    method: 'PUT',
+    body: data,
+  });
 }
 
 export async function deleteOrganization(organizationId: string): Promise<void> {
