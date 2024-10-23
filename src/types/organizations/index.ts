@@ -7,5 +7,10 @@ export interface Organizations {
     photo_url: string | null
 }
 
-export interface GetOrganizations extends Omit<Organizations, 'id_organization'  | 'address' | 'location_lat' | 'location_lng' | 'photo_url'> {
+export interface CreateOrganizationData {
+    name: string
+    address: string
+    location_lat: number
+    location_lng: number
+    photo_url: string | null
 }
