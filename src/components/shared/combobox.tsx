@@ -37,7 +37,6 @@ export function Combobox({
   emptyMessage,
   onChange,
   defaultValue = "",
-  required,
 }: ComboboxProps) {
   const [open, setOpen] = useState(false)
   const [value, setValue] = useState(defaultValue)

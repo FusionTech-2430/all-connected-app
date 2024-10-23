@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Label } from "@/components/ui/label"
-import { MoreHorizontal, Search, Eye, Trash2, X } from 'lucide-react'
+import { MoreHorizontal, Search, Eye, Trash2 } from 'lucide-react'
 
 type Product = {
   id: string

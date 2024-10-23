@@ -3,7 +3,6 @@
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { Input, InputProps } from '@/components/ui/input'
-import { Search } from 'lucide-react'
 
 interface SearchInputProps extends Omit<InputProps, 'onChange' | 'placeholder' | 'value' | 'type'> {
     placeholder?: string

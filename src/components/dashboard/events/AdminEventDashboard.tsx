@@ -35,7 +35,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label"
-import { Eye, MoreHorizontal, Pencil, Plus, Trash2, X } from "lucide-react"
+import { Eye, MoreHorizontal, Pencil, Plus, Trash2} from "lucide-react"
 
 interface Event {
   id: string

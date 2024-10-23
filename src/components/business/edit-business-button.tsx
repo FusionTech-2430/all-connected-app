@@ -19,7 +19,7 @@ import { getUsers } from '@/lib/api/users'
 import { updateBusiness } from '@/lib/api/business'
 import { Organizations } from '@/types/organizations'
 import { User } from '@/types/users/user'
-import type { Business, CreateBusinessData } from '@/types/business'
+import type { Business } from '@/types/business'
 
 interface EditButtonProps {
   business: Business
