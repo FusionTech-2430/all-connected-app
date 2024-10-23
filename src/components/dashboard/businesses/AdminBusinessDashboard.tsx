@@ -2,55 +2,47 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  TableRow
+} from '@/components/ui/table'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { Label } from "@/components/ui/label"
-import { MoreHorizontal, Pencil, Trash2, X } from "lucide-react"
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { MoreHorizontal, Pencil, Trash2, X } from 'lucide-react'
 import { Business } from '@/types/business'
 import { getOrganizationById } from '@/lib/api/organizations'
-import { deleteBusiness } from '@/lib/api/business'
 import { DeleteButton } from '@/components/business/delete-business-button'
 
 interface BusinessManagementProps {
   businesses: Business[]
 }
 
-export default function BusinessManagement({ businesses: initialBusinesses }: BusinessManagementProps) {
+export default function BusinessManagement({
+  businesses: initialBusinesses
+}: BusinessManagementProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [currentBusiness, setCurrentBusiness] = useState<Business | null>(null)
-  const [organizations, setOrganizations] = useState<{ [key: string]: string }>({})
+  const [organizations, setOrganizations] = useState<{ [key: string]: string }>(
+    {}
+  )
   const [isLoading, setIsLoading] = useState(true)
   const [businesses, setBusinesses] = useState<Business[]>(initialBusinesses)
 
@@ -89,33 +81,6 @@ export default function BusinessManagement({ businesses: initialBusinesses }: Bu
     handleCloseDialog()
   }
 
-  const handleDelete = (business: Business) => {
-    setCurrentBusiness(business)
-
-  }
-
-  const handleDeleteBusiness = async (businessId: string) => {
-    try {
-      await deleteBusiness(businessId)
-      // Update the UI to reflect the deletion
-      setBusinesses(businesses.filter(business => business.id_business !== businessId))
-      setCurrentBusiness(null)
-
-    } catch (error) {
-      console.error('Failed to delete business:', error)
-    }
-  }
-
-  const confirmDelete = () => {
-    if (currentBusiness) {
-      handleDeleteBusiness(currentBusiness.id_business)
-    }
-  }
-
-  const handleBusinessCreated = (newBusiness: Business) => {
-    setBusinesses([...businesses, newBusiness])
-  }
-
   if (isLoading) {
     return <div>Loading...</div>
   }
@@ -138,7 +103,7 @@ export default function BusinessManagement({ businesses: initialBusinesses }: Bu
                 <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 relative flex-shrink-0">
                     <Image
-                      src={business.logo_url || "/placeholder.svg"}
+                      src={business.logo_url || '/placeholder.svg'}
                       alt={`${business.name} logo`}
                       layout="fill"
                       objectFit="contain"
@@ -149,7 +114,9 @@ export default function BusinessManagement({ businesses: initialBusinesses }: Bu
               </TableCell>
               <TableCell>{business.owner_id}</TableCell>
               <TableCell>
-                {business.organizations?.map((orgId) => organizations[orgId] || orgId).join(', ')}
+                {business.organizations
+                  ?.map((orgId) => organizations[orgId] || orgId)
+                  .join(', ')}
               </TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
@@ -160,17 +127,24 @@ export default function BusinessManagement({ businesses: initialBusinesses }: Bu
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-  <DropdownMenuItem className="flex items-center cursor-pointer" onClick={() => handleOpenDialog(business)}>
-    <Pencil className="mr-2 h-4 w-4 text-yellow-500" />
-    Modificar
-  </DropdownMenuItem>
-  <DeleteButton 
-    business={business}
-    onDeleteSuccess={(businessId) => {
-      setBusinesses(businesses.filter(business => business.id_business !== businessId))
-    }}
-  />
-</DropdownMenuContent>
+                    <DropdownMenuItem
+                      className="flex items-center cursor-pointer"
+                      onClick={() => handleOpenDialog(business)}
+                    >
+                      <Pencil className="mr-2 h-4 w-4 text-yellow-500" />
+                      Modificar
+                    </DropdownMenuItem>
+                    <DeleteButton
+                      business={business}
+                      onDeleteSuccess={(businessId) => {
+                        setBusinesses(
+                          businesses.filter(
+                            (business) => business.id_business !== businessId
+                          )
+                        )
+                      }}
+                    />
+                  </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>
             </TableRow>
@@ -178,13 +152,23 @@ export default function BusinessManagement({ businesses: initialBusinesses }: Bu
         </TableBody>
       </Table>
       <div className="flex justify-between items-center mt-4">
-        <p className="text-sm text-gray-500">Total: {businesses.length} emprendimientos.</p>
+        <p className="text-sm text-gray-500">
+          Total: {businesses.length} emprendimientos.
+        </p>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">&lt;&lt;</Button>
-          <Button variant="outline" size="sm">&lt;</Button>
+          <Button variant="outline" size="sm">
+            &lt;&lt;
+          </Button>
+          <Button variant="outline" size="sm">
+            &lt;
+          </Button>
           <span className="text-sm">Página 1 de 2</span>
-          <Button variant="outline" size="sm">&gt;</Button>
-          <Button variant="outline" size="sm">&gt;&gt;</Button>
+          <Button variant="outline" size="sm">
+            &gt;
+          </Button>
+          <Button variant="outline" size="sm">
+            &gt;&gt;
+          </Button>
         </div>
       </div>
       <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
@@ -197,27 +181,45 @@ export default function BusinessManagement({ businesses: initialBusinesses }: Bu
               </Button>
             </DialogTitle>
             <DialogDescription>
-              {currentBusiness ? 'Modifica la información del negocio' : 'Llena el formulario con la información del negocio'}
+              {currentBusiness
+                ? 'Modifica la información del negocio'
+                : 'Llena el formulario con la información del negocio'}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Nombre</Label>
-              <Input id="name" name="name" placeholder="Nombre del negocio" defaultValue={currentBusiness?.name} />
+              <Input
+                id="name"
+                name="name"
+                placeholder="Nombre del negocio"
+                defaultValue={currentBusiness?.name}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="owner">Dueño</Label>
-              <Input id="owner" name="owner" placeholder="ID del dueño" defaultValue={currentBusiness?.owner_id} />
+              <Input
+                id="owner"
+                name="owner"
+                placeholder="ID del dueño"
+                defaultValue={currentBusiness?.owner_id}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="organization">Organización</Label>
-              <Input id="organization" name="organization" placeholder="Organización" defaultValue={currentBusiness?.organizations} />
+              <Input
+                id="organization"
+                name="organization"
+                placeholder="Organización"
+                defaultValue={currentBusiness?.organizations}
+              />
             </div>
-            <Button type="submit" className="w-full">{currentBusiness ? 'Guardar cambios' : 'Crear negocio'}</Button>
+            <Button type="submit" className="w-full">
+              {currentBusiness ? 'Guardar cambios' : 'Crear negocio'}
+            </Button>
           </form>
         </DialogContent>
       </Dialog>
-
     </>
   )
 }
