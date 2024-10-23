@@ -1,5 +1,3 @@
-'use client'
-
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -10,43 +8,38 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { logOut } from '@/lib/firebase'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
-import { type User } from '@/types/users/user'
-import { useEffect, useState } from 'react'
+
+import { jwtDecode } from 'jwt-decode'
+
+import Link from 'next/link'
+import SignOut from '@/components/auth/sign-out-dropdown-item'
+import { cookies } from 'next/headers'
+import { JwtClaims } from '@/types/auth/jwt-claims'
+import { getUser } from '@/services/userService'
 
 function getInitials(name: string): string {
-  const initials = name.split(' ').slice(0, 2).map(word => word.toUpperCase()[0]).join('');
-  return initials.toUpperCase();
+  const initials = name
+    .split(' ')
+    .slice(0, 2)
+    .map((word) => word.toUpperCase()[0])
+    .join('')
+  return initials.toUpperCase()
 }
 
-export default function UserAvatar() {
-  const router = useRouter()
-  const [user, setUser] = useState<User | null>(null)
+export default async function UserAvatar() {
+  // Decode the JWT token to get the user's name and photo URL
+  const cookieStore = cookies()
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedUser = sessionStorage.getItem('user')
-      if (storedUser) {
-        setUser(JSON.parse(storedUser))
-      } else {
-        router.push('/')
-      }
-    }
-  }, [router])
+  const token = cookieStore.get('access-token')
 
-  const handleLogOut = () => {
-    logOut()
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('id-user')
-    }
-    router.push('/')
+  if (!token) {
+    return null
   }
 
-  const handleSettings = () => {
-    router.push('/profile')
-  }
+  const decodedToken = jwtDecode<JwtClaims>(token?.value)
+  const userId = decodedToken.user_id
+
 
   const handleToken = () => {
     router.push('/use-token')
@@ -58,6 +51,7 @@ export default function UserAvatar() {
 
   const userName = user?.fullname || ''
   const photoUrl = user?.photo_url || ''
+  const { photo_url, username } = await getUser(userId)
 
   return (
     <>
@@ -65,24 +59,29 @@ export default function UserAvatar() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8">
-              {photoUrl ? (
-                <Image src={photoUrl} alt="User Avatar" width={80} height={80} />
+              {photo_url ? (
+                <Image
+                  src={photo_url}
+                  alt="User Avatar"
+                  width={80}
+                  height={80}
+                />
               ) : (
-                <AvatarFallback>{getInitials(userName)}</AvatarFallback>
+                <AvatarFallback>{getInitials(username)}</AvatarFallback>
               )}
             </Avatar>
             <span className="sr-only">Toggle user menu</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuLabel>Mi perfil</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleSettings}>Ajustes</DropdownMenuItem>
           <DropdownMenuItem onClick={handleToken}>Usar Token</DropdownMenuItem>
           <DropdownMenuItem onClick={handlePedidos}>Mis Pedidos</DropdownMenuItem>
           <DropdownMenuItem>Soporte</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogOut}>Logout</DropdownMenuItem>
+          <SignOut />
         </DropdownMenuContent>
       </DropdownMenu>
     </>

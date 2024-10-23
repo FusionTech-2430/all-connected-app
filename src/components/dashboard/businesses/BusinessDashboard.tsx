@@ -91,6 +91,52 @@ export default function BusinessDashboard() {
   const [imageError, setImageError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const fetchAlliesData = async (businessData: Business) => {
+    try {
+      const membersResponse = await fetch(`${API_URL}/businesses-service/api/v1/businesses/${businessData.id_business}/members`)
+      if (!membersResponse.ok) {
+        throw new Error('Failed to fetch members data')
+      }
+      const membersData: Member[] = await membersResponse.json()
+
+      const alliesPromises = membersData.map(async (member) => {
+        const userResponse = await fetch(`${API_URL}/users-service/api/v1/users/${member.id.idUser}`)
+        if (!userResponse.ok) {
+          throw new Error(`Failed to fetch user data for ${member.id.idUser}`)
+        }
+        const userData: User = await userResponse.json()
+        return { 
+          ...userData, 
+          joinDate: member.joinDate,
+          isOwner: member.id.idUser === businessData.owner_id
+        }
+      })
+
+      const alliesData = await Promise.all(alliesPromises)
+      
+      // Ensure owner is in the list
+      if (!alliesData.some(ally => ally.id_user === businessData.owner_id)) {
+        const ownerResponse = await fetch(`${API_URL}/users-service/api/v1/users/${businessData.owner_id}`)
+        if (ownerResponse.ok) {
+          const ownerData: User = await ownerResponse.json()
+          alliesData.push({
+            ...ownerData,
+            joinDate: new Date().toISOString(), // Use current date as join date for owner
+            isOwner: true
+          })
+        }
+      }
+
+      setAllies(alliesData)
+      setFilteredAllies(alliesData)
+    } catch (err) {
+      setError('Error al cargar la información de los aliados')
+      console.error(err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   useEffect(() => {
     const fetchBusinessData = async () => {
       try {
@@ -104,52 +150,6 @@ export default function BusinessDashboard() {
       } catch (err) {
         setError('Error al cargar la información del negocio')
         console.error(err)
-      }
-    }
-
-    const fetchAlliesData = async (businessData: Business) => {
-      try {
-        const membersResponse = await fetch(`${API_URL}/businesses-service/api/v1/businesses/${businessData.id_business}/members`)
-        if (!membersResponse.ok) {
-          throw new Error('Failed to fetch members data')
-        }
-        const membersData: Member[] = await membersResponse.json()
-
-        const alliesPromises = membersData.map(async (member) => {
-          const userResponse = await fetch(`${API_URL}/users-service/api/v1/users/${member.id.idUser}`)
-          if (!userResponse.ok) {
-            throw new Error(`Failed to fetch user data for ${member.id.idUser}`)
-          }
-          const userData: User = await userResponse.json()
-          return { 
-            ...userData, 
-            joinDate: member.joinDate,
-            isOwner: member.id.idUser === businessData.owner_id
-          }
-        })
-
-        const alliesData = await Promise.all(alliesPromises)
-        
-        // Ensure owner is in the list
-        if (!alliesData.some(ally => ally.id_user === businessData.owner_id)) {
-          const ownerResponse = await fetch(`${API_URL}/users-service/api/v1/users/${businessData.owner_id}`)
-          if (ownerResponse.ok) {
-            const ownerData: User = await ownerResponse.json()
-            alliesData.push({
-              ...ownerData,
-              joinDate: new Date().toISOString(), // Use current date as join date for owner
-              isOwner: true
-            })
-          }
-        }
-
-        setAllies(alliesData)
-        setFilteredAllies(alliesData)
-      } catch (err) {
-        setError('Error al cargar la información de los aliados')
-        console.error(err)
-      } finally {
-        setIsLoading(false)
       }
     }
 
@@ -330,6 +330,41 @@ export default function BusinessDashboard() {
       }
     }
   }
+  
+  const [isJoinBusinessModalOpen, setIsJoinBusinessModalOpen] = useState(false); // Controla el modal de unirse
+
+  const joinBusinessWithToken = async () => {
+    if (!temporaryToken) {
+      setTokenError('Por favor, ingresa un token válido');
+      return;
+    }
+  
+    try {
+      const response = await fetch(`${API_URL}/businesses-service/api/v1/businesses/join`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token: temporaryToken }),
+      });
+  
+      const data = await response.json();
+      if (response.ok) {
+        setTemporaryToken(''); // Limpiar el campo de token después de unirse
+        setTokenError(null);
+        setIsJoinBusinessModalOpen(false); // Cerrar el modal tras unirse con éxito
+        if (business) {
+          await fetchAlliesData(business); // Actualiza los datos si es necesario
+        }
+      } else {
+        setTokenError(data.message || 'Error al unirse al emprendimiento');
+      }
+    } catch (error) {
+      console.error('Error al unirse al emprendimiento:', error);
+      setTokenError('Hubo un error al procesar la solicitud. Inténtalo de nuevo.');
+    }
+  };
+  
 
   if (error) {
     return <div className="container mx-auto p-6">{error}</div>
@@ -357,7 +392,10 @@ export default function BusinessDashboard() {
             <p className="text-sm text-gray-500">ID: {business.id_business}</p>
           </div>
         </div>
+
+        
         <div className="flex space-x-2">
+        <Button onClick={() => setIsJoinBusinessModalOpen(true)}>Unirse a un emprendimiento</Button>
           <Button variant="outline" onClick={() => setIsChangeImageModalOpen(true)}>
             <Upload className="w-4 h-4 mr-2" />
             Cambiar imagen
@@ -370,6 +408,7 @@ export default function BusinessDashboard() {
           </Button>
         </div>
       </div>
+      
 
       <h3 className="text-xl font-semibold mb-4">Gestión de aliados</h3>
 
@@ -437,6 +476,7 @@ export default function BusinessDashboard() {
       <div className="mt-4">
         <p className="text-sm text-gray-500">Total: {filteredAllies.length} aliados.</p>
       </div>
+
 
       {/* Ownership Transfer Modal */}
       <Dialog
@@ -628,6 +668,8 @@ export default function BusinessDashboard() {
               </div>
             )}
           </div>
+
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsChangeImageModalOpen(false)}>
               Cancelar
@@ -638,6 +680,36 @@ export default function BusinessDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Join Business Modal */}
+      <Dialog open={isJoinBusinessModalOpen} onOpenChange={setIsJoinBusinessModalOpen}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Unirse a un Emprendimiento</DialogTitle>
+      <DialogDescription>
+        Ingresa el token que te proporcionaron para unirte al emprendimiento.
+      </DialogDescription>
+    </DialogHeader>
+    <Input
+      placeholder="Ingresa tu token"
+      value={temporaryToken}
+      onChange={(e) => setTemporaryToken(e.target.value)}
+    />
+    {tokenError && (
+      <Alert variant="destructive" className="mt-2">
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{tokenError}</AlertDescription>
+      </Alert>
+    )}
+    <DialogFooter>
+      <Button variant="outline" onClick={() => setIsJoinBusinessModalOpen(false)}>
+        Cancelar
+      </Button>
+      <Button onClick={joinBusinessWithToken}>Unirse</Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
     </div>
   )
 }
