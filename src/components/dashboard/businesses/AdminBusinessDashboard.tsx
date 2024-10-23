@@ -1,4 +1,3 @@
-// components/dashboard/businesses/AdminBusinessDashboard.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -19,7 +18,9 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { MoreHorizontal } from 'lucide-react'
 import { Business } from '@/types/business'
+import { User } from '@/types/users/user'
 import { getOrganizationById } from '@/lib/api/organizations'
+import { getUser } from '@/lib/api/users'
 import { DeleteButton } from '@/components/business/delete-business-button'
 import { EditButton } from '@/components/business/edit-business-button'
 
@@ -37,11 +38,13 @@ export default function AdminBusinessDashboard({
   const [organizations, setOrganizations] = useState<{ [key: string]: string }>(
     {}
   )
+  const [owners, setOwners] = useState<{ [key: string]: User }>({})
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const fetchOrganizations = async () => {
+    const fetchData = async () => {
       const orgs: { [key: string]: string } = {}
+      const ownersData: { [key: string]: User } = {}
       for (const business of businesses) {
         if (business.organizations) {
           for (const orgId of business.organizations) {
@@ -51,11 +54,16 @@ export default function AdminBusinessDashboard({
             }
           }
         }
+        if (!ownersData[business.owner_id]) {
+          const owner = await getUser(business.owner_id)
+          ownersData[business.owner_id] = owner
+        }
       }
       setOrganizations(orgs)
+      setOwners(ownersData)
       setIsLoading(false)
     }
-    fetchOrganizations()
+    fetchData()
   }, [businesses])
 
   if (isLoading) {
@@ -89,7 +97,27 @@ export default function AdminBusinessDashboard({
                   <span>{business.name}</span>
                 </div>
               </TableCell>
-              <TableCell>{business.owner_id}</TableCell>
+              <TableCell>
+                {owners[business.owner_id] ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 relative flex-shrink-0">
+                      <Image
+                        src={
+                          owners[business.owner_id].photo_url ||
+                          '/placeholder.svg'
+                        }
+                        alt={`${owners[business.owner_id].fullname} photo`}
+                        layout="fill"
+                        objectFit="cover"
+                        className="rounded-full"
+                      />
+                    </div>
+                    <span>{owners[business.owner_id].fullname}</span>
+                  </div>
+                ) : (
+                  business.owner_id
+                )}
+              </TableCell>
               <TableCell>
                 {business.organizations
                   ?.map((orgId) => organizations[orgId] || orgId)

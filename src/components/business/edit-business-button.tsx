@@ -15,8 +15,10 @@ import { Label } from '@/components/ui/label'
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { Combobox } from '../shared/combobox'
 import { getOrganizations } from '@/lib/api/organizations'
+import { getUsers } from '@/lib/api/users'
 import { updateBusiness } from '@/lib/api/business'
 import { Organizations } from '@/types/organizations'
+import { User } from '@/types/users/user'
 import type { Business, CreateBusinessData } from '@/types/business'
 
 interface EditButtonProps {
@@ -30,13 +32,19 @@ export function EditButton({ business, onEditSuccess }: EditButtonProps) {
   const [organizations, setOrganizations] = useState<
     { key: string; value: string; label: string }[]
   >([])
+  const [users, setUsers] = useState<
+    { key: string; value: string; label: string }[]
+  >([])
   const [selectedOrganization, setSelectedOrganization] = useState<
     string | null
   >(business.organizations?.[0] || null)
+  const [selectedOwner, setSelectedOwner] = useState<string | null>(
+    business.owner_id || null
+  )
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
 
   useEffect(() => {
-    const fetchOrganizations = async () => {
+    const fetchData = async () => {
       const orgs = await getOrganizations()
       const formattedOrgs = orgs.map((org: Organizations) => ({
         key: org.id_organization,
@@ -44,8 +52,16 @@ export function EditButton({ business, onEditSuccess }: EditButtonProps) {
         label: org.name
       }))
       setOrganizations(formattedOrgs)
+
+      const usersData = await getUsers()
+      const formattedUsers = usersData.map((user: User) => ({
+        key: user.id_user,
+        value: user.id_user,
+        label: user.fullname
+      }))
+      setUsers(formattedUsers)
     }
-    fetchOrganizations()
+    fetchData()
   }, [])
 
   const handleOpenDialog = (event: React.MouseEvent) => {
@@ -62,14 +78,16 @@ export function EditButton({ business, onEditSuccess }: EditButtonProps) {
     const formElement = event.currentTarget
     const formData = new FormData(formElement)
 
-    // If a new image is selected, add it to the formData
     if (selectedImage) {
       formData.set('logo_url', selectedImage)
     }
 
-    // Add the selected organization to the formData
     if (selectedOrganization) {
       formData.set('organization', selectedOrganization)
+    }
+
+    if (selectedOwner) {
+      formData.set('owner_id', selectedOwner)
     }
 
     try {
@@ -125,10 +143,11 @@ export function EditButton({ business, onEditSuccess }: EditButtonProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="owner_id">Dueño</Label>
-              <Input
-                id="owner_id"
-                name="owner_id"
-                placeholder="ID del dueño"
+              <Combobox
+                items={users}
+                placeholder="Selecciona el dueño"
+                emptyMessage="No se encontraron usuarios."
+                onChange={(value: string | null) => setSelectedOwner(value)}
                 defaultValue={business.owner_id}
                 required
               />
@@ -142,6 +161,7 @@ export function EditButton({ business, onEditSuccess }: EditButtonProps) {
                 onChange={(value: string | null) =>
                   setSelectedOrganization(value)
                 }
+                defaultValue={business.organizations?.[0]}
                 required
               />
             </div>
@@ -164,4 +184,3 @@ export function EditButton({ business, onEditSuccess }: EditButtonProps) {
     </>
   )
 }
-  
