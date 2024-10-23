@@ -30,6 +30,7 @@ import { MoreHorizontal, Pencil, Trash2, X } from 'lucide-react'
 import { Business } from '@/types/business'
 import { getOrganizationById } from '@/lib/api/organizations'
 import { DeleteButton } from '@/components/business/delete-business-button'
+import { EditButton } from '@/components/business/edit-business-button'
 
 interface BusinessManagementProps {
   businesses: Business[]
@@ -127,13 +128,18 @@ export default function BusinessManagement({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      className="flex items-center cursor-pointer"
-                      onClick={() => handleOpenDialog(business)}
-                    >
-                      <Pencil className="mr-2 h-4 w-4 text-yellow-500" />
-                      Modificar
-                    </DropdownMenuItem>
+                    <EditButton
+                      business={business}
+                      onEditSuccess={(updatedBusiness) => {
+                        setBusinesses(
+                          businesses.map((b) =>
+                            b.id_business === updatedBusiness.id_business
+                              ? updatedBusiness
+                              : b
+                          )
+                        )
+                      }}
+                    />
                     <DeleteButton
                       business={business}
                       onDeleteSuccess={(businessId) => {
