@@ -93,6 +93,7 @@ export default function Component() {
         throw new Error('Failed to fetch labels')
       }
       const data = await response.json()
+      console.log('Labels:', data)
       setLabels(data)
     } catch (err) {
       console.error('Error fetching labels:', err)
