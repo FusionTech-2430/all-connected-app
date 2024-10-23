@@ -90,7 +90,7 @@ export default function ManualSales() {
     )
     const usersData = await Promise.all(userPromises)
     const usersMap = usersData.reduce((acc, user) => {
-      acc[user.id] = user
+      acc[user.id_user] = user
       return acc
     }, {} as Record<string, User>)
     setUsers(usersMap)
