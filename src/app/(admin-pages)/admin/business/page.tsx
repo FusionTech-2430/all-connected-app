@@ -1,4 +1,3 @@
-// app/admin/business/page.tsx
 'use client'
 
 import { CreateBusinessButton } from '@/components/business/create-business-button'
@@ -39,7 +38,7 @@ export default function AdminBusiness() {
     <>
       <div className="container mx-auto p-4">
         <h1 className="text-2xl font-bold mb-4">Gestión de emprendimiento</h1>
-        <div className="flex justify-between mb-4">
+        <div className="flex justify-between items-center mb-1">
           <SearchInput
             className="w-1/3"
             paramName="name"
