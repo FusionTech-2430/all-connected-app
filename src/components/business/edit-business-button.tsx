@@ -26,12 +26,14 @@ interface EditButtonProps {
 
 export function EditButton({ business, onEditSuccess }: EditButtonProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [organizations, setOrganizations] = useState<
     { key: string; value: string; label: string }[]
   >([])
   const [selectedOrganization, setSelectedOrganization] = useState<
     string | null
   >(business.organizations?.[0] || null)
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
 
   useEffect(() => {
     const fetchOrganizations = async () => {
@@ -55,26 +57,38 @@ export function EditButton({ business, onEditSuccess }: EditButtonProps) {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setIsSubmitting(true)
 
     const formElement = event.currentTarget
     const formData = new FormData(formElement)
 
-    const businessData: CreateBusinessData = {
-      name: formData.get('name')?.toString() || '',
-      owner_id: formData.get('owner_id')?.toString() || '',
-      logo_url: '',
-      organization: selectedOrganization || ''
+    // If a new image is selected, add it to the formData
+    if (selectedImage) {
+      formData.set('logo_url', selectedImage)
+    }
+
+    // Add the selected organization to the formData
+    if (selectedOrganization) {
+      formData.set('organization', selectedOrganization)
     }
 
     try {
       const updatedBusiness = await updateBusiness(
         business.id_business,
-        businessData
+        formData
       )
       onEditSuccess(updatedBusiness)
       handleCloseDialog()
     } catch (error) {
       console.error('Error updating business:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setSelectedImage(event.target.files[0])
     }
   }
 
@@ -132,11 +146,17 @@ export function EditButton({ business, onEditSuccess }: EditButtonProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="picture">Logo</Label>
-              <Input id="picture" name="picture" type="file" accept="image/*" />
+              <Label htmlFor="logo_url">Logo</Label>
+              <Input
+                id="logo_url"
+                name="logo_url"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+              />
             </div>
-            <Button type="submit" className="w-full">
-              Guardar cambios
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
             </Button>
           </form>
         </DialogContent>
@@ -144,3 +164,4 @@ export function EditButton({ business, onEditSuccess }: EditButtonProps) {
     </>
   )
 }
+  

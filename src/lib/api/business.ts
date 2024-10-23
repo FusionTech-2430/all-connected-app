@@ -69,20 +69,9 @@ export async function deleteBusiness(businessId: string) {
 }
 
 // Update business
-export async function updateBusiness(businessId: string, data: CreateBusinessData) {
-  const formData = new FormData();
-  
-  // Append only string values
-  formData.append('name', data.name);
-  formData.append('owner_id', data.owner_id);
-  formData.append('organization', data.organization);
-  
-  if (data.logo_url) {
-    formData.append('logo_url', data.logo_url);
-  }
-
+export async function updateBusiness(businessId: string, data: FormData): Promise<Business> {
   return fetcher<Business>(`/businesses/${businessId}`, {
     method: 'PUT',
-    body: formData,
+    body: data,
   });
 }

@@ -14,7 +14,3 @@ export interface CreateBusinessData {
     logo_url: string;
     organization: string;
 }
-
-export interface CreateBusiness extends Omit<Business, 'id_business'  | 'organizations'> {
-    organization: UUID
-}

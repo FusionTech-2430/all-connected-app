@@ -1,6 +1,5 @@
 'use client'
 
-import { CreateBusinessButton } from '@/components/business/create-business-button'
 import AdminBusinessDashboard from '@/components/dashboard/businesses/AdminBusinessDashboard'
 import SearchInput from '@/components/shared/search-input'
 import { getBusinesses } from '@/lib/api/business'
@@ -44,9 +43,6 @@ export default function AdminBusiness() {
             paramName="name"
             placeholder="Buscar por nombre..."
           />
-          <div className="flex gap-2">
-            <CreateBusinessButton onBusinessCreated={handleBusinessCreated} />
-          </div>
         </div>
       </div>
       <AdminBusinessDashboard
