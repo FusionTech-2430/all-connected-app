@@ -4,19 +4,25 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
-import { type User, type UserUpdate } from '@/types/users/user'
+import { type UserUpdate } from '@/types/users/user'
 import { useRouter } from 'next/navigation'
-import { updateUser, deleteUser } from '@/services/userService'
+import { updateUser } from '@/services/userService'
+import { useUserId } from '@/hooks/use-user-id'
+import { deleteUser, getUser } from '@/lib/actions/users'
 
 function getInitials(name: string): string {
-  const initials = name.split(' ').slice(0, 2).map(word => word.toUpperCase()[0]).join('');
-  return initials.toUpperCase();
+  const initials = name
+    .split(' ')
+    .slice(0, 2)
+    .map((word) => word.toUpperCase()[0])
+    .join('')
+  return initials.toUpperCase()
 }
 
 export default function ProfileView() {
   const router = useRouter()
+  const userId = useUserId()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState({
     fullName: '',
     username: '',
@@ -27,42 +33,35 @@ export default function ProfileView() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [file, setFile] = useState<File | null>(null)
 
+  // Fetch user data from the API
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedUser = sessionStorage.getItem('user')
-      if (storedUser) {
-        const parsedUser = JSON.parse(storedUser)
-        setUser(parsedUser)
-        setProfile({
-          fullName: parsedUser.fullname || '',
-          username: parsedUser.username || '',
-          email: parsedUser.mail || '',
-          password: '',
-          photo_url: parsedUser.photo_url || ''
-        })
-      } else {
-        router.push('/')
-      }
+    const getUserData = async () => {
+      const user = await getUser(userId || '')
+      setProfile({
+        fullName: user.fullname,
+        username: user.username,
+        email: user.mail,
+        password: '',
+        photo_url: user.photo_url
+      })
     }
-  }, [router])
+    getUserData()
+  }, [userId])
 
-  console.log('Usuario:', user)
+  if (!userId) {
+    router.push('/')
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setProfile({
       ...profile,
-      [name]: value,
+      [name]: value
     })
   }
 
   const handleDelete = async () => {
-    await deleteUser(user?.id_user || '')
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('id-user')
-      sessionStorage.removeItem('user')
-    }
-    router.push('/')
+    await deleteUser(userId || '')
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,9 +85,10 @@ export default function ProfileView() {
       username: profile.username,
       mail: profile.email,
       password: profile.password,
-      photo: file ? file : undefined,
-    };
-    console.log('Updated user object:', updatedUser);
+      photo: file ? file : undefined
+    }
+
+    console.log('Updated user object:', updatedUser)
 
     const formPayload = new FormData()
     formPayload.append('fullname', updatedUser.fullname)
@@ -102,7 +102,7 @@ export default function ProfileView() {
       formPayload.append('photo', updatedUser.photo)
     }
 
-    const newUser = await updateUser(user?.id_user || '', formPayload)
+    const newUser = await updateUser(userId || '', formPayload)
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('user', JSON.stringify(newUser))
     }
@@ -139,25 +139,27 @@ export default function ProfileView() {
               >
                 Avatar
               </label>
-              <Button 
-                variant="ghost" 
-                size="default" 
+              <Button
+                variant="ghost"
+                size="default"
                 className="p-0 h-auto"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <Avatar className="w-28 h-28">
                   {previewUrl || profile.photo_url ? (
                     <div className="relative w-full h-full">
-                      <Image 
-                        src={previewUrl || profile.photo_url} 
-                        alt="User Avatar" 
+                      <Image
+                        src={previewUrl || profile.photo_url}
+                        alt="User Avatar"
                         layout="fill"
                         objectFit="cover"
                         className="rounded-full"
                       />
                     </div>
                   ) : (
-                    <AvatarFallback className="text-4xl">{getInitials(profile.fullName)}</AvatarFallback>
+                    <AvatarFallback className="text-4xl">
+                      {getInitials(profile.fullName)}
+                    </AvatarFallback>
                   )}
                 </Avatar>
                 <span className="sr-only">Change avatar</span>
@@ -232,9 +234,10 @@ export default function ProfileView() {
               />
             </div>
             <div className="flex justify-end">
-              <Button 
+              <Button
                 type="submit"
-                className="bg-[#0284C7] text-white py-2 px-4 rounded-lg hover:bg-blue-700">
+                className="bg-[#0284C7] text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+              >
                 Guardar Cambios
               </Button>
             </div>
@@ -250,7 +253,10 @@ export default function ProfileView() {
             Cierra todas las sesiones activas.
           </p>
         </div>
-        <button onClick={handleDelete} className="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700">
+        <button
+          onClick={handleDelete}
+          className="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700"
+        >
           Eliminar Cuenta
         </button>
       </div>
