@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { CheckCircle, ArrowLeft } from 'lucide-react'
+import { CheckCircle, ArrowLeft, Minus, Plus } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { toast } from "@/components/ui/use-toast"
 
 interface Product {
   id: number
@@ -20,11 +24,19 @@ interface Business {
   name: string
 }
 
+interface User {
+  id_user: string
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
 
 export default function ProductPage() {
   const [product, setProduct] = useState<Product | null>(null)
   const [business, setBusiness] = useState<Business | null>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [quantity, setQuantity] = useState(1)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -42,7 +54,78 @@ export default function ProductPage() {
     }
 
     fetchProduct()
+
+    // Fetch user data from sessionStorage
+    const storedUser = sessionStorage.getItem('user')
+    if (storedUser) {
+      setUser(JSON.parse(storedUser))
+    }
   }, [])
+
+  const handleQuantityChange = (amount: number) => {
+    setQuantity(prev => Math.max(1, Math.min(prev + amount, product?.stock || 1)))
+  }
+
+  const handlePurchase = async () => {
+    if (!user || !product) {
+      toast({
+        title: "Error",
+        description: "Usuario o producto no disponible",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      // Create order
+      const orderResponse = await fetch(`${API_URL}/orders-service/api/v1/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          idUser: user.id_user,
+          idBusiness: product.idBusiness,
+        }),
+      })
+
+      if (!orderResponse.ok) {
+        throw new Error('Failed to create order')
+      }
+
+      const orderData = await orderResponse.json()
+
+      // Add product to order
+      const formData = new FormData()
+      formData.append('quantity', quantity.toString())
+
+      const productResponse = await fetch(`${API_URL}/orders-service/api/v1/orders/${orderData.id}/products/${product.id}`, {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!productResponse.ok) {
+        throw new Error('Failed to add product to order')
+      }
+
+      toast({
+        title: "Éxito",
+        description: "Orden creada correctamente",
+      })
+      setIsModalOpen(false)
+    } catch (error) {
+      console.error('Error creating order:', error)
+      toast({
+        title: "Error",
+        description: "Error al crear la orden",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   if (!product || !business) return <div>Loading...</div>
 
@@ -84,7 +167,10 @@ export default function ProductPage() {
               <span className="text-green-500">En stock</span>
             </div>
 
-            <button className="bg-[#0284c7] text-white px-6 py-2 rounded hover:bg-[#0369a1] transition-colors w-full md:w-auto">
+            <button
+              className="bg-[#0284c7] text-white px-6 py-2 rounded hover:bg-[#0369a1] transition-colors w-full md:w-auto"
+              onClick={() => setIsModalOpen(true)}
+            >
               Comprar
             </button>
 
@@ -101,6 +187,41 @@ export default function ProductPage() {
           <p>No hay opiniones disponibles.</p>
         </div>
       </main>
+
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar Compra</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <h3 className="font-semibold mb-2">{product.name}</h3>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <Button variant="outline" size="icon" onClick={() => handleQuantityChange(-1)}>
+                  <Minus className="h-4 w-4" />
+                </Button>
+                <Input
+                  type="number"
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.max(1, Math.min(parseInt(e.target.value) || 1, product.stock)))}
+                  className="w-16 mx-2 text-center"
+                />
+                <Button variant="outline" size="icon" onClick={() => handleQuantityChange(1)}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="font-semibold">${(product.price * quantity).toLocaleString()}</p>
+            </div>
+            <p className="text-sm text-gray-500">Stock disponible: {product.stock}</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
+            <Button onClick={handlePurchase} disabled={isLoading}>
+              {isLoading ? 'Procesando...' : 'Confirmar Compra'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

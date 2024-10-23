@@ -40,6 +40,17 @@ export default async function UserAvatar() {
   const decodedToken = jwtDecode<JwtClaims>(token?.value)
   const userId = decodedToken.user_id
 
+
+  const handleToken = () => {
+    router.push('/use-token')
+  }
+
+  const handlePedidos = () => {
+    router.push('/my-orders')
+  }
+
+  const userName = user?.fullname || ''
+  const photoUrl = user?.photo_url || ''
   const { photo_url, username } = await getUser(userId)
 
   return (
@@ -65,16 +76,9 @@ export default async function UserAvatar() {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Mi perfil</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <Link className="w-full" href="/profile">
-              Ajustes
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Link className="w-full" href="/use-token">
-              Usar Token
-            </Link>
-          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleSettings}>Ajustes</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleToken}>Usar Token</DropdownMenuItem>
+          <DropdownMenuItem onClick={handlePedidos}>Mis Pedidos</DropdownMenuItem>
           <DropdownMenuItem>Soporte</DropdownMenuItem>
           <DropdownMenuSeparator />
           <SignOut />
