@@ -1,18 +1,20 @@
+'use client'
+
 import React, { useState } from 'react'
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { Trash2 } from 'lucide-react'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog'
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import { User } from '@/types/users/user'
 import { deleteUser } from '@/lib/api/users'
+import { useToast } from '@/components/ui/use-toast'
 
 interface DeleteUserButtonProps {
   user: User
@@ -23,56 +25,72 @@ export function DeleteUserButton({
   user,
   onUserDeleted
 }: DeleteUserButtonProps) {
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-
-  const handleDelete = (event: React.MouseEvent) => {
-    event.preventDefault()
-    event.stopPropagation()
-    setIsDeleteDialogOpen(true)
-  }
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const { toast } = useToast()
 
   const handleDeleteUser = async () => {
+    setIsDeleting(true)
     try {
       await deleteUser(user.id_user)
       onUserDeleted(user.id_user)
-      setIsDeleteDialogOpen(false)
+      setIsDialogOpen(false)
+      toast({
+        title: 'Usuario eliminado',
+        description: `El usuario ${user.fullname} ha sido eliminado exitosamente.`
+      })
     } catch (error) {
-      console.error('Failed to delete user:', error)
+      console.error('Error deleting user:', error)
+      toast({
+        title: 'Error',
+        description:
+          'No se pudo eliminar el usuario. Por favor, intente nuevamente.',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsDeleting(false)
     }
   }
 
   return (
     <>
       <DropdownMenuItem
-        className="flex items-center cursor-pointer"
-        onClick={handleDelete}
+        onSelect={(event) => {
+          event.preventDefault()
+          setIsDialogOpen(true)
+        }}
       >
-        <Trash2 className="mr-2 h-4 w-4 text-red-500" />
+        <Trash2 className="mr-2 h-4 w-4" />
         Eliminar
       </DropdownMenuItem>
 
-      <AlertDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              ¿Estás seguro de que quieres eliminar este usuario?
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción no se puede deshacer. Esto eliminará permanentemente
-              el usuario y todos sus datos asociados de nuestros servidores.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteUser}>
-              Eliminar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar eliminación</DialogTitle>
+          </DialogHeader>
+          <DialogDescription>
+            ¿Está seguro de que desea eliminar al usuario {user.fullname}? Esta
+            acción no se puede deshacer.
+          </DialogDescription>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDialogOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteUser}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Eliminando...' : 'Eliminar Usuario'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

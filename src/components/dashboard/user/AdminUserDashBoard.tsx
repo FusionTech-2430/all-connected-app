@@ -27,12 +27,14 @@ import { MoreHorizontal, Search } from 'lucide-react'
 import Image from 'next/image'
 import { User } from '@/types/users/user'
 import { getUsers } from '@/lib/api/users'
-import { ActivateDeactivateButton } from './ActivateDeactiveButton'
+import ActivateDeactivateButton from './ActivateDeactiveButton'
 import { DeleteUserButton } from './DeleteUserButton'
 
 export default function UserManagementTable() {
   const [users, setUsers] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
 
   useEffect(() => {
     fetchUsers()
@@ -61,6 +63,25 @@ export default function UserManagementTable() {
     setUsers((prevUsers) => prevUsers.filter((user) => user.id_user !== userId))
   }
 
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      (user.fullname?.toLowerCase().includes(searchTerm.toLowerCase()) ??
+        false) ||
+      (user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ??
+        false) ||
+      (user.roles?.some((role) =>
+        role.toLowerCase().includes(searchTerm.toLowerCase())
+      ) ??
+        false)
+
+    const matchesStatus =
+      statusFilter === 'all' ||
+      (statusFilter === 'active' && user.active) ||
+      (statusFilter === 'inactive' && !user.active)
+
+    return matchesSearch && matchesStatus
+  })
+
   if (isLoading) {
     return <div>Loading...</div>
   }
@@ -74,9 +95,11 @@ export default function UserManagementTable() {
           <Input
             placeholder="Buscar por nombre o rol..."
             className="pl-8 w-[300px]"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Select>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Todos los estados" />
           </SelectTrigger>
@@ -97,38 +120,41 @@ export default function UserManagementTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users.map((user) => (
+          {filteredUsers.map((user) => (
             <TableRow key={user.id_user}>
               <TableCell>
                 <div className="flex items-center">
                   <div className="w-8 h-8 relative mr-2">
                     <Image
                       src={user.photo_url || '/placeholder.svg'}
-                      alt={user.fullname}
-                      layout="fill"
-                      objectFit="cover"
-                      className="rounded-full"
+                      alt={user.fullname || 'User'}
+                      width={32}
+                      height={32}
+                      className="rounded-full object-cover"
                     />
                   </div>
                   <div>
-                    <div>{user.fullname}</div>
-                    <div className="text-sm text-gray-500">{user.mail}</div>
+                    <div>{user.fullname || 'N/A'}</div>
+                    <div className="text-sm text-gray-500">
+                      {user.mail || 'N/A'}
+                    </div>
                   </div>
                 </div>
               </TableCell>
-              <TableCell>{user.username}</TableCell>
+              <TableCell>{user.username || 'N/A'}</TableCell>
               <TableCell>
                 <div className="flex items-center">
                   <span
                     className={`inline-block w-2 h-2 rounded-full mr-2 ${user.active ? 'bg-green-500' : 'bg-red-500'}`}
                   />
-                  {user.active ? 'Activo' : 'Inactivo'}
+                  {user.active ? 'Activo' : 'Bloqueado'}
                 </div>
               </TableCell>
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="h-8 w-8 p-0">
+                      <span className="sr-only">Open menu</span>
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -149,7 +175,7 @@ export default function UserManagementTable() {
         </TableBody>
       </Table>
       <div className="flex items-center justify-between">
-        <div>Total: {users.length} usuarios</div>
+        <div>Total: {filteredUsers.length} usuarios</div>
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm">
             &lt;&lt;
@@ -157,7 +183,7 @@ export default function UserManagementTable() {
           <Button variant="outline" size="sm">
             &lt;
           </Button>
-          <div>Página 1 de 10</div>
+          <div>Página 1 de {Math.ceil(filteredUsers.length / 10)}</div>
           <Button variant="outline" size="sm">
             &gt;
           </Button>
