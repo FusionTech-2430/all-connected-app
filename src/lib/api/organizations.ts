@@ -79,20 +79,10 @@ export async function updateOrganization(organizationId: string, data: FormData)
 }
 
 export async function deleteOrganization(organizationId: string): Promise<void> {
-  try {
-    const response = await fetch(`/organizations/${organizationId}`, {
-      method: 'DELETE',
-      headers: {
-        Accept: 'application/json'
-      }
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(`Failed to delete organization: ${response.status} ${response.statusText}. ${JSON.stringify(errorData)}`);
+   return fetcher<void>(`/organizations/${organizationId}`, {
+    method: 'DELETE',
+    headers: {
+      Accept: 'application/json'
     }
-  } catch (error) {
-    console.error(`Error deleting organization with id ${organizationId}:`, error);
-    throw new Error('Failed to delete organization. Please try again later.');
-  }
+  });
 }
