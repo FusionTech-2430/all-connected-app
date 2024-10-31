@@ -7,6 +7,7 @@ import {
 } from '@/lib/firebase/auth'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { createUser } from './users'
 
 export async function signIn(formData: FormData) {
   const email = formData.get('email')
@@ -31,8 +32,6 @@ export async function signUp(formData: FormData) {
   const password = formData.get('password')
   formData.append('roles', 'customer')
 
-  console.log(formData)
-
   // Create a new user in Firebase Authentication and in the Users Service
   const userCredential = await firebaseSignUp(
     mail as string,
@@ -44,9 +43,9 @@ export async function signUp(formData: FormData) {
     httpOnly: true
   })
 
-  // TODO: In backend, the service is creating the user into firebase also
-  // so the duplicate email error is thrown
-  // const user = await createUser(formData)
+  formData.append('id_user', userCredential.user.uid)
+
+  await createUser(formData)
 
   // const [userCredential, user] = await Promise.all([
   // ])
