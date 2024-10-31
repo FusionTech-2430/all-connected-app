@@ -95,8 +95,8 @@ export default function SignUpForm() {
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none"
         /> */}
 
-        {/* <Label htmlFor="photo">Foto de Perfil (Opcional)</Label>
-        <Input id="photo" name="photo" type="file" /> */}
+        <Label htmlFor="photo">Foto de Perfil (Opcional)</Label>
+        <Input id="photo" name="photo" type="file" />
       </div>
       <div className="text-center mt-6">
         <SubmitButton
@@ -105,12 +105,6 @@ export default function SignUpForm() {
         >
           Crear Cuenta
         </SubmitButton>
-        {/* <button
-          type="submit"
-          className={`w-full bg-[#0284C7] text-white font-semibold py-2 px-4 rounded-lg ${isLoading ? 'cursor-not-allowed opacity-50' : 'hover:bg-blue-700'}`}
-          disabled={isLoading} // Desactivar el botón cuando está en modo de carga
-        >
-        </button> */}
       </div>
     </form>
   )
