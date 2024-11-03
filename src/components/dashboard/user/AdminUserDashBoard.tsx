@@ -1,67 +1,89 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { MoreHorizontal, Search, AlertTriangle } from 'lucide-react'
-
-type User = {
-  id: string
-  name: string
-  email: string
-  role: string
-  status: 'activo' | 'inactivo' | 'bloqueado'
-}
+import React, { useState, useEffect } from 'react'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
+import { MoreHorizontal, Search } from 'lucide-react'
+import Image from 'next/image'
+import { User } from '@/types/users/user'
+import { getUsers } from '@/lib/api/users'
+import ActivateDeactivateButton from './ActivateDeactiveButton'
+import { DeleteUserButton } from './DeleteUserButton'
 
 export default function UserManagementTable() {
-  const [users, setUsers] = useState<User[]>([
-    { id: 'CN', name: 'Camilo Nossa', email: 'calejandro@fusiontech.com', role: 'Dueño', status: 'inactivo' },
-    { id: 'VE', name: 'Valentina Escobar', email: 'tina_vale@fusiontech.com', role: 'Aliado', status: 'inactivo' },
-    { id: 'DP', name: 'Diego Pardo', email: 'pardiego@fusiontech.com', role: 'Dueño', status: 'activo' },
-    { id: 'CR', name: 'Carlos Rojas', email: 'carlosroj@fusiontech.com', role: 'Consumidor', status: 'bloqueado' },
-    { id: 'ES', name: 'Esteban Salazar', email: 'estebans@fusiontech.com', role: 'Aliado', status: 'activo' },
-  ])
-  const [warningOpen, setWarningOpen] = useState(false)
-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [users, setUsers] = useState<User[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
 
-  const handleStatusChange = (user: User) => {
-    if (user.status === 'activo' || user.status === 'inactivo') {
-      setSelectedUser(user)
-      setWarningOpen(true)
-    } else {
-      updateUserStatus(user.id)
+  useEffect(() => {
+    fetchUsers()
+  }, [])
+
+  const fetchUsers = async () => {
+    try {
+      const data = await getUsers()
+      setUsers(data)
+    } catch (error) {
+      console.error('Error fetching users:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  const updateUserStatus = (userId: string) => {
-    setUsers(users.map(user => {
-      if (user.id === userId) {
-        return {
-          ...user,
-          status: user.status === 'bloqueado' ? 'activo' : 'bloqueado'
-        }
-      }
-      return user
-    }))
-    setWarningOpen(false)
-    setSelectedUser(null)
+  const handleUserUpdated = (updatedUser: User) => {
+    setUsers((prevUsers) =>
+      prevUsers.map((user) =>
+        user.id_user === updatedUser.id_user ? updatedUser : user
+      )
+    )
   }
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'activo':
-        return <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-2" />
-      case 'inactivo':
-        return <span className="inline-block w-2 h-2 bg-yellow-500 rounded-full mr-2" />
-      case 'bloqueado':
-        return <span className="inline-block w-2 h-2 bg-red-500 rounded-full mr-2" />
-      default:
-        return null
-    }
+  const handleUserDeleted = (userId: string) => {
+    setUsers((prevUsers) => prevUsers.filter((user) => user.id_user !== userId))
+  }
+
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      (user.fullname?.toLowerCase().includes(searchTerm.toLowerCase()) ??
+        false) ||
+      (user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ??
+        false) ||
+      (user.roles?.some((role) =>
+        role.toLowerCase().includes(searchTerm.toLowerCase())
+      ) ??
+        false)
+
+    const matchesStatus =
+      statusFilter === 'all' ||
+      (statusFilter === 'active' && user.active) ||
+      (statusFilter === 'inactive' && !user.active)
+
+    return matchesSearch && matchesStatus
+  })
+
+  if (isLoading) {
+    return <div>Loading...</div>
   }
 
   return (
@@ -70,17 +92,21 @@ export default function UserManagementTable() {
       <div className="flex justify-between">
         <div className="relative">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Buscar por nombre o rol..." className="pl-8 w-[300px]" />
+          <Input
+            placeholder="Buscar por nombre o rol..."
+            className="pl-8 w-[300px]"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
-        <Select>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Todos los estados" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos los estados</SelectItem>
-            <SelectItem value="activo">Activo</SelectItem>
-            <SelectItem value="inactivo">Inactivo</SelectItem>
-            <SelectItem value="bloqueado">Bloqueado</SelectItem>
+            <SelectItem value="active">Activo</SelectItem>
+            <SelectItem value="inactive">Inactivo</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -88,43 +114,59 @@ export default function UserManagementTable() {
         <TableHeader>
           <TableRow>
             <TableHead>Nombre</TableHead>
-            <TableHead>Rol</TableHead>
+            <TableHead>Username</TableHead>
             <TableHead>Estado</TableHead>
             <TableHead>Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users.map((user) => (
-            <TableRow key={user.id}>
+          {filteredUsers.map((user) => (
+            <TableRow key={user.id_user}>
               <TableCell>
                 <div className="flex items-center">
-                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-2">
-                    {user.id}
+                  <div className="w-8 h-8 relative mr-2">
+                    <Image
+                      src={user.photo_url || '/placeholder.svg'}
+                      alt={user.fullname || 'User'}
+                      width={32}
+                      height={32}
+                      className="rounded-full object-cover"
+                    />
                   </div>
                   <div>
-                    <div>{user.name}</div>
-                    <div className="text-sm text-gray-500">{user.email}</div>
+                    <div>{user.fullname || 'N/A'}</div>
+                    <div className="text-sm text-gray-500">
+                      {user.mail || 'N/A'}
+                    </div>
                   </div>
                 </div>
               </TableCell>
-              <TableCell>{user.role}</TableCell>
+              <TableCell>{user.username || 'N/A'}</TableCell>
               <TableCell>
                 <div className="flex items-center">
-                  {getStatusIcon(user.status)}
-                  {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                  <span
+                    className={`inline-block w-2 h-2 rounded-full mr-2 ${user.active ? 'bg-green-500' : 'bg-red-500'}`}
+                  />
+                  {user.active ? 'Activo' : 'Bloqueado'}
                 </div>
               </TableCell>
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="h-8 w-8 p-0">
+                      <span className="sr-only">Open menu</span>
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleStatusChange(user)}>
-                      {user.status === 'bloqueado' ? 'Desbloquear' : 'Bloquear'}
-                    </DropdownMenuItem>
+                    <ActivateDeactivateButton
+                      user={user}
+                      onUserUpdated={handleUserUpdated}
+                    />
+                    <DeleteUserButton
+                      user={user}
+                      onUserDeleted={handleUserDeleted}
+                    />
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>
@@ -133,33 +175,23 @@ export default function UserManagementTable() {
         </TableBody>
       </Table>
       <div className="flex items-center justify-between">
-        <div>Total: {users.length} usuarios</div>
+        <div>Total: {filteredUsers.length} usuarios</div>
         <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm">&lt;&lt;</Button>
-          <Button variant="outline" size="sm">&lt;</Button>
-          <div>Página 1 de 10</div>
-          <Button variant="outline" size="sm">&gt;</Button>
-          <Button variant="outline" size="sm">&gt;&gt;</Button>
+          <Button variant="outline" size="sm">
+            &lt;&lt;
+          </Button>
+          <Button variant="outline" size="sm">
+            &lt;
+          </Button>
+          <div>Página 1 de {Math.ceil(filteredUsers.length / 10)}</div>
+          <Button variant="outline" size="sm">
+            &gt;
+          </Button>
+          <Button variant="outline" size="sm">
+            &gt;&gt;
+          </Button>
         </div>
       </div>
-
-      <Dialog open={warningOpen} onOpenChange={setWarningOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center text-destructive">
-              <AlertTriangle className="mr-2 h-5 w-5" />
-              Advertencia: Bloquear Usuario
-            </DialogTitle>
-          </DialogHeader>
-          <DialogDescription>
-            Está a punto de bloquear al usuario {selectedUser?.name}. Esta acción tendrá un efecto permanente en la cuenta del usuario. ¿Está seguro de que desea continuar?
-          </DialogDescription>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setWarningOpen(false)}>Cancelar</Button>
-            <Button variant="destructive" onClick={() => selectedUser && updateUserStatus(selectedUser.id)}>Bloquear Usuario</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
