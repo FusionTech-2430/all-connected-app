@@ -66,7 +66,6 @@ export default function AdminFAQ() {
             className="w-1/3"
             paramName="search"
             placeholder="Buscar por pregunta, respuesta o categoría..."
-            onChange={(e) => setSearchQuery(e.target.value)}
           />
           <CreateFAQButton
             onFAQCreated={(newFAQ) =>

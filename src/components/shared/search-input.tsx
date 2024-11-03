@@ -9,13 +9,6 @@ interface SearchInputProps extends Omit<InputProps, 'onChange' | 'placeholder' |
     paramName: string
 }
 
-interface SearchInputProps {
-  className?: string;
-  paramName: string;
-  placeholder?: string;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}
-
 export default function SearchInput({ paramName, placeholder = 'Buscar por nombre', ...props }: SearchInputProps) {
     const router = useRouter()
     const pathname = usePathname()
