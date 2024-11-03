@@ -16,7 +16,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { MoreHorizontal, ImageIcon } from 'lucide-react'
+import { MoreHorizontal } from 'lucide-react'
 import { Organizations } from '@/types/organizations'
 import { DeleteOrganizationButton } from '@/components/organization/DeleteOrganizationButton'
 import { EditOrganizationButton } from '@/components/organization/EditOrganizationButton'
@@ -55,60 +55,53 @@ export default function Component({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {organizations.map((organization) => (
-            <TableRow key={organization.id_organization}>
-              <TableCell>
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 relative flex-shrink-0 bg-gray-100 rounded-full overflow-hidden">
-                    {organization.photo_url ? (
+          {organizations.map((organization) => {
+            return (
+              <TableRow key={organization.id_organization}>
+                <TableCell>
+                  <div className="flex items-center space-x-2">
+                    <div className="relative h-8 w-8">
                       <Image
-                        src={organization.photo_url}
+                        src={organization.photoUrl || '/placeholder.svg'}
                         alt={`${organization.name} logo`}
-                        width={32}
-                        height={32}
-                        className="object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src = '/placeholder.svg'
-                        }}
+                        fill
+                        className="object-contain"
+                        sizes="32px"
                       />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <ImageIcon className="w-4 h-4 text-gray-400" />
-                      </div>
-                    )}
+                    </div>
+                    <span>{organization.name}</span>
                   </div>
-                  <span>{organization.name}</span>
-                </div>
-              </TableCell>
-              <TableCell>{organization.address}</TableCell>
-              <TableCell>{organization.location_lat}</TableCell>
-              <TableCell>{organization.location_lng}</TableCell>
-              <TableCell className="text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                      <span className="sr-only">Open menu</span>
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <EditOrganizationButton
-                      organization={organization}
-                      onEditSuccess={onOrganizationUpdated}
-                    />
-                    <DeleteOrganizationButton
-                      organization={organization}
-                      onDeleteSuccess={onOrganizationDeleted}
-                    />
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          ))}
+                </TableCell>
+                <TableCell>{organization.address}</TableCell>
+                <TableCell>{organization.location_lat}</TableCell>
+                <TableCell>{organization.location_lng}</TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <EditOrganizationButton
+                        organization={organization}
+                        onEditSuccess={onOrganizationUpdated}
+                      />
+                      <DeleteOrganizationButton
+                        organization={organization}
+                        onDeleteSuccess={onOrganizationDeleted}
+                      />
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            )
+          })}
         </TableBody>
       </Table>
-      <div className="flex justify-between items-center mt-4">
-        <p className="text-sm text-gray-500">
+      <div className="flex items-center justify-between mt-4">
+        <p className="text-sm text-muted-foreground">
           Total: {organizations.length} organizaciones.
         </p>
         <div className="flex gap-2">

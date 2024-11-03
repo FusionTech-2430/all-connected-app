@@ -16,7 +16,7 @@ async function fetcher<T>(url: string, options: RequestInit): Promise<T> {
   } catch (error) {
     console.error('Error:', error);
     if (error instanceof Error) {
-      throw new Error(`Failed to fetch ${url}: ${error.message}`);
+      throw new Error(`Failed to fetch ${API_URL + url}: ${error.message}`);
     } else {
       throw new Error(`Failed to fetch ${url}: Unknown error`);
     }

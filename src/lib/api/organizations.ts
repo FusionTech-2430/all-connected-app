@@ -30,10 +30,11 @@ export const getOrganizations = async () => {
       cache: 'no-store'
     })
   } catch (error) {
-    console.error('Error fetching organizations:', error)
-    throw new Error('Failed to fetch organizations. Please try again later.')
+    console.error('Error fetching organizations:', error);
+    throw new Error('Failed to fetch organizations. Please try again later.');
   }
 }
+
 
 export const getOrganizationById = async (organizationId: string) => {
   try {
@@ -42,15 +43,17 @@ export const getOrganizationById = async (organizationId: string) => {
       headers: {
         Accept: 'application/json'
       }
-    })
+    });
   } catch (error) {
     console.error(
       `Error fetching organization with id ${organizationId}:`,
       error
-    )
-    throw new Error('Failed to fetch organization. Please try again later.')
+    );
+    throw new Error('Failed to fetch organization. Please try again later.');
   }
 }
+
+
 export async function createOrganization(
   data: FormData
 ): Promise<Organizations> {
