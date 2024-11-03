@@ -69,7 +69,7 @@ export default function ProductManagement() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold mb-4">Gestión reportes de productos y servicios</h2>
+        <h2 className="text-2xl font-bold mb-4">Gestión de productos y servicios</h2>
         <div className="mb-4 relative">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Buscar por nombre..." className="pl-8" />

@@ -7,6 +7,8 @@ import {
   Package,
   Users,
   NotebookPen,
+  // for question and answers
+  MessageCircleQuestion,
 } from 'lucide-react'
 
 const navBarItems = [
@@ -39,6 +41,12 @@ const navBarItems = [
     href: '/admin/organizations',
     title: 'Organizaciones',
     icon: <NotebookPen size={20} />
+  },
+  {
+    uid: 'qa',
+    href: '/admin/q&a',
+    title: 'Preguntas frecuentes',
+    icon: <MessageCircleQuestion size={20} />
   }
 ]
 
