@@ -42,7 +42,7 @@ export default function ProductManagement() {
   const [deletedSelectedCategory, setDeletedSelectedCategory] = useState<'todos' | 'productos' | 'servicios'>('todos')
   const [currentPage, setCurrentPage] = useState(1)
   const [deletedCurrentPage, setDeletedCurrentPage] = useState(1)
-  const itemsPerPage = 5
+  const itemsPerPage = 10
   const totalPages = Math.ceil(products.length / itemsPerPage)
   const deletedTotalPages = Math.ceil(deletedProducts.length / itemsPerPage)
 

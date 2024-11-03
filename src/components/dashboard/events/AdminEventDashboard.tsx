@@ -57,7 +57,7 @@ export default function AdminCEventDashboard() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 5
+  const itemsPerPage = 10
   const totalPages = Math.ceil(events.length / itemsPerPage)
 
   const paginatedEvents = events.slice(

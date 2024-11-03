@@ -33,7 +33,7 @@ export default function AdminFAQDashboard({
   onFAQDeleted
 }: AdminFAQDashboardProps) {
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 5
+  const itemsPerPage = 10
   const totalPages = Math.ceil(faqs.length / itemsPerPage)
 
   const paginatedFAQs = faqs.slice(

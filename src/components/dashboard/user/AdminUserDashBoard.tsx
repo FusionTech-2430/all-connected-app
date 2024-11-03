@@ -36,7 +36,7 @@ export default function UserManagementTable() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 5
+  const itemsPerPage = 10
   const totalPages = Math.ceil(users.length / itemsPerPage)
 
   useEffect(() => {

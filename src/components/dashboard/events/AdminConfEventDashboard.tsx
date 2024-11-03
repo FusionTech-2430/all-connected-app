@@ -102,7 +102,7 @@ export default function AdminSpecificEventDashboard({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [currentItem, setCurrentItem] = useState<Item | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 5
+  const itemsPerPage = 10
   const totalPages = Math.ceil(
     items.filter((item) => item.type === activeTab).length / itemsPerPage
   )

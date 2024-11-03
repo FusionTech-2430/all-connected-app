@@ -34,7 +34,7 @@ export default function Component({
 }: AdminOrganizationsDashboardProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 5
+  const itemsPerPage = 10
   const totalPages = Math.ceil(organizations.length / itemsPerPage)
 
   const paginatedOrganizations = organizations.slice(

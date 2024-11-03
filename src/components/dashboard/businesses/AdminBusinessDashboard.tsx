@@ -41,7 +41,7 @@ export default function AdminBusinessDashboard({
   const [owners, setOwners] = useState<{ [key: string]: User }>({})
   const [isLoading, setIsLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 5
+  const itemsPerPage = 10
   const totalPages = Math.ceil(businesses.length / itemsPerPage)
 
   const paginatedBusinesses = businesses.slice(
