@@ -41,6 +41,48 @@ const initialFAQs: FAQ[] = [
     question: '¿Ofrecen reembolsos?',
     answer:
       'Sí, ofrecemos reembolsos completos para productos devueltos dentro de los 30 días posteriores a la compra, siempre que el artículo esté en su estado original y sin usar. Para iniciar un reembolso, contacta a nuestro servicio de atención al cliente.'
+  },
+  {
+    id: 6,
+    category: 'Returns',
+    question: '¿Ofrecen reembolsos?',
+    answer:
+      'Sí, ofrecemos reembolsos completos para productos devueltos dentro de los 30 días posteriores a la compra, siempre que el artículo esté en su estado original y sin usar. Para iniciar un reembolso, contacta a nuestro servicio de atención al cliente.'
+  },
+  {
+    id: 7,
+    category: 'Returns',
+    question: '¿Ofrecen reembolsos?',
+    answer:
+      'Sí, ofrecemos reembolsos completos para productos devueltos dentro de los 30 días posteriores a la compra, siempre que el artículo esté en su estado original y sin usar. Para iniciar un reembolso, contacta a nuestro servicio de atención al cliente.'
+  },
+  {
+    id: 8,
+    category: 'Returns',
+    question: '¿Ofrecen reembolsos?',
+    answer:
+      'Sí, ofrecemos reembolsos completos para productos devueltos dentro de los 30 días posteriores a la compra, siempre que el artículo esté en su estado original y sin usar. Para iniciar un reembolso, contacta a nuestro servicio de atención al cliente.'
+  },
+  {
+    id: 9,
+    category: 'Returns',
+    question: '¿Ofrecen reembolsos?',
+    answer:
+      'Sí, ofrecemos reembolsos completos para productos devueltos dentro de los 30 días posteriores a la compra, siempre que el artículo esté en su estado original y sin usar. Para iniciar un reembolso, contacta a nuestro servicio de atención al cliente.'
+  },
+  {
+    id: 10,
+    category: 'Returns',
+    question: '¿Ofrecen reembolsos?',
+    answer:
+      'Sí, ofrecemos reembolsos completos para productos devueltos dentro de los 30 días posteriores a la compra, siempre que el artículo esté en su estado original y sin usar. Para iniciar un reembolso, contacta a nuestro servicio de atención al cliente.'
+  },
+  {
+    id: 11,
+    category: 'Returns',
+    question: '¿Ofrecen reembolsos?',
+    answer:
+      'Sí, ofrecemos reembolsos completos para productos devueltos dentro de los 30 días posteriores a la compra, siempre que el artículo esté en su estado original y sin usar. Para iniciar un reembolso, contacta a nuestro servicio de atención al cliente.'
   }
 ]
 

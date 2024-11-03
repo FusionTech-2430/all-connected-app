@@ -25,10 +25,6 @@ export default function AdminBusiness() {
     fetchBusinesses()
   }, [])
 
-  // const handleBusinessCreated = (newBusiness: Business) => {
-  //   setBusinesses((prevBusinesses) => [...prevBusinesses, newBusiness])
-  // }
-
   if (isLoading) {
     return <div>Loading...</div>
   }

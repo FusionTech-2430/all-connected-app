@@ -41,8 +41,14 @@ export default function AdminFAQDashboard({
     currentPage * itemsPerPage
   )
 
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
+  }
+
   return (
     <div className="container mx-auto p-4">
+      <div className="flex justify-end mb-4">
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -78,13 +84,15 @@ export default function AdminFAQDashboard({
       </Table>
       <div className="flex justify-between items-center mt-4">
         <p className="text-sm text-gray-500">
-          Total: {faqs.length} preguntas frecuentes.
+          Mostrando {(currentPage - 1) * itemsPerPage + 1} -{' '}
+          {Math.min(currentPage * itemsPerPage, faqs.length)} de {faqs.length}{' '}
+          preguntas frecuentes.
         </p>
         <div className="flex gap-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentPage(1)}
+            onClick={() => handlePageChange(1)}
             disabled={currentPage === 1}
           >
             &lt;&lt;
@@ -92,19 +100,19 @@ export default function AdminFAQDashboard({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
             disabled={currentPage === 1}
           >
             &lt;
           </Button>
-          <span className="text-sm">
+          <span className="text-sm py-2">
             Página {currentPage} de {totalPages}
           </span>
           <Button
             variant="outline"
             size="sm"
             onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              handlePageChange(Math.min(currentPage + 1, totalPages))
             }
             disabled={currentPage === totalPages}
           >
@@ -113,7 +121,7 @@ export default function AdminFAQDashboard({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentPage(totalPages)}
+            onClick={() => handlePageChange(totalPages)}
             disabled={currentPage === totalPages}
           >
             &gt;&gt;
