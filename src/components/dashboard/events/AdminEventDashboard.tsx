@@ -35,7 +35,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label"
-import { Eye, MoreHorizontal, Pencil, Plus, Trash2} from "lucide-react"
+import { Eye, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react"
 
 interface Event {
   id: string
@@ -51,10 +51,23 @@ export default function EventManagement() {
     { id: '3', name: 'City Marathon', capacity: 50, date: '16/09/2024' },
     { id: '4', name: 'Modern Art Exhibition', capacity: 20, date: '10/10/2024' },
     { id: '5', name: 'International Cuisine Expo', capacity: 800, date: '14/11/2024' },
+    { id: '6', name: 'International Cuisine Expo', capacity: 800, date: '14/11/2024' },
   ])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5
+  const totalPages = Math.ceil(events.length / itemsPerPage)
+
+  const paginatedEvents = events.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
+  }
 
   const handleOpenDialog = (event: Event | null = null) => {
     setCurrentEvent(event)
@@ -121,7 +134,7 @@ export default function EventManagement() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {events.map((event) => (
+          {paginatedEvents.map((event) => (
             <TableRow key={event.id}>
               <TableCell>{event.name}</TableCell>
               <TableCell>{event.capacity}</TableCell>
@@ -155,13 +168,49 @@ export default function EventManagement() {
         </TableBody>
       </Table>
       <div className="flex justify-between items-center mt-4">
-        <p className="text-sm text-gray-500">Total: 100 eventos.</p>
+        <p className="text-sm text-gray-500">
+          Mostrando {(currentPage - 1) * itemsPerPage + 1} -{' '}
+          {Math.min(currentPage * itemsPerPage, events.length)} de {events.length}{' '}
+          eventos.
+        </p>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">&lt;&lt;</Button>
-          <Button variant="outline" size="sm">&lt;</Button>
-          <span className="text-sm">Página 1 de 10</span>
-          <Button variant="outline" size="sm">&gt;</Button>
-          <Button variant="outline" size="sm">&gt;&gt;</Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(1)}
+            disabled={currentPage === 1}
+          >
+            &lt;&lt;
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            &lt;
+          </Button>
+          <span className="text-sm py-2">
+            Página {currentPage} de {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              handlePageChange(Math.min(currentPage + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+          >
+            &gt;
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(totalPages)}
+            disabled={currentPage === totalPages}
+          >
+            &gt;&gt;
+          </Button>
         </div>
       </div>
       <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>

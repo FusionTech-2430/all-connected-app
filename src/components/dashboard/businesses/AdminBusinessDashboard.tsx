@@ -40,6 +40,18 @@ export default function AdminBusinessDashboard({
   )
   const [owners, setOwners] = useState<{ [key: string]: User }>({})
   const [isLoading, setIsLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5
+  const totalPages = Math.ceil(businesses.length / itemsPerPage)
+
+  const paginatedBusinesses = businesses.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -82,7 +94,7 @@ export default function AdminBusinessDashboard({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {businesses.map((business) => (
+          {paginatedBusinesses.map((business) => (
             <TableRow key={business.id_business}>
               <TableCell>
                 <div className="flex items-center space-x-2">
@@ -149,20 +161,46 @@ export default function AdminBusinessDashboard({
       </Table>
       <div className="flex justify-between items-center mt-4">
         <p className="text-sm text-gray-500">
-          Total: {businesses.length} emprendimientos.
+          Mostrando {(currentPage - 1) * itemsPerPage + 1} -{' '}
+          {Math.min(currentPage * itemsPerPage, businesses.length)} de {businesses.length}{' '}
+          emprendimientos.
         </p>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(1)}
+            disabled={currentPage === 1}
+          >
             &lt;&lt;
           </Button>
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+            disabled={currentPage === 1}
+          >
             &lt;
           </Button>
-          <span className="text-sm">Página 1 de 2</span>
-          <Button variant="outline" size="sm">
+          <span className="text-sm py-2">
+            Página {currentPage} de {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              handlePageChange(Math.min(currentPage + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+          >
             &gt;
           </Button>
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(totalPages)}
+            disabled={currentPage === totalPages}
+          >
             &gt;&gt;
           </Button>
         </div>

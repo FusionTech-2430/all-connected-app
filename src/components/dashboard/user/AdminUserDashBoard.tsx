@@ -35,6 +35,9 @@ export default function UserManagementTable() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5
+  const totalPages = Math.ceil(users.length / itemsPerPage)
 
   useEffect(() => {
     fetchUsers()
@@ -82,6 +85,15 @@ export default function UserManagementTable() {
     return matchesSearch && matchesStatus
   })
 
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
+  }
+
   if (isLoading) {
     return <div>Loading...</div>
   }
@@ -120,7 +132,7 @@ export default function UserManagementTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredUsers.map((user) => (
+          {paginatedUsers.map((user) => (
             <TableRow key={user.id_user}>
               <TableCell>
                 <div className="flex items-center">
@@ -174,20 +186,48 @@ export default function UserManagementTable() {
           ))}
         </TableBody>
       </Table>
-      <div className="flex items-center justify-between">
-        <div>Total: {filteredUsers.length} usuarios</div>
+      <div className="flex items-center justify-between mt-4">
+        <p className="text-sm text-gray-500">
+          Mostrando {(currentPage - 1) * itemsPerPage + 1} -{' '}
+          {Math.min(currentPage * itemsPerPage, filteredUsers.length)} de {filteredUsers.length}{' '}
+          usuarios.
+        </p>
         <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(1)}
+            disabled={currentPage === 1}
+          >
             &lt;&lt;
           </Button>
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+            disabled={currentPage === 1}
+          >
             &lt;
           </Button>
-          <div>Página 1 de {Math.ceil(filteredUsers.length / 10)}</div>
-          <Button variant="outline" size="sm">
+          <span className="text-sm py-2">
+            Página {currentPage} de {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              handlePageChange(Math.min(currentPage + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+          >
             &gt;
           </Button>
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(totalPages)}
+            disabled={currentPage === totalPages}
+          >
             &gt;&gt;
           </Button>
         </div>

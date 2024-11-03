@@ -64,10 +64,22 @@ export default function AdminSpecificEventDashboard({ id }: AdminSpecificEventDa
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [currentItem, setCurrentItem] = useState<Item | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5
+  const totalPages = Math.ceil(items.filter(item => item.type === activeTab).length / itemsPerPage)
 
   const filteredItems = items.filter(item => item.type === activeTab)
+  const paginatedItems = filteredItems.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
+
   const totalExpenses = items.filter(item => item.type === 'expense').reduce((sum, item) => sum + item.price, 0)
   const totalIncome = items.filter(item => item.type === 'income').reduce((sum, item) => sum + item.price, 0)
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
+  }
 
   const handleOpenDialog = (item: Item | null = null) => {
     setCurrentItem(item)
@@ -187,7 +199,7 @@ export default function AdminSpecificEventDashboard({ id }: AdminSpecificEventDa
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredItems.map((item) => (
+              {paginatedItems.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell>{item.name}</TableCell>
                   <TableCell>{item.category}</TableCell>
@@ -236,7 +248,7 @@ export default function AdminSpecificEventDashboard({ id }: AdminSpecificEventDa
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredItems.map((item) => (
+              {paginatedItems.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell>{item.name}</TableCell>
                   <TableCell>{item.category}</TableCell>
@@ -269,13 +281,49 @@ export default function AdminSpecificEventDashboard({ id }: AdminSpecificEventDa
         </TabsContent>
       </Tabs>
       <div className="flex justify-between items-center mt-4">
-        <p className="text-sm text-gray-500">Total: {filteredItems.length} items.</p>
+        <p className="text-sm text-gray-500">
+          Mostrando {(currentPage - 1) * itemsPerPage + 1} -{' '}
+          {Math.min(currentPage * itemsPerPage, filteredItems.length)} de {filteredItems.length}{' '}
+          items.
+        </p>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">&lt;&lt;</Button>
-          <Button variant="outline" size="sm">&lt;</Button>
-          <span className="text-sm">Página 1 de 10</span>
-          <Button variant="outline" size="sm">&gt;</Button>
-          <Button variant="outline" size="sm">&gt;&gt;</Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(1)}
+            disabled={currentPage === 1}
+          >
+            &lt;&lt;
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            &lt;
+          </Button>
+          <span className="text-sm py-2">
+            Página {currentPage} de {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              handlePageChange(Math.min(currentPage + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+          >
+            &gt;
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(totalPages)}
+            disabled={currentPage === totalPages}
+          >
+            &gt;&gt;
+          </Button>
         </div>
       </div>
       <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>

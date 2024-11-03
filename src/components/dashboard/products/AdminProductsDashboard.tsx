@@ -31,6 +31,7 @@ export default function ProductManagement() {
     { id: '3', name: 'Vapes', user: 'Steven Ortiz', reason: 'Producto sin supervisión...', date: '22/03/2024', category: 'productos' },
     { id: '4', name: 'Diseño de logo', user: 'Carlos Rojas', reason: 'Varios stickers parecen...', date: '1/04/2024', category: 'servicios' },
     { id: '5', name: 'Consultoría', user: 'Carlos Rojas', reason: 'Algunas operaciones muestran...', date: '12/04/2024', category: 'servicios' },
+    { id: '6', name: 'Consultoría', user: 'Carlos Rojas', reason: 'Algunas operaciones muestran...', date: '12/04/2024', category: 'servicios' },
   ])
 
   const [deletedProducts, setDeletedProducts] = useState<Product[]>([])
@@ -39,6 +40,29 @@ export default function ProductManagement() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<'todos' | 'productos' | 'servicios'>('todos')
   const [deletedSelectedCategory, setDeletedSelectedCategory] = useState<'todos' | 'productos' | 'servicios'>('todos')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [deletedCurrentPage, setDeletedCurrentPage] = useState(1)
+  const itemsPerPage = 5
+  const totalPages = Math.ceil(products.length / itemsPerPage)
+  const deletedTotalPages = Math.ceil(deletedProducts.length / itemsPerPage)
+
+  const paginatedProducts = products.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
+
+  const paginatedDeletedProducts = deletedProducts.slice(
+    (deletedCurrentPage - 1) * itemsPerPage,
+    deletedCurrentPage * itemsPerPage
+  )
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
+  }
+
+  const handleDeletedPageChange = (newPage: number) => {
+    setDeletedCurrentPage(newPage)
+  }
 
   const handleView = (product: Product) => {
     setSelectedProduct(product)
@@ -58,11 +82,11 @@ export default function ProductManagement() {
     }
   }
 
-  const filteredProducts = products.filter(product => 
+  const filteredProducts = paginatedProducts.filter(product => 
     selectedCategory === 'todos' || product.category === selectedCategory
   )
 
-  const filteredDeletedProducts = deletedProducts.filter(product => 
+  const filteredDeletedProducts = paginatedDeletedProducts.filter(product => 
     deletedSelectedCategory === 'todos' || product.category === deletedSelectedCategory
   )
 
@@ -137,13 +161,49 @@ export default function ProductManagement() {
           </TableBody>
         </Table>
         <div className="flex items-center justify-between mt-4">
-          <div>Total: {filteredProducts.length} eventos</div>
+          <p className="text-sm text-gray-500">
+            Mostrando {(currentPage - 1) * itemsPerPage + 1} -{' '}
+            {Math.min(currentPage * itemsPerPage, products.length)} de {products.length}{' '}
+            productos.
+          </p>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm">&lt;&lt;</Button>
-            <Button variant="outline" size="sm">&lt;</Button>
-            <div>Página 1 de 10</div>
-            <Button variant="outline" size="sm">&gt;</Button>
-            <Button variant="outline" size="sm">&gt;&gt;</Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(1)}
+              disabled={currentPage === 1}
+            >
+              &lt;&lt;
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              &lt;
+            </Button>
+            <span className="text-sm py-2">
+              Página {currentPage} de {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                handlePageChange(Math.min(currentPage + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+            >
+              &gt;
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(totalPages)}
+              disabled={currentPage === totalPages}
+            >
+              &gt;&gt;
+            </Button>
           </div>
         </div>
       </div>
@@ -204,7 +264,50 @@ export default function ProductManagement() {
           </TableBody>
         </Table>
         <div className="flex items-center justify-between mt-4">
-          <div>Total: {filteredDeletedProducts.length} eventos eliminados</div>
+          <p className="text-sm text-gray-500">
+            Mostrando {(deletedCurrentPage - 1) * itemsPerPage + 1} -{' '}
+            {Math.min(deletedCurrentPage * itemsPerPage, deletedProducts.length)} de {deletedProducts.length}{' '}
+            productos eliminados.
+          </p>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleDeletedPageChange(1)}
+              disabled={deletedCurrentPage === 1}
+            >
+              &lt;&lt;
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleDeletedPageChange(Math.max(deletedCurrentPage - 1, 1))}
+              disabled={deletedCurrentPage === 1}
+            >
+              &lt;
+            </Button>
+            <span className="text-sm py-2">
+              Página {deletedCurrentPage} de {deletedTotalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                handleDeletedPageChange(Math.min(deletedCurrentPage + 1, deletedTotalPages))
+              }
+              disabled={deletedCurrentPage === deletedTotalPages}
+            >
+              &gt;
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleDeletedPageChange(deletedTotalPages)}
+              disabled={deletedCurrentPage === deletedTotalPages}
+            >
+              &gt;&gt;
+            </Button>
+          </div>
         </div>
       </div>
 

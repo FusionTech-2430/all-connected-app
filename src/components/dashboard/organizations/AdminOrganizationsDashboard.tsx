@@ -33,6 +33,18 @@ export default function Component({
   onOrganizationDeleted
 }: AdminOrganizationsDashboardProps) {
   const [isLoading, setIsLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5
+  const totalPages = Math.ceil(organizations.length / itemsPerPage)
+
+  const paginatedOrganizations = organizations.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
+  }
 
   useEffect(() => {
     setIsLoading(false)
@@ -55,7 +67,7 @@ export default function Component({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {organizations.map((organization) => {
+          {paginatedOrganizations.map((organization) => {
             return (
               <TableRow key={organization.id_organization}>
                 <TableCell>
@@ -100,22 +112,48 @@ export default function Component({
           })}
         </TableBody>
       </Table>
-      <div className="flex items-center justify-between mt-4">
+      <div className="flex justify-between items-center mt-4">
         <p className="text-sm text-muted-foreground">
-          Total: {organizations.length} organizaciones.
+          Mostrando {(currentPage - 1) * itemsPerPage + 1} -{' '}
+          {Math.min(currentPage * itemsPerPage, organizations.length)} de {organizations.length}{' '}
+          organizaciones.
         </p>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(1)}
+            disabled={currentPage === 1}
+          >
             &lt;&lt;
           </Button>
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+            disabled={currentPage === 1}
+          >
             &lt;
           </Button>
-          <span className="text-sm">Página 1 de 2</span>
-          <Button variant="outline" size="sm">
+          <span className="text-sm py-2">
+            Página {currentPage} de {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              handlePageChange(Math.min(currentPage + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+          >
             &gt;
           </Button>
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(totalPages)}
+            disabled={currentPage === totalPages}
+          >
             &gt;&gt;
           </Button>
         </div>
