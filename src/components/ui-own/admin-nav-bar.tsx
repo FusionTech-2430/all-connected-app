@@ -9,9 +9,17 @@ import {
   NotebookPen,
   // for question and answers
   MessageCircleQuestion,
+  // for events
+  PartyPopperIcon,
 } from 'lucide-react'
 
 const navBarItems = [
+  {
+    uid: 'ConfesionesEvents',
+    href: '/admin/conf-events',
+    title: 'Eventos confesiones',
+    icon: <PartyPopperIcon size={20} /> 
+  },
   {
     uid: 'business',
     href: '/admin/business',
