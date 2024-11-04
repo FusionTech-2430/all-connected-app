@@ -55,14 +55,12 @@ export const getReportById = (productId: number) => {
 
 // Get a product by id
 export const getProductById = async (productId: number) => {
-  console.log(`Fetching product with ID: ${productId}`);
   const response = await fetcher<Products>(`/products/${productId}`, {
     method: 'GET',
     headers: {
       Accept: 'application/json'
     }
   });
-  console.log('Fetched product response:', response);
   return response;
 }
 

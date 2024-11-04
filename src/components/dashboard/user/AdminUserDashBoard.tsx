@@ -28,7 +28,7 @@ import Image from 'next/image'
 import { User } from '@/types/users/user'
 import { getUsers } from '@/lib/api/users'
 import ActivateDeactivateButton from './ActivateDeactiveButton'
-import { DeleteUserButton } from './DeleteUserButton'
+import DeleteUserButton from './DeleteUserButton'
 
 export default function UserManagementTable() {
   const [users, setUsers] = useState<User[]>([])
@@ -37,7 +37,6 @@ export default function UserManagementTable() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
-  const totalPages = Math.ceil(users.length / itemsPerPage)
 
   useEffect(() => {
     fetchUsers()
@@ -85,6 +84,8 @@ export default function UserManagementTable() {
     return matchesSearch && matchesStatus
   })
 
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage)
+
   const paginatedUsers = filteredUsers.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -111,7 +112,7 @@ export default function UserManagementTable() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setCurrentPage(1); }}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Todos los estados" />
           </SelectTrigger>
@@ -171,7 +172,7 @@ export default function UserManagementTable() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <ActivateDeactivateButton
+                    <ActivateDeactivateButton 
                       user={user}
                       onUserUpdated={handleUserUpdated}
                     />
