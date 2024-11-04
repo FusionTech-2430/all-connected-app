@@ -106,3 +106,13 @@ export async function deleteProduct(productId: number) {
     }
   });
 }
+
+
+export const getProductRating = async (productId: number) => {
+  return fetcher(`/products/${productId}/rating/average`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json'
+    }
+  });
+};

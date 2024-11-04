@@ -21,6 +21,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from '@/components/ui/use-toast'
 import { useUserId } from '@/hooks/use-user-id'
+import { getProductById } from '@/lib/api/products'
+import { getBusiness } from '@/lib/api/business'
+import { createOrder, addProductToOrder } from '@/lib/api/orders'
 
 interface Product {
   id: number
@@ -61,22 +64,10 @@ export default function ProductPage() {
 
   const fetchProduct = async (id: number) => {
     try {
-      const response = await fetch(
-        `${API_URL}/products-service/api/v1/products/${id}`
-      )
-      if (!response.ok) {
-        throw new Error('Failed to fetch product')
-      }
-      const data = await response.json()
-      setProduct(data)
+      const productData = await getProductById(id);
+      setProduct(productData);
 
-      const businessResponse = await fetch(
-        `${API_URL}/businesses-service/api/v1/businesses/${data.idBusiness}`
-      )
-      if (!businessResponse.ok) {
-        throw new Error('Failed to fetch business')
-      }
-      const businessData = await businessResponse.json()
+      const businessData = await getBusiness(productData.idBusiness);
       setBusiness(businessData)
 
       const ratingResponse = await fetch(
@@ -117,67 +108,51 @@ export default function ProductPage() {
       toast({
         title: 'Error',
         description: 'Usuario o producto no disponible',
-        variant: 'destructive'
-      })
-      return
+        variant: 'destructive',
+      });
+      return;
     }
-
-    setIsLoading(true)
-
+  
+    setIsLoading(true);
+  
     try {
-      // Create order
-      const orderResponse = await fetch(
-        `${API_URL}/orders-service/api/v1/orders`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            idUser: userId,
-            idBusiness: product.idBusiness
-          })
-        }
-      )
-
-      if (!orderResponse.ok) {
-        throw new Error('Failed to create order')
+      // Verificar si ya existe una orden en sessionStorage
+      let orderId = sessionStorage.getItem('orderId');
+  
+      // Si no hay una orden existente, crear una nueva
+      if (!orderId) {
+        const orderData = await createOrder({
+          idUser: userId,
+          idBusiness: product.idBusiness,
+        });
+  
+        // Guardar el ID de la nueva orden en sessionStorage
+        orderId = orderData.id;
+        sessionStorage.setItem('orderId', orderId);
       }
-
-      const orderData = await orderResponse.json()
-
-      // Add product to order
-      const formData = new FormData()
-      formData.append('quantity', quantity.toString())
-
-      const productResponse = await fetch(
-        `${API_URL}/orders-service/api/v1/orders/${orderData.id}/products/${product.id}`,
-        {
-          method: 'POST',
-          body: formData
-        }
-      )
-
-      if (!productResponse.ok) {
-        throw new Error('Failed to add product to order')
-      }
-
+  
+      // Agregar producto a la orden existente o nueva
+      await addProductToOrder(orderId, product.id, quantity);
+  
       toast({
         title: 'Éxito',
-        description: 'Orden creada correctamente'
-      })
-      setIsModalOpen(false)
+        description: 'Producto agregado a la orden correctamente',
+      });
+      setIsModalOpen(false);
     } catch (error) {
-      console.error('Error creating order:', error)
+      console.error('Error procesando la compra:', error);
       toast({
         title: 'Error',
-        description: 'Error al crear la orden',
-        variant: 'destructive'
-      })
+        description: 'Error al procesar la compra',
+        variant: 'destructive',
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
+      // reload the page to update the cart button
+      window.location.reload();
     }
-  }
+  };
+  
 
   const renderStars = (rating: number) => {
     return (
