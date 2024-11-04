@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import {
   CheckCircle,
-  ArrowLeft,
   Minus,
   Plus,
   Star,
@@ -43,7 +42,6 @@ interface Business {
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
 
 export default function ProductPage() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const productId = searchParams.get('id')
 
@@ -204,84 +202,105 @@ export default function ProductPage() {
 
   if (!product || !business) return <div>Producto no encontrado</div>
 
-  return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-[#0c4a6e] text-white p-8 flex items-center justify-center">
-        <h1 className="text-3xl font-bold">Productos</h1>
-      </header>
+ return (
+    <div className="min-h-screen bg-gray-50"> 
+      <header className="relative w-full bg-gradient-to-br from-[#0C4A6E] via-[#075985] to-[#0369A1] overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjA1Ij48Y2lyY2xlIGN4PSIxIiBjeT0iMSIgcj0iMSIvPjwvZz48L3N2Zz4=')] opacity-30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+        
+        <div className="relative max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+          <h1 className="text-4xl font-bold text-center text-white tracking-tight drop-shadow-lg">
+            Informacion del Producto
+          </h1>
+        </div>
 
-      <main className="flex-grow bg-white p-4 max-w-4xl mx-auto w-full">
-        <button
-          onClick={() => router.back()}
-          className="text-blue-500 mb-6 inline-flex items-center"
-        >
-          <ArrowLeft className="mr-2" size={16} />
-          Vuelve a todos los productos
-        </button>
-
-        <div className="flex flex-col md:flex-row gap-8">
-          <div className="md:w-1/2">
-            <Image
-              src={product.photoUrl}
-              alt={product.name}
-              width={500}
-              height={500}
-              className="w-full h-auto"
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg
+            className="w-full h-8 text-gray-50"
+            viewBox="0 0 1200 120"
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
+              className="fill-current"
             />
-          </div>
-
-          <div className="md:w-1/2">
-            <p className="text-gray-500 mb-1 text-sm">{business.name}</p>
-            <h2 className="text-2xl font-bold mb-2 text-[#0c4a6e]">
-              {product.name}
-            </h2>
-
-            {product.rating && (
-              <div className="flex items-center mb-4">
-                {renderStars(product.rating)}
-                <span className="ml-2 text-sm text-gray-600">
-                  ({product.rating.toFixed(1)})
-                </span>
+          </svg>
+        </div>
+      </header>
+      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <div className="bg-white rounded-xl shadow-sm p-6 md:p-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div className="space-y-4">
+              <div className="aspect-square relative rounded-lg overflow-hidden bg-gray-100">
+                <Image
+                  src={product.photoUrl}
+                  alt={product.name}
+                  fill
+                  className="object-cover"
+                />
               </div>
-            )}
-
-            <p className="text-gray-700 mb-4">{product.description}</p>
-
-            <p className="text-3xl font-bold mb-4">
-              ${product.price.toLocaleString()}
-            </p>
-
-            <div className="flex items-center mb-4">
-              <CheckCircle className="text-green-500 mr-2" />
-              <span className="text-green-500">En stock</span>
             </div>
 
-            <button
-              className="bg-[#0284c7] text-white px-6 py-2 rounded hover:bg-[#0369a1] transition-colors w-full md:w-auto"
-              onClick={() => setIsModalOpen(true)}
-            >
-              Comprar
-            </button>
+            <div className="space-y-6">
+              <div>
+                <p className="text-gray-500 text-sm">{business.name}</p>
+                <h2 className="text-3xl font-bold text-gray-900 mt-1">
+                  {product.name}
+                </h2>
+              </div>
 
-            <p className="mt-4 text-sm text-gray-500 flex items-center">
-              <svg
-                className="w-4 h-4 mr-1"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              Reportar producto o emprendimiento
-            </p>
+              {product.rating && (
+                <div className="flex items-center">
+                  {renderStars(product.rating)}
+                  <span className="ml-2 text-sm text-gray-600">
+                    ({product.rating.toFixed(1)})
+                  </span>
+                </div>
+              )}
+
+              <p className="text-gray-700">{product.description}</p>
+
+              <div className="border-t border-b border-gray-200 py-4">
+                <p className="text-3xl font-bold text-gray-900">
+                  ${product.price.toLocaleString()}
+                </p>
+
+                <div className="mt-4 flex items-center">
+                  <CheckCircle className="text-green-500 mr-2" />
+                  <span className="text-green-500 font-medium">En stock</span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <Button 
+                  className="w-full py-6 text-lg"
+                  onClick={() => setIsModalOpen(true)}
+                >
+                  Comprar
+                </Button>
+
+                <button className="w-full text-sm text-gray-500 flex items-center justify-center hover:text-gray-700">
+                  <svg
+                    className="w-4 h-4 mr-1"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  Reportar producto o emprendimiento
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="mt-8">
-          <h2 className="text-2xl font-bold mb-4 text-[#0c4a6e]">
-            Opiniones del producto
-          </h2>
-          <p>No hay opiniones disponibles.</p>
+
+          <div className="mt-16">
+            <h2 className="text-2xl font-bold text-gray-900 mb-8">
+              Opiniones del producto
+            </h2>
+            <p className="text-gray-500">No hay opiniones disponibles.</p>
+          </div>
         </div>
       </main>
 

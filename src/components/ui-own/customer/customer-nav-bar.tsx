@@ -6,7 +6,8 @@ import {
   MessageSquareIcon,
   PartyPopperIcon,
   PencilIcon,
-  ShieldQuestionIcon
+  ShieldQuestionIcon,
+  ShoppingBag
 } from 'lucide-react'
 
 const navBarItems = [
@@ -27,6 +28,12 @@ const navBarItems = [
     href: '/consumer/events',
     title: 'Eventos',
     icon: <PartyPopperIcon size={20} /> 
+  },
+  {
+    uid: 'Orders',
+    href: '/orders',
+    title: 'Mis Ordenes',
+    icon: <ShoppingBag size={20} /> 
   },
   {
     uid: 'Chat',

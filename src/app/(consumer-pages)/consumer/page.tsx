@@ -1,4 +1,4 @@
-import ProductsComponent from '@/components/consumer/products-page'
+import ProductsComponent from '@/components/consumer/products/products-page'
 
 export default function ProductsPage() {
   return (
