@@ -1,4 +1,4 @@
-'use client'
+
 
 // interface SearchInputProps
 //   extends Omit<InputProps, 'onChange' | 'placeholder' | 'value' | 'type'> {
@@ -48,6 +48,8 @@
 //     />
 //   )
 // }
+
+'use client'
 
 interface SearchInputProps {
   className?: string

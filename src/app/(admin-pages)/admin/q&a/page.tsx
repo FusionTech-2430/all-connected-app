@@ -97,6 +97,10 @@ export default function AdminFAQ() {
       faq.category.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
+  const handleSearch = (value: string) => {
+    setSearchQuery(value)
+  }
+
   return (
     <>
       <div className="container mx-auto p-4">
@@ -108,6 +112,8 @@ export default function AdminFAQ() {
             className="w-1/3"
             paramName="search"
             placeholder="Buscar por pregunta, respuesta o categoría..."
+            onChange={handleSearch}
+            value={searchQuery}
           />
           <CreateFAQButton
             onFAQCreated={(newFAQ) =>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -44,7 +44,7 @@ interface Event {
   date: string
 }
 
-export default function AdminCEventDashboard() {
+export default function AdminEventDashboard() {
   const [events, setEvents] = useState<Event[]>([
     { id: '1', name: 'Summer Music Festival', capacity: 100, date: '21/08/2024' },
     { id: '2', name: 'Annual Developer Conference', capacity: 400, date: '12/09/2024' },
@@ -53,14 +53,23 @@ export default function AdminCEventDashboard() {
     { id: '5', name: 'International Cuisine Expo', capacity: 800, date: '14/11/2024' },
     { id: '6', name: 'International Cuisine Expo', capacity: 800, date: '14/11/2024' },
   ])
+  const [filteredEvents, setFilteredEvents] = useState<Event[]>(events)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [searchTerm, setSearchTerm] = useState('')
   const itemsPerPage = 10
-  const totalPages = Math.ceil(events.length / itemsPerPage)
+  const totalPages = Math.ceil(filteredEvents.length / itemsPerPage)
 
-  const paginatedEvents = events.slice(
+  useEffect(() => {
+    const filtered = events.filter((event) =>
+      event.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    setFilteredEvents(filtered)
+  }, [searchTerm, events])
+
+  const paginatedEvents = filteredEvents.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   )
@@ -112,7 +121,12 @@ export default function AdminCEventDashboard() {
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Eventos</h1>
       <div className="flex justify-between mb-4">
-        <Input className="w-1/3" placeholder="Buscar por nombre..." />
+        <Input
+          className="w-1/3"
+          placeholder="Buscar por nombre..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
         <Button onClick={handleOpenDialog}>
           <Plus className="mr-2 h-4 w-4" /> Añadir
         </Button>
@@ -159,7 +173,7 @@ export default function AdminCEventDashboard() {
       <div className="flex justify-between items-center mt-4">
         <p className="text-sm text-gray-500">
           Mostrando {(currentPage - 1) * itemsPerPage + 1} -{' '}
-          {Math.min(currentPage * itemsPerPage, events.length)} de {events.length}{' '}
+          {Math.min(currentPage * itemsPerPage, filteredEvents.length)} de {filteredEvents.length}{' '}
           eventos.
         </p>
         <div className="flex gap-2">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -65,10 +65,11 @@ export default function AdminSpecificEventDashboard({ id }: AdminSpecificEventDa
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [currentItem, setCurrentItem] = useState<Item | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [searchTerm, setSearchTerm] = useState('')
   const itemsPerPage = 10
-  const totalPages = Math.ceil(items.filter(item => item.type === activeTab).length / itemsPerPage)
+  const totalPages = Math.ceil(items.filter(item => item.type === activeTab && item.name.toLowerCase().includes(searchTerm.toLowerCase())).length / itemsPerPage)
 
-  const filteredItems = items.filter(item => item.type === activeTab)
+  const filteredItems = items.filter(item => item.type === activeTab && item.name.toLowerCase().includes(searchTerm.toLowerCase()))
   const paginatedItems = filteredItems.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -176,7 +177,12 @@ export default function AdminSpecificEventDashboard({ id }: AdminSpecificEventDa
         </TabsList>
         <TabsContent value="expense">
           <div className="flex justify-between mb-4">
-            <Input className="w-1/3" placeholder="Buscar por nombre..." />
+            <Input
+              className="w-1/3"
+              placeholder="Buscar por nombre..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
             <Button onClick={handleOpenDialog}>
               <Plus className="mr-2 h-4 w-4" /> Añadir
             </Button>
@@ -221,7 +227,12 @@ export default function AdminSpecificEventDashboard({ id }: AdminSpecificEventDa
         </TabsContent>
         <TabsContent value="income">
           <div className="flex justify-between mb-4">
-            <Input className="w-1/3" placeholder="Buscar por nombre..." />
+            <Input
+              className="w-1/3"
+              placeholder="Buscar por nombre..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
             <Button onClick={handleOpenDialog}>
               <Plus className="mr-2 h-4 w-4" /> Añadir
             </Button>
