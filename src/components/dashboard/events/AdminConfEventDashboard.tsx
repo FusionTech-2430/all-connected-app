@@ -278,6 +278,10 @@ export default function AdminConfEventDashboard({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleOpenDialog(item)}>
+                          <Pencil className="mr-2 h-4 w-4 text-yellow-500" /> {/* Change color to yellow */}
+                          Editar
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDelete(item)}>
                           <Trash2 className="mr-2 h-4 w-4 text-red-500" /> {/* Change color to red */}
                           Eliminar
@@ -328,6 +332,10 @@ export default function AdminConfEventDashboard({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleOpenDialog(item)}>
+                          <Pencil className="mr-2 h-4 w-4 text-yellow-500" /> {/* Change color to yellow */}
+                          Editar
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDelete(item)}>
                           <Trash2 className="mr-2 h-4 w-4 text-red-500" /> {/* Change color to red */}
                           Eliminar
