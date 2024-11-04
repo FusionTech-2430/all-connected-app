@@ -142,41 +142,43 @@ export default function ProductList() {
   }
 
   return (
-    <section className="w-4/5 p-5">
-      <div className="flex justify-between items-center mb-4">
-        <p>Mostrando 1-{filteredProducts.length} de {filteredProducts.length} resultados</p>
+    <section className="w-full p-5">
+      <div className="mb-4">
         <Input
           type="text"
           placeholder="Buscar productos..."
-          className="max-w-sm"
+          className="w-full"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
+      <p className="mb-4">Mostrando 1-{filteredProducts.length} de {filteredProducts.length} resultados</p>
 
-      <div className="flex mb-4">
-        <div className="w-1/4 pr-4">
+      <div className="flex flex-col md:flex-row md:gap-6">
+        <div className="w-full md:w-1/5 mb-4 md:mb-0">
           <h3 className="font-bold mb-2">Filtrar por etiquetas:</h3>
-          {labels.map((label) => (
-            <div key={label.id} className="flex items-center mb-2">
-              <Checkbox
-                id={`label-${label.id}`}
-                checked={selectedLabels.includes(label.label)}
-                onCheckedChange={() => handleLabelChange(label.label)}
-              />
-              <Label htmlFor={`label-${label.id}`} className="ml-2">
-                {label.label}
-              </Label>
-            </div>
-          ))}
+          <div className="space-y-2">
+            {labels.map((label) => (
+              <div key={label.id} className="flex items-center">
+                <Checkbox
+                  id={`label-${label.id}`}
+                  checked={selectedLabels.includes(label.label)}
+                  onCheckedChange={() => handleLabelChange(label.label)}
+                />
+                <Label htmlFor={`label-${label.id}`} className="ml-2 text-sm">
+                  {label.label}
+                </Label>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="w-3/4 grid grid-cols-3 gap-4">
+        <div className="w-full md:w-4/5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 pr-40">
           {filteredProducts.map((product) => (
-            <div key={product.id} className="border p-4 flex flex-col items-center">
+            <div key={product.id} className="border rounded-lg shadow-sm p-4 flex flex-col items-center">
               <Dialog>
                 <DialogTrigger asChild>
-                  <div className="w-full h-48 mb-4 cursor-pointer overflow-hidden">
+                  <div className="w-full h-40 mb-3 cursor-pointer overflow-hidden rounded-lg">
                     {product.photoUrl ? (
                       <Image
                         src={product.photoUrl}
@@ -186,7 +188,7 @@ export default function ProductList() {
                         className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                      <div className="w-full h-full bg-gray-200 flex items-center justify-center rounded-lg">
                         No image
                       </div>
                     )}
@@ -199,21 +201,21 @@ export default function ProductList() {
                       alt={product.name}
                       width={800}
                       height={600}
-                      className="w-full h-auto"
+                      className="w-full h-auto rounded-lg"
                     />
                   )}
                 </DialogContent>
               </Dialog>
-              <h4 className="font-semibold text-center">{product.name}</h4>
-              <p className="text-sm text-gray-600 mb-2 text-center">{product.description}</p>
-              <p className="text-xl font-bold mb-2">${product.price.toLocaleString()}</p>
+              <h4 className="font-semibold text-center text-sm">{product.name}</h4>
+              <p className="text-xs text-gray-600 mb-2 text-center line-clamp-2">{product.description}</p>
+              <p className="text-lg font-bold mb-2">${product.price.toLocaleString()}</p>
               {product.rating !== null && product.rating !== undefined && (
                 <div className="mb-2">
-                  <p className="text-sm text-gray-600 text-center">Rating: {product.rating.toFixed(1)}</p>
+                  <p className="text-xs text-gray-600 text-center">Rating: {product.rating.toFixed(1)}</p>
                   {renderStars(product.rating)}
                 </div>
               )}
-              <Button className="w-full" onClick={() => handleViewProduct(product.id)}>Ver Producto</Button>
+              <Button className="w-full text-sm" onClick={() => handleViewProduct(product.id)}>Ver Producto</Button>
             </div>
           ))}
         </div>
