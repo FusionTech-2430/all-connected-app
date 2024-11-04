@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import type { FAQ } from '@/types/faq'
 import { toast } from 'sonner'
+import { createFaq } from '@/lib/api/faq'
 
 interface CreateFAQButtonProps {
   onFAQCreated: (newFAQ: FAQ) => void
@@ -31,18 +32,14 @@ export function CreateFAQButton({ onFAQCreated }: CreateFAQButtonProps) {
     setIsSubmitting(true)
 
     const formData = new FormData(event.currentTarget)
+       // Example in CreateFAQButton.tsx
     const faqData = {
-      category: formData.get('category') as string,
-      question: formData.get('question') as string,
-      answer: formData.get('answer') as string
+      pregunta: formData.get('question') as string,
+      respuesta: formData.get('answer') as string
     }
 
     try {
-      // Simulate API call
-      const newFAQ: FAQ = {
-        id: Date.now(),
-        ...faqData
-      }
+      const newFAQ = await createFaq(faqData)
       onFAQCreated(newFAQ)
       toast.success('Pregunta frecuente creada exitosamente')
       handleCloseDialog()
@@ -68,15 +65,6 @@ export function CreateFAQButton({ onFAQCreated }: CreateFAQButtonProps) {
           </DialogHeader>
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
-              <Label htmlFor="category">Categoría</Label>
-              <Input
-                id="category"
-                name="category"
-                placeholder="Ingresa la categoría"
-                required
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="question">Pregunta</Label>
               <Input
                 id="question"
@@ -87,11 +75,13 @@ export function CreateFAQButton({ onFAQCreated }: CreateFAQButtonProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="answer">Respuesta</Label>
-              <Textarea
+                            <Textarea
                 id="answer"
                 name="answer"
                 placeholder="Ingresa la respuesta"
                 required
+                rows={6} // Increased number of rows
+                className="h-32" // Alternatively, set a fixed height
               />
             </div>
             <Button type="submit" className="w-full" disabled={isSubmitting}>

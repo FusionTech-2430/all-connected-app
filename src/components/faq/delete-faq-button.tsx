@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { FAQ } from '@/types/faq'
+import { deleteFaq } from '@/lib/api/faq'
 
 interface DeleteFAQButtonProps {
   faq: FAQ
@@ -34,7 +35,7 @@ export function DeleteFAQButton({
 
   const handleDeleteFAQ = async () => {
     try {
-      // Simulate API call
+      await deleteFaq(faq.id)
       onDeleteSuccess(faq.id)
       setIsDeleteDialogOpen(false)
     } catch (error) {

@@ -1,8 +1,8 @@
 'use server'
 
-import { FA, FQ } from "@/types/faq";
+import { FAQ } from "@/types/faq";
 
-const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/communication-service/api/v1`;
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/qa-service/api/v1`;
 
 async function fetcher<T>(url: string, options: RequestInit): Promise<T> {
   try {
@@ -22,18 +22,19 @@ async function fetcher<T>(url: string, options: RequestInit): Promise<T> {
   }
 }
 
-export const getFQs = () => {
-  return fetcher<FQ[]>('/communication', {
+export const getFaqs = async (): Promise<FAQ[]> => {
+  const faqs = await fetcher<FAQ[]>('/questions', {
     method: 'GET',
     headers: {
       Accept: 'application/json'
     },
     cache: 'no-store'
   });
+  return faqs;
 }
 
-export const getFQById = (FQId: string) => {
-  return fetcher<FQ>(`/example/${FQId}`, {
+export const getFaqById = (FaqId: number): Promise<FAQ> => {
+  return fetcher<FAQ>(`/questions/${FaqId}`, {
     method: 'GET',
     headers: {
       Accept: 'application/json'
@@ -41,19 +42,20 @@ export const getFQById = (FQId: string) => {
   });
 }
 
-
 // Create a new FAQ with a json object
-export async function createFQ(): Promise<FQ> {
-    return fetcher<FQ>('/example', {
+export async function createFaq(faqData: { pregunta: string, respuesta: string }): Promise<FAQ> {
+    return fetcher<FAQ>('/questions', {
         method: 'POST',
         headers: {
-        Accept: 'application/json'
-        }
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify(faqData)
     });
 }
 
-export async function deleteFQ(businessId: string) {
-  return fetcher<void>(`/example/${businessId}`, {
+export async function deleteFaq(FaqId: number): Promise<void> {
+  return fetcher<void>(`/questions/${FaqId}`, {
     method: 'DELETE',
     headers: {
       Accept: 'application/json'
@@ -62,11 +64,13 @@ export async function deleteFQ(businessId: string) {
 }
 
 // Update a FAQ with a json object
-export async function updateFQ(businessId: string): Promise<FQ> {
-    return fetcher<FQ>(`/example/${businessId}`, {
+export async function updateFaq(FaqId: number, faqData: { pregunta: string, respuesta: string }): Promise<FAQ> {
+    return fetcher<FAQ>(`/questions/${FaqId}`, {
         method: 'PUT',
         headers: {
-        Accept: 'application/json'
-        }
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify(faqData)
     });
 }

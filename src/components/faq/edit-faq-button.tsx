@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import type { FAQ } from '@/types/faq'
+import { updateFaq } from '@/lib/api/faq'
 
 interface EditFAQButtonProps {
   faq: FAQ
@@ -38,17 +39,12 @@ export function EditFAQButton({ faq, onEditSuccess }: EditFAQButtonProps) {
 
     const formData = new FormData(event.currentTarget)
     const updatedFAQData = {
-      category: formData.get('category') as string,
-      question: formData.get('question') as string,
-      answer: formData.get('answer') as string
+      pregunta: formData.get('question') as string,
+      respuesta: formData.get('answer') as string
     }
 
     try {
-      // Simulate API call
-      const updatedFAQ: FAQ = {
-        ...faq,
-        ...updatedFAQData
-      }
+      const updatedFAQ = await updateFaq(faq.id as number, updatedFAQData)
       onEditSuccess(updatedFAQ)
       handleCloseDialog()
     } catch (error) {
@@ -78,30 +74,23 @@ export function EditFAQButton({ faq, onEditSuccess }: EditFAQButtonProps) {
           </DialogHeader>
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
-              <Label htmlFor="category">Categoría</Label>
-              <Input
-                id="category"
-                name="category"
-                defaultValue={faq.category}
-                required
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="question">Pregunta</Label>
               <Input
                 id="question"
                 name="question"
-                defaultValue={faq.question}
+                defaultValue={faq.pregunta}
                 required
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="answer">Respuesta</Label>
-              <Textarea
+                            <Textarea
                 id="answer"
                 name="answer"
-                defaultValue={faq.answer}
+                defaultValue={faq.respuesta}
                 required
+                rows={6} // Increased number of rows
+                className="h-32" // Alternatively, set a fixed height
               />
             </div>
             <Button type="submit" className="w-full" disabled={isSubmitting}>
