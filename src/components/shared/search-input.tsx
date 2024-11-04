@@ -1,4 +1,4 @@
-
+// search-input.tsx
 
 // interface SearchInputProps
 //   extends Omit<InputProps, 'onChange' | 'placeholder' | 'value' | 'type'> {

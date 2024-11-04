@@ -1,6 +1,6 @@
 'use server'
 
-import { Products} from "@/types/products";
+import { Products, ProductsReport} from "@/types/products";
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/products-service/api/v1`;
 
@@ -22,8 +22,9 @@ async function fetcher<T>(url: string, options: RequestInit): Promise<T> {
   }
 }
 
-export const getProducts = () => {
-  return fetcher<Products[]>('/products', {
+// Get all products reports
+export const getReports = () => {
+  return fetcher<ProductsReport[]>('/products/reports', {
     method: 'GET',
     headers: {
       Accept: 'application/json'
@@ -32,8 +33,9 @@ export const getProducts = () => {
   });
 }
 
-export const getProductsById = (productsId: string) => {
-  return fetcher<Products>(`/products/${productsId}`, {
+// Get all products
+export const getProducts = () => {
+  return fetcher<Products[]>('/products', {
     method: 'GET',
     headers: {
       Accept: 'application/json'
@@ -41,26 +43,53 @@ export const getProductsById = (productsId: string) => {
   });
 }
 
-// export async function createBusiness(data: CreateBusinessData): Promise<Business> {
-//   const formData = new FormData();
-  
-//   // Append only string values
-//   formData.append('name', data.name);
-//   formData.append('owner_id', data.owner_id);
-//   formData.append('organization', data.organization);
-  
-//   if (data.logo_url) {
-//     formData.append('logo_url', data.logo_url);
-//   }
+// Get a product report by id
+export const getReportById = (productId: number) => {
+  return fetcher<ProductsReport>(`/products/${productId}/report`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json'
+    }
+  });
+}
 
-//   return fetcher<Business>('/businesses', {
-//     method: 'POST',
-//     body: formData,
-//   });
-// }
+// Get a product by id
+export const getProductById = async (productId: number) => {
+  console.log(`Fetching product with ID: ${productId}`);
+  const response = await fetcher<Products>(`/products/${productId}`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json'
+    }
+  });
+  console.log('Fetched product response:', response);
+  return response;
+}
 
-export async function deleteProducts(productsId: string) {
-  return fetcher<void>(`/products/${productsId}`, {
+export async function createProductReport(productId: number, report: ProductsReport) {
+  return fetcher<void>(`/products/${productId}/report`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    },
+    body: JSON.stringify(report)
+  });
+}
+
+export async function updateProductReport(productId: number, report: ProductsReport) {
+  return fetcher<void>(`/products/${productId}/report`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    },
+    body: JSON.stringify(report)
+  });
+}
+
+export async function deleteProductReport(productId: number) {
+  return fetcher<void>(`/products/${productId}/report`, {
     method: 'DELETE',
     headers: {
       Accept: 'application/json'
@@ -68,10 +97,12 @@ export async function deleteProducts(productsId: string) {
   });
 }
 
-// Update business
-// export async function updateBusiness(businessId: string, data: FormData): Promise<Business> {
-//   return fetcher<Business>(`/businesses/${businessId}`, {
-//     method: 'PUT',
-//     body: data,
-//   });
-// }
+// Delete a product by id
+export async function deleteProduct(productId: number) {
+  return fetcher<void>(`/products/${productId}`, {
+    method: 'DELETE',
+    headers: {
+      Accept: 'application/json'
+    }
+  });
+}
