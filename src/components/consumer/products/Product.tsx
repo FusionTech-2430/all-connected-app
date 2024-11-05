@@ -22,7 +22,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from '@/components/ui/use-toast'
 import { useUserId } from '@/hooks/use-user-id'
-import { getProductById } from '@/lib/api/products'
+import { getProductById, getProductRating, getRatingsByProduct, addRating } from '@/lib/api/products'
 import { getBusiness } from '@/lib/api/business'
 import { getOrdersByUser } from '@/lib/api/orders'
 import { createOrder, addProductToOrder } from '@/lib/api/orders'
@@ -50,7 +50,7 @@ interface Rating {
   userId: string
   rating: number
   comment: string
-  date: string
+  date: Date
 }
 
 interface RatingShow {
@@ -67,8 +67,6 @@ interface RatingCreateDTO {
   rating: number;
   comment: string;
 }
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
 
 export default function ProductPage() {
   const searchParams = useSearchParams()
@@ -105,92 +103,83 @@ export default function ProductPage() {
   }, [shouldReload])
 
   const fetchProduct = async (id: number) => {
+    setIsLoading(true);
     try {
+      // Obtener datos del producto
       const productData = await getProductById(id);
-      setProduct(productData);
-
+  
+      if (!productData) {
+        throw new Error("Producto no encontrado");
+      }
+  
+      // Obtener datos de la empresa
       const businessData = await getBusiness(productData.idBusiness);
-      setBusiness(businessData)
-
-      const ratingResponse = await fetch(
-        `${API_URL}/products-service/api/v1/products/rating/${id}/average`
-      )
-      if (ratingResponse.ok) {
-        const ratingData = await ratingResponse.json()
-        if (ratingData.code === 200 && ratingData.message) {
-          const ratingMatch = ratingData.message.match(/(\d+(\.\d+)?)/)
-          if (ratingMatch) {
-            setProduct((prev) => ({
-              ...prev!,
-              rating: parseFloat(ratingMatch[1])
-            }))
-          }
-        }
-      }
+  
+      // Obtener la calificación promedio del producto
+      const ratingResponse = await getProductRating(id);
+      const rating = ratingResponse.message ? parseFloat(ratingResponse.message.split(' ')[2]) : 0;
+  
+      // Actualizar el estado del producto y del negocio
+      setProduct({ ...productData, rating });
+      setBusiness(businessData);
     } catch (error) {
-      console.error('Error fetching product:', error)
-      toast({
-        title: 'Error',
-        description: 'No se pudo cargar el producto',
-        variant: 'destructive'
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const fetchRatings = async (id: number) => {
-    try {
-      const response = await fetch(`${API_URL}/products-service/api/v1/products/rating/${id}`, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-        },
-      });
-
-      if (response.ok) {
-        const ratingsData = await response.json();
-
-        // Obtén el nombre de usuario para cada rating de manera asincrónica
-        const formattedRatings = await Promise.all(
-          ratingsData.map(async (rating: Rating) => {
-            try {
-              const user = await getUser(rating.userId);
-              console.log(`Datos del usuario para ID ${rating.userId}:`, user); // Verifica los datos aquí
-              return {
-                idRating: rating.idRating,
-                username: user.username || "Nombre no disponible", // Usa un nombre alternativo si `user.username` es nulo
-                rating: rating.rating,
-                comment: rating.comment,
-                date: rating.date ? new Date(rating.date).toLocaleDateString() : "Fecha no disponible",
-              };
-            } catch (error) {
-              console.error(`Error fetching user for rating ${rating.idRating}:`, error);
-              return {
-                idRating: rating.idRating,
-                username: "Usuario desconocido",
-                rating: rating.rating,
-                comment: rating.comment,
-                date: rating.date ? new Date(rating.date).toLocaleDateString() : "Fecha no disponible",
-              };
-            }
-          })
-        );
-
-        setRatings(formattedRatings);
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Error al cargar las opiniones");
-      }
-    } catch (error) {
-      console.error("Error fetching ratings:", error);
+      console.error("Error fetching product:", error);
       toast({
         title: "Error",
-        description: "No se pudieron cargar las opiniones",
+        description: error instanceof Error ? error.message : "No se pudo cargar el producto",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
+  
+  
+
+  const fetchRatings = async (id: number) => {
+  try {
+    // Obtener las calificaciones del producto
+    const ratingsData = await getRatingsByProduct(id.toString());
+
+    // Formatear cada calificación para incluir el nombre de usuario
+    const formattedRatings = await Promise.all(
+      ratingsData.map(async (rating: Rating) => {
+        try {
+          // Obtener datos del usuario
+          const user = await getUser(rating.userId);
+          return {
+            idRating: rating.idRating,
+            username: user.username || "Usuario Desconocido", 
+            rating: rating.rating,
+            comment: rating.comment,
+            date: rating.date ? new Date(rating.date).toLocaleDateString() : "Fecha no disponible",
+          };
+        } catch (error) {
+          console.error(`Error al obtener el usuario para el rating ${rating.idRating}:`, error);
+          return {
+            idRating: rating.idRating,
+            username: "Usuario desconocido",
+            rating: rating.rating,
+            comment: rating.comment,
+            date: rating.date ? new Date(rating.date).toLocaleDateString() : "Fecha no disponible",
+          };
+        }
+      })
+    );
+
+    // Actualizar el estado con las calificaciones formateadas
+    setRatings(formattedRatings);
+  } catch (error) {
+    console.error("Error al obtener las calificaciones:", error);
+    toast({
+      title: "Error",
+      description: "No se pudieron cargar las opiniones",
+      variant: "destructive",
+    });
+  }
+};
+
+  
 
 
 
@@ -262,25 +251,19 @@ export default function ProductPage() {
       });
       return;
     }
-
+  
     try {
       const ratingData: RatingCreateDTO = {
         productId: product.id,
         userId: userId,
         rating: newRating.rating,
-        comment: newRating.comment
+        comment: newRating.comment,
       };
-
-      const response = await fetch(`${API_URL}/products-service/api/v1/products/rating/${product.id}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify(ratingData),
-      });
-
-      if (response.ok) {
+  
+      // Llama al endpoint `addRating` con el ID del producto y los datos de la calificación
+      const response = await addRating(product.id.toString(), ratingData);
+  
+      if (response) {
         toast({
           title: 'Éxito',
           description: 'Calificación agregada correctamente',
@@ -288,10 +271,7 @@ export default function ProductPage() {
         });
         setShouldReload(true);
         setIsRatingModalOpen(false);
-        fetchRatings(product.id);
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al agregar la calificación');
+        fetchRatings(product.id); // Refresca las calificaciones del producto
       }
     } catch (error) {
       console.error('Error al crear la calificación:', error);
@@ -302,6 +282,7 @@ export default function ProductPage() {
       });
     }
   };
+  
 
   const renderStars = (rating: number) => {
     return (
