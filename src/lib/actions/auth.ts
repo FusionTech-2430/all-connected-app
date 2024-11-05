@@ -57,15 +57,19 @@ export async function signUp(formData: FormData) {
     mail as string,
     password as string
   )
+  formData.append('id_user', userCredential.user.uid)
+  // Wait for the user to be created in the Users Service
+  await createUser(formData)
+
+  // Refresh the access token to include custom claims
+  const user = userCredential.user
+  await user.getIdToken(true)
+  await createUser(formData)
 
   cookies().set('access-token', await userCredential.user.getIdToken())
   cookies().set('refresh-token', userCredential.user.refreshToken, {
     httpOnly: true
   })
-
-  formData.append('id_user', userCredential.user.uid)
-
-  await createUser(formData)
 
   // const [userCredential, user] = await Promise.all([
   // ])
