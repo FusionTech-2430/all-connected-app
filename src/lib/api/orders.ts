@@ -76,7 +76,7 @@ export const getOrdersByBusiness = (businessId: string) => {
 
 // Obtener órdenes por usuario
 export const getOrdersByUser = (userId: string) => {
-  return fetcher(`/orders/user/${userId}`, {
+  return fetcher<OrderDTO[]>(`/orders/${userId}/user`, {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -117,7 +117,7 @@ export const addProductToOrder = (orderId: string, productId: number, quantity: 
 
 // Eliminar un producto de una orden
 export const removeProductFromOrder = (orderId: string, productId: number) => {
-  return fetcher(`/orders/${orderId}/products/${productId}`, {
+  return fetcher(`/orders/${orderId}/products/${productId}/delete`, {
     method: 'DELETE',
     headers: {
       Accept: 'application/json',
