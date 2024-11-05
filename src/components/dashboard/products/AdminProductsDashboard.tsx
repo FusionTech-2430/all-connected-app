@@ -50,8 +50,21 @@ const mockServices = [
     description: 'Limpieza profesional para hogares y oficinas',
     price: 50.0,
     photoUrl: '/placeholder.svg?height=48&width=48'
+  },
+  {
+    id: 2,
+    name: 'Servicio de Jardinería',
+    description: 'Mantenimiento y diseño de jardines',
+    price: 75.0,
+    photoUrl: '/placeholder.svg?height=48&width=48'
+  },
+  {
+    id: 3,
+    name: 'Reparación de Electrodomésticos',
+    description: 'Servicio técnico para electrodomésticos',
+    price: 60.0,
+    photoUrl: '/placeholder.svg?height=48&width=48'
   }
-  // ... (other mock services)
 ]
 
 export default function AdminProductsDashboard() {
@@ -140,25 +153,36 @@ export default function AdminProductsDashboard() {
     }
   }
 
-  const filteredItems =
-    selectedCategory === 'servicios'
-      ? mockServices.filter(
+  const filteredItems = (() => {
+    let items: any[] = []
+
+    if (selectedCategory === 'todos' || selectedCategory === 'productos') {
+      items = items.concat(
+        reports.filter(
+          (report) =>
+            report.reason.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            report.description
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()) ||
+            productNames[report.productId]
+              ?.toLowerCase()
+              .includes(searchTerm.toLowerCase())
+        )
+      )
+    }
+
+    if (selectedCategory === 'todos' || selectedCategory === 'servicios') {
+      items = items.concat(
+        mockServices.filter(
           (service) =>
             service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             service.description.toLowerCase().includes(searchTerm.toLowerCase())
         )
-      : reports.filter(
-          (report) =>
-            (selectedCategory === 'todos' ||
-              selectedCategory === 'productos') &&
-            (report.reason.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              report.description
-                .toLowerCase()
-                .includes(searchTerm.toLowerCase()) ||
-              productNames[report.productId]
-                ?.toLowerCase()
-                .includes(searchTerm.toLowerCase()))
-        )
+      )
+    }
+
+    return items
+  })()
 
   const paginatedItems = filteredItems.slice(
     (currentPage - 1) * itemsPerPage,
@@ -206,119 +230,91 @@ export default function AdminProductsDashboard() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Producto</TableHead>
-              <TableHead>Motivo</TableHead>
-              <TableHead>
-                {selectedCategory === 'servicios'
-                  ? 'Precio'
-                  : 'Fecha del Reporte'}
-              </TableHead>
+              <TableHead>Producto/Servicio</TableHead>
+              <TableHead>Motivo/Descripción</TableHead>
+              <TableHead>Fecha del Reporte/Precio</TableHead>
               <TableHead>Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedItems.map((item) => (
-              <TableRow
-                key={
-                  selectedCategory === 'servicios'
-                    ? (item as (typeof mockServices)[0]).id
-                    : (item as ProductsReport).productId
-                }
-              >
-                <TableCell>
-                  <div className="flex items-center">
-                    <Image
-                      src={
-                        selectedCategory === 'servicios'
-                          ? (item as (typeof mockServices)[0]).photoUrl
-                          : productImages[(item as ProductsReport).productId] ||
-                            '/placeholder.svg'
-                      }
-                      alt={
-                        selectedCategory === 'servicios'
-                          ? (item as (typeof mockServices)[0]).name
-                          : productNames[(item as ProductsReport).productId] ||
-                            'Producto'
-                      }
-                      width={48}
-                      height={48}
-                      className="rounded-md mr-2"
-                    />
-                    <span>
-                      {selectedCategory === 'servicios'
-                        ? (item as (typeof mockServices)[0]).name
-                        : productNames[(item as ProductsReport).productId] ||
-                          'Cargando...'}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell
-                  title={
-                    selectedCategory === 'servicios'
-                      ? (item as (typeof mockServices)[0]).description
-                      : (item as ProductsReport).reason
-                  }
-                >
-                  {selectedCategory === 'servicios'
-                    ? truncateText(
-                        (item as (typeof mockServices)[0]).description,
-                        30
-                      )
-                    : truncateText((item as ProductsReport).reason, 30)}
-                </TableCell>
-                <TableCell>
-                  {selectedCategory === 'servicios'
-                    ? `$${(item as (typeof mockServices)[0]).price.toFixed(2)}`
-                    : new Date(
-                        (item as ProductsReport).reportDate
-                      ).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Abrir menú</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {selectedCategory !== 'servicios' && (
-                        <>
+            {paginatedItems.map((item) => {
+              const isService = 'price' in item
+              return (
+                <TableRow key={isService ? item.id : item.productId}>
+                  <TableCell>
+                    <div className="flex items-center">
+                      <Image
+                        src={
+                          isService
+                            ? item.photoUrl
+                            : productImages[item.productId] ||
+                              '/placeholder.svg'
+                        }
+                        alt={
+                          isService
+                            ? item.name
+                            : productNames[item.productId] || 'Producto'
+                        }
+                        width={48}
+                        height={48}
+                        className="rounded-md mr-2"
+                      />
+                      <span>
+                        {isService
+                          ? item.name
+                          : productNames[item.productId] || 'Cargando...'}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell title={isService ? item.description : item.reason}>
+                    {truncateText(
+                      isService ? item.description : item.reason,
+                      30
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {isService
+                      ? `$${item.price.toFixed(2)}`
+                      : new Date(item.reportDate).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Abrir menú</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {isService ? (
                           <DropdownMenuItem
-                            onClick={() =>
-                              handleViewReport(item as ProductsReport)
-                            }
+                            onClick={() => handleViewService(item)}
                           >
                             <Eye className="mr-2 h-4 w-4 text-blue-500" />
-                            Visualizar Reporte
+                            Ver Detalles
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleViewProduct(
-                                (item as ProductsReport).productId
-                              )
-                            }
-                          >
-                            <Package className="mr-2 h-4 w-4 text-green-500" />
-                            Ver Producto
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                      {selectedCategory === 'servicios' && (
-                        <DropdownMenuItem
-                          onClick={() =>
-                            handleViewService(item as (typeof mockServices)[0])
-                          }
-                        >
-                          <Eye className="mr-2 h-4 w-4 text-blue-500" />
-                          Ver Detalles
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
+                        ) : (
+                          <>
+                            <DropdownMenuItem
+                              onClick={() => handleViewReport(item)}
+                            >
+                              <Eye className="mr-2 h-4 w-4 text-blue-500" />
+                              Visualizar Reporte
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleViewProduct(item.productId)}
+                            >
+                              <Package className="mr-2 h-4 w-4 text-green-500" />
+                              Ver Producto
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
           </TableBody>
         </Table>
         <div className="flex items-center justify-between mt-4">
