@@ -1,10 +1,19 @@
 export interface Products {
-    id: string;
+    id: number;
+    idBusiness: string;
     name: string;
-    price: number;
     description: string;
-    image: string;
+    photoUrl: string;
+    stock: number;
+    price: number;
+    status: string;
+    labels: string[];
+}
+
+export interface ProductsReport {
     category: string;
-    countInStock: number;
-    rating: number;
+    productId: number;
+    reason: string;
+    description: string;
+    reportDate: Date;
 }

@@ -9,14 +9,18 @@ async function fetcher<T>(url: string, options: RequestInit): Promise<T> {
   try {
     const response = await fetch(API_URL + url, options);
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || 'Unexpected server error');
+    }
+    if (response.status === 204) {
+      // Return an empty object as T
+      return {} as T;
     }
     return await response.json();
   } catch (error) {
     console.error('Error:', error);
     if (error instanceof Error) {
-      throw new Error(`Failed to fetch ${url}: ${error.message}`);
+      throw new Error(`Failed to fetch ${API_URL + url}: ${error.message}`);
     } else {
       throw new Error(`Failed to fetch ${url}: Unknown error`);
     }
@@ -44,7 +48,7 @@ export const getUser = (userId: string) => {
 
 export async function deleteUser(userId: string) {
   try {
-    const response = await fetch(`/users/${userId}`, {
+    const response = await fetch(API_URL + `/users/${userId}`, {
       method: 'DELETE',
       headers: {
         Accept: 'application/json'
@@ -56,11 +60,10 @@ export async function deleteUser(userId: string) {
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
 
-    // If the response is 204 No Content, return null or an empty object
     return response.status === 204 ? null : await response.json();
   } catch (error) {
     console.error('Error deleting user:', error);
-    throw error; // Re-throw the error so it can be handled by the component
+    throw error;
   }
 }
 
@@ -71,17 +74,16 @@ export async function updateUser(userId: string, active: boolean): Promise<User>
   return fetcher<User>(`/users/${userId}`, {
     method: 'PUT',
     headers: {
-      Accept: 'application/json'
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
     },
     body: requestBody,
     cache: 'no-store'
   });
 }
 
-
-// The deactivate the user
-export async function deactivateUser(userId: string, deleteReason: string): Promise<User> {
-  return fetcher<User>(`/users/${userId}/deactivate`, {
+export async function deactivateUser(userId: string, deleteReason: string): Promise<void> {
+  const response = await fetch(API_URL + `/users/${userId}/deactivate`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -90,15 +92,24 @@ export async function deactivateUser(userId: string, deleteReason: string): Prom
     body: JSON.stringify({ delete_reason: deleteReason }),
     cache: 'no-store'
   });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+  }
 }
 
-// // Activate the user
-// export async function activateUser(userId: string): Promise<User> {
-//   return fetcher<User>(`/users/${userId}/activate`, {
-//     method: 'POST',
-//     headers: {
-//       Accept: 'application/json'
-//     },
-//     cache: 'no-store'
-//   });
-// }
+export async function activateUser(userId: string): Promise<void> {
+  const response = await fetch(API_URL + `/users/${userId}/activate`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json'
+    },
+    cache: 'no-store'
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+  }
+}

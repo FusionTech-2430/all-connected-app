@@ -7,9 +7,19 @@ import {
   Package,
   Users,
   NotebookPen,
+  // for question and answers
+  MessageCircleQuestion,
+  // for events
+  PartyPopperIcon,
 } from 'lucide-react'
 
 const navBarItems = [
+  {
+    uid: 'ConfesionesEvents',
+    href: '/admin/conf-events',
+    title: 'Eventos confesiones',
+    icon: <PartyPopperIcon size={20} /> 
+  },
   {
     uid: 'business',
     href: '/admin/business',
@@ -39,6 +49,12 @@ const navBarItems = [
     href: '/admin/organizations',
     title: 'Organizaciones',
     icon: <NotebookPen size={20} />
+  },
+  {
+    uid: 'qa',
+    href: '/admin/q&a',
+    title: 'Preguntas frecuentes',
+    icon: <MessageCircleQuestion size={20} />
   }
 ]
 

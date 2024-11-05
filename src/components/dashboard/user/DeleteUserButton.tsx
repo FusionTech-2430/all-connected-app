@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
-import { Trash2 } from 'lucide-react'
+import { AlertTriangle, Trash } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -21,7 +21,7 @@ interface DeleteUserButtonProps {
   onUserDeleted: (userId: string) => void
 }
 
-export function DeleteUserButton({
+export default function DeleteUserButton({
   user,
   onUserDeleted
 }: DeleteUserButtonProps) {
@@ -29,8 +29,14 @@ export function DeleteUserButton({
   const [isDeleting, setIsDeleting] = useState(false)
   const { toast } = useToast()
 
-  const handleDeleteUser = async () => {
+  const handleDeleteClick = (event: Event) => {
+    event.preventDefault()
+    setIsDialogOpen(true)
+  }
+
+  const deleteUserAccount = async () => {
     setIsDeleting(true)
+
     try {
       await deleteUser(user.id_user)
       onUserDeleted(user.id_user)
@@ -43,8 +49,7 @@ export function DeleteUserButton({
       console.error('Error deleting user:', error)
       toast({
         title: 'Error',
-        description:
-          'No se pudo eliminar el usuario. Por favor, intente nuevamente.',
+        description: 'No se pudo eliminar el usuario. Por favor, intente nuevamente.',
         variant: 'destructive'
       })
     } finally {
@@ -54,24 +59,21 @@ export function DeleteUserButton({
 
   return (
     <>
-      <DropdownMenuItem
-        onSelect={(event) => {
-          event.preventDefault()
-          setIsDialogOpen(true)
-        }}
-      >
-        <Trash2 className="mr-2 h-4 w-4" />
+      <DropdownMenuItem onSelect={handleDeleteClick}>
+        <Trash className="mr-2 h-4 w-4 text-red-500" />
         Eliminar
       </DropdownMenuItem>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirmar eliminación</DialogTitle>
+            <DialogTitle className="flex items-center text-destructive">
+              <AlertTriangle className="mr-2 h-5 w-5" />
+              Advertencia: Eliminar Usuario
+            </DialogTitle>
           </DialogHeader>
           <DialogDescription>
-            ¿Está seguro de que desea eliminar al usuario {user.fullname}? Esta
-            acción no se puede deshacer.
+            Está a punto de eliminar al usuario {user.fullname}. Esta acción no se puede deshacer.
           </DialogDescription>
           <DialogFooter>
             <Button
@@ -83,10 +85,10 @@ export function DeleteUserButton({
             </Button>
             <Button
               variant="destructive"
-              onClick={handleDeleteUser}
+              onClick={deleteUserAccount}
               disabled={isDeleting}
             >
-              {isDeleting ? 'Eliminando...' : 'Eliminar Usuario'}
+              {isDeleting ? 'Eliminando...' : 'Eliminar'} Usuario
             </Button>
           </DialogFooter>
         </DialogContent>

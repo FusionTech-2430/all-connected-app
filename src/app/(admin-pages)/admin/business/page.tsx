@@ -1,19 +1,22 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import AdminBusinessDashboard from '@/components/dashboard/businesses/AdminBusinessDashboard'
 import SearchInput from '@/components/shared/search-input'
 import { getBusinesses } from '@/lib/api/business'
 import { Business } from '@/types/business'
-import { useEffect, useState } from 'react'
 
 export default function AdminBusiness() {
   const [businesses, setBusinesses] = useState<Business[]>([])
+  const [filteredBusinesses, setFilteredBusinesses] = useState<Business[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
 
   const fetchBusinesses = async () => {
     try {
       const data = await getBusinesses()
       setBusinesses(data)
+      setFilteredBusinesses(data)
     } catch (error) {
       console.error('Error fetching businesses:', error)
     } finally {
@@ -25,9 +28,16 @@ export default function AdminBusiness() {
     fetchBusinesses()
   }, [])
 
-  // const handleBusinessCreated = (newBusiness: Business) => {
-  //   setBusinesses((prevBusinesses) => [...prevBusinesses, newBusiness])
-  // }
+  useEffect(() => {
+    const filtered = businesses.filter((business) =>
+      business.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    setFilteredBusinesses(filtered)
+  }, [searchTerm, businesses])
+
+  const handleSearch = (value: string) => {
+    setSearchTerm(value)
+  }
 
   if (isLoading) {
     return <div>Loading...</div>
@@ -42,11 +52,13 @@ export default function AdminBusiness() {
             className="w-1/3"
             paramName="name"
             placeholder="Buscar por nombre..."
+            onChange={handleSearch}
+            value={searchTerm}
           />
         </div>
       </div>
       <AdminBusinessDashboard
-        businesses={businesses}
+        businesses={filteredBusinesses}
         onBusinessUpdated={(updatedBusiness) => {
           setBusinesses((prevBusinesses) =>
             prevBusinesses.map((b) =>

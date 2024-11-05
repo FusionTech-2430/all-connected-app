@@ -16,7 +16,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { MoreHorizontal, ImageIcon } from 'lucide-react'
+import { MoreHorizontal } from 'lucide-react'
 import { Organizations } from '@/types/organizations'
 import { DeleteOrganizationButton } from '@/components/organization/DeleteOrganizationButton'
 import { EditOrganizationButton } from '@/components/organization/EditOrganizationButton'
@@ -33,6 +33,18 @@ export default function Component({
   onOrganizationDeleted
 }: AdminOrganizationsDashboardProps) {
   const [isLoading, setIsLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
+  const totalPages = Math.ceil(organizations.length / itemsPerPage)
+
+  const paginatedOrganizations = organizations.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
+  }
 
   useEffect(() => {
     setIsLoading(false)
@@ -55,74 +67,93 @@ export default function Component({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {organizations.map((organization) => (
-            <TableRow key={organization.id_organization}>
-              <TableCell>
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 relative flex-shrink-0 bg-gray-100 rounded-full overflow-hidden">
-                    {organization.photo_url ? (
+          {paginatedOrganizations.map((organization) => {
+            return (
+              <TableRow key={organization.id_organization}>
+                <TableCell>
+                  <div className="flex items-center space-x-2">
+                    <div className="relative h-8 w-8">
                       <Image
-                        src={organization.photo_url}
+                        src={organization.photoUrl || '/placeholder.svg'}
                         alt={`${organization.name} logo`}
-                        width={32}
-                        height={32}
-                        className="object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src = '/placeholder.svg'
-                        }}
+                        fill
+                        className="object-contain"
+                        sizes="32px"
                       />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <ImageIcon className="w-4 h-4 text-gray-400" />
-                      </div>
-                    )}
+                    </div>
+                    <span>{organization.name}</span>
                   </div>
-                  <span>{organization.name}</span>
-                </div>
-              </TableCell>
-              <TableCell>{organization.address}</TableCell>
-              <TableCell>{organization.location_lat}</TableCell>
-              <TableCell>{organization.location_lng}</TableCell>
-              <TableCell className="text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                      <span className="sr-only">Open menu</span>
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <EditOrganizationButton
-                      organization={organization}
-                      onEditSuccess={onOrganizationUpdated}
-                    />
-                    <DeleteOrganizationButton
-                      organization={organization}
-                      onDeleteSuccess={onOrganizationDeleted}
-                    />
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          ))}
+                </TableCell>
+                <TableCell>{organization.address}</TableCell>
+                <TableCell>{organization.location_lat}</TableCell>
+                <TableCell>{organization.location_lng}</TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <EditOrganizationButton
+                        organization={organization}
+                        onEditSuccess={onOrganizationUpdated}
+                      />
+                      <DeleteOrganizationButton
+                        organization={organization}
+                        onDeleteSuccess={onOrganizationDeleted}
+                      />
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            )
+          })}
         </TableBody>
       </Table>
       <div className="flex justify-between items-center mt-4">
-        <p className="text-sm text-gray-500">
-          Total: {organizations.length} organizaciones.
+        <p className="text-sm text-muted-foreground">
+          Mostrando {(currentPage - 1) * itemsPerPage + 1} -{' '}
+          {Math.min(currentPage * itemsPerPage, organizations.length)} de {organizations.length}{' '}
+          organizaciones.
         </p>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(1)}
+            disabled={currentPage === 1}
+          >
             &lt;&lt;
           </Button>
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+            disabled={currentPage === 1}
+          >
             &lt;
           </Button>
-          <span className="text-sm">Página 1 de 2</span>
-          <Button variant="outline" size="sm">
+          <span className="text-sm py-2">
+            Página {currentPage} de {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              handlePageChange(Math.min(currentPage + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+          >
             &gt;
           </Button>
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(totalPages)}
+            disabled={currentPage === totalPages}
+          >
             &gt;&gt;
           </Button>
         </div>

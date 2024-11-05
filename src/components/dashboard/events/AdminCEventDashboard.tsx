@@ -35,7 +35,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label"
-import { Eye, MoreHorizontal, Plus, Trash2 } from "lucide-react"
+import { Eye, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react"
 
 interface Event {
   id: string
@@ -44,7 +44,7 @@ interface Event {
   date: string
 }
 
-export default function AdminEventDashboard() {
+export default function EventManagement() {
   const [events, setEvents] = useState<Event[]>([
     { id: '1', name: 'Summer Music Festival', capacity: 100, date: '21/08/2024' },
     { id: '2', name: 'Annual Developer Conference', capacity: 400, date: '12/09/2024' },
@@ -78,11 +78,13 @@ export default function AdminEventDashboard() {
     setCurrentPage(newPage)
   }
 
-  const handleOpenDialog = () => {
+  const handleOpenDialog = (event: Event | null = null) => {
+    setCurrentEvent(event)
     setIsDialogOpen(true)
   }
 
   const handleCloseDialog = () => {
+    setCurrentEvent(null)
     setIsDialogOpen(false)
   }
 
@@ -90,13 +92,18 @@ export default function AdminEventDashboard() {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
     const newEvent: Event = {
-      id: String(events.length + 1),
+      id: currentEvent?.id || String(events.length + 1),
       name: formData.get('name')?.toString() || '',
       capacity: Number(formData.get('capacity')) || 0,
       date: formData.get('date')?.toString() || '',
     }
 
-    setEvents([...events, newEvent])
+    if (currentEvent) {
+      setEvents(events.map(evt => evt.id === currentEvent.id ? newEvent : evt))
+    } else {
+      setEvents([...events, newEvent])
+    }
+
     handleCloseDialog()
   }
 
@@ -114,12 +121,12 @@ export default function AdminEventDashboard() {
   }
 
   const handleView = (event: Event) => {
-    window.location.href = `/admin/event/${event.id}`
+    window.location.href = `/admin/conf-events/${event.id}`
   }
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Eventos</h1>
+      <h1 className="text-2xl font-bold mb-4">Eventos confesiones</h1>
       <div className="flex justify-between mb-4">
         <Input
           className="w-1/3"
@@ -127,7 +134,7 @@ export default function AdminEventDashboard() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <Button onClick={handleOpenDialog}>
+        <Button onClick={() => handleOpenDialog()}>
           <Plus className="mr-2 h-4 w-4" /> Añadir
         </Button>
       </div>
@@ -158,6 +165,10 @@ export default function AdminEventDashboard() {
                     <DropdownMenuItem onClick={() => handleView(event)}>
                       <Eye className="mr-2 h-4 w-4 text-blue-500" /> {/* Change color to blue */}
                       Visualizar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleOpenDialog(event)}>
+                      <Pencil className="mr-2 h-4 w-4 text-yellow-500" /> {/* Change color to yellow */}
+                      Modificar
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleDelete(event)}>
                       <Trash2 className="mr-2 h-4 w-4 text-red-500" /> {/* Change color to red */}
@@ -220,26 +231,26 @@ export default function AdminEventDashboard() {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="flex justify-between items-center">
-              Crear nuevo evento
+              {currentEvent ? 'Editar evento' : 'Crear nuevo evento'}
             </DialogTitle>
             <DialogDescription>
-              Ingresa la información del nuevo evento
+              {currentEvent ? 'Modifica la información del evento' : 'Ingresa la información del nuevo evento'}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Nombre</Label>
-              <Input id="name" name="name" required />
+              <Input id="name" name="name" defaultValue={currentEvent?.name} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="capacity">Aforo</Label>
-              <Input id="capacity" name="capacity" type="number" required />
+              <Input id="capacity" name="capacity" type="number" defaultValue={currentEvent?.capacity} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="date">Fecha</Label>
-              <Input id="date" name="date" type="date" required />
+              <Input id="date" name="date" type="date" defaultValue={currentEvent?.date} required />
             </div>
-            <Button type="submit" className="w-full">Crear evento</Button>
+            <Button type="submit" className="w-full">{currentEvent ? 'Guardar cambios' : 'Crear evento'}</Button>
           </form>
         </DialogContent>
       </Dialog>

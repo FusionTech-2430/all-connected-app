@@ -4,7 +4,7 @@ export interface Organizations {
     address: string
     location_lat: number
     location_lng: number
-    photo_url: string | null
+    photoUrl: string | null
 }
 
 export interface CreateOrganizationData {
@@ -12,5 +12,5 @@ export interface CreateOrganizationData {
     address: string
     location_lat: number
     location_lng: number
-    photo_url: string | null
+    photoUrl: string | null
 }

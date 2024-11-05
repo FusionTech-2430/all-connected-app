@@ -14,7 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { User } from '@/types/users/user'
-import { deactivateUser } from '@/lib/api/users'
+import { deactivateUser, activateUser } from '@/lib/api/users'
 import { useToast } from '@/components/ui/use-toast'
 
 interface ActivateDeactivateButtonProps {
@@ -37,7 +37,7 @@ export default function ActivateDeactivateButton({
   }
 
   const updateUserStatus = async () => {
-    if (!user.active && !reason.trim()) {
+    if (user.active && !reason.trim()) {
       toast({
         title: 'Error',
         description: 'Por favor, ingrese una razón para desactivar el usuario.',
@@ -49,20 +49,19 @@ export default function ActivateDeactivateButton({
     setIsUpdating(true)
 
     try {
-      let updatedUser: User | null = null
       if (user.active) {
-        updatedUser = await deactivateUser(user.id_user, reason)
-      } 
-      // else {
-      //   updatedUser = await activateUser(user.id_user)
-      // }
-      if (updatedUser) {
+        await deactivateUser(user.id_user, reason)
+        const updatedUser = { ...user, active: false }
+        onUserUpdated(updatedUser)
+      } else {
+        await activateUser(user.id_user)
+        const updatedUser = { ...user, active: true }
         onUserUpdated(updatedUser)
       }
       setIsDialogOpen(false)
       toast({
         title: 'Estado de usuario actualizado',
-        description: `El usuario ${user.fullname} ha sido ${user.active ? 'bloqueado' : 'activado'} exitosamente.`
+        description: `El usuario ${user.fullname} ha sido ${!user.active ? 'activado' : 'bloqueado'} exitosamente.`
       })
     } catch (error) {
       console.error('Error updating user status:', error)
@@ -82,12 +81,12 @@ export default function ActivateDeactivateButton({
       <DropdownMenuItem onSelect={handleStatusChange}>
         {user.active ? (
           <>
-            <XCircle className="mr-2 h-4 w-4" />
+            <XCircle className="mr-2 h-4 w-4 text-yellow-500" />
             Desactivar
           </>
         ) : (
           <>
-            <CheckCircle className="mr-2 h-4 w-4" />
+            <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
             Activar
           </>
         )}
@@ -106,7 +105,7 @@ export default function ActivateDeactivateButton({
             {user.fullname}. Esta acción afectará el acceso del usuario a la
             plataforma.
             {user.active &&
-              'Por favor, ingrese una razón para la desactivación.'}
+              ' Por favor, ingrese una razón para la desactivación.'}
           </DialogDescription>
           {user.active && (
             <Input
