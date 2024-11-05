@@ -307,7 +307,7 @@ export default function ProductPage() {
   }
 
   const handleCreateReport = async () => {
-    setReportErrorMessage(''); // Reiniciar el mensaje de error
+    setReportErrorMessage('');
 
     if (!product) {
       setReportErrorMessage('Producto no disponible');
@@ -337,7 +337,6 @@ export default function ProductPage() {
         reportDate: new Date(),
       });
 
-      // Limpiar mensaje de error y cerrar modal si se envió correctamente
       setReportErrorMessage('');
       setIsReportModalOpen(false);
       setReportData({
@@ -347,16 +346,13 @@ export default function ProductPage() {
         description: '',
         reportDate: new Date(),
       });
-    } catch (error: never) {
+    } catch (error: unknown) {
       console.error("Error al crear el reporte:", error);
 
-      // Verificar si el error es un duplicado (restricción única)
-      if (error.message.includes("duplicate key") || error.status === 500) {
-        setReportErrorMessage(
-          'El producto ya se encuentra reportado, el equipo de AllConnected está evaluando la continuidad en la plataforma'
-        );
+      if (error instanceof Error && error.message.includes("duplicate key")) {
+        setReportErrorMessage("El producto ya se encuentra reportado, el equipo de AllConnected está evaluando el caso.");
       } else {
-        setReportErrorMessage('No se pudo enviar el reporte. Por favor intente nuevamente.');
+        setReportErrorMessage("No se pudo enviar el reporte. Por favor intente nuevamente.");
       }
     }
   };
@@ -384,7 +380,6 @@ export default function ProductPage() {
   }
 
   if (!product || !business) return <div>Producto no encontrado</div>
-
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="relative w-full bg-gradient-to-br from-[#0C4A6E] via-[#075985] to-[#0369A1] overflow-hidden">
@@ -624,7 +619,6 @@ export default function ProductPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      );
 
       <Dialog open={isReportModalOpen} onOpenChange={setIsReportModalOpen}>
         <DialogContent className="sm:max-w-[425px]">
@@ -695,7 +689,6 @@ export default function ProductPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      );
     </div>
   )
 }
