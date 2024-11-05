@@ -33,7 +33,7 @@ const MessagesList = (prop : MessagesListProps) => {
           }
         }
 
-        fetchUserChats(id, setMessages)
+        fetchUserChats(id, prop.business, setMessages)
       } catch (error) {
         console.error('Error getting chats:', error)
       }
@@ -49,14 +49,14 @@ const MessagesList = (prop : MessagesListProps) => {
             Ver mensajes
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Aquí se muestran todos los mensajes de tus clientes.
+            {prop.business ? 'Aquí se muestran todos los mensajes de tus clientes.' : 'Aquí se muestran todas tus conversaciones con los emprendimientos.'}
           </p>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700">
                   <th className="text-left py-2 text-gray-600 dark:text-gray-300">
-                    Cliente
+                    {prop.business ? 'Cliente' : 'Emprendimiento'}
                   </th>
                   <th className="text-left py-2 text-gray-600 dark:text-gray-300">
                     Fecha

@@ -4,9 +4,10 @@ import { Chat, Message } from '@/types/chat/Message';
 import { formatFriendlyDate } from '@/utils/date-utils';
 import { uploadBytesResumable, getDownloadURL, ref as storageRef } from 'firebase/storage';
 import { getUser } from './userService';
+import { getBusiness } from '@/lib/api/business';
 
 // Función para obtener los chats del usuario
-export const fetchUserChats = (id_user: string, setMessages: (messages: Chat[]) => void) => {
+export const fetchUserChats = (id_user: string, business : boolean, setMessages: (messages: Chat[]) => void) => {
     const chatsRef = ref(database, 'chats');
   
     onValue(chatsRef, async (snapshot) => {
@@ -22,17 +23,19 @@ export const fetchUserChats = (id_user: string, setMessages: (messages: Chat[]) 
         if (Object.values(usersInChat).includes(id_user)) {
           const otherUserId = Object.values(usersInChat).find((uid) => uid !== id_user);
   
-          // Obtener el nombre del otro usuario mediante el servicio getUser
-          let otherUserName = 'Desconocido'; // Valor por defecto si no se encuentra el usuario
+          let otherUserName = 'Desconocido';
           if (typeof otherUserId === 'string') {
             try {
-              const otherUserData = await getUser(otherUserId); // Llama al servicio para obtener el usuario
-              otherUserName = otherUserData?.fullname || otherUserName; // Asigna el nombre completo si está disponible
+              if(!business){
+                otherUserName = (await getBusiness(otherUserId)).name;
+              } else {
+                const otherUserData = await getUser(otherUserId);
+                otherUserName = otherUserData?.fullname || otherUserName;
+              }
             } catch (error) {
               console.error('Error getting user name:', error);
             }
-          }
-  
+          }  
           const messages = chat.messages || {};
           const messageKeys = Object.keys(messages);
   
