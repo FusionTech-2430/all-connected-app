@@ -7,7 +7,11 @@ import { fetchUserChats } from '@/services/chatService'
 import { Chat } from '@/types/chat/Message'
 import { useUserId } from '@/hooks/use-user-id'
 
-const MessagesList = () => {
+interface MessagesListProps {
+  business: boolean;
+}
+
+const MessagesList = (prop : MessagesListProps) => {
   const [messages, setMessages] = useState<Chat[]>([])
   const router = useRouter()
 
@@ -20,14 +24,22 @@ const MessagesList = () => {
           router.push('/')
           return
         }
+        let id : string | null = userId;
+        if(prop.business === true){
+          id = sessionStorage.getItem('currentBusinessId')
+          if (!id) {
+            router.push('/')
+            return
+          }
+        }
 
-        fetchUserChats(userId, setMessages)
+        fetchUserChats(id, setMessages)
       } catch (error) {
         console.error('Error getting chats:', error)
       }
     }
     fetchMessages()
-  }, [router])
+  }, [router, userId, prop.business])
 
   return (
     <section className="flex flex-col">
@@ -68,7 +80,7 @@ const MessagesList = () => {
                     </td>
                     <td className="py-2 text-right">
                       <Link
-                        href={`/chat?id=${message.id}`}
+                        href={prop.business? `/messages/chat?id=${message.id}` : `/consumer/messages/chat?id=${message.id}`}
                         className="inline-block text-blue-500 hover:text-blue-600 transition-colors"
                       >
                         <Send className="h-5 w-5" />

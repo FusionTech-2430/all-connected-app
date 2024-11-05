@@ -5,7 +5,7 @@ const MessagePage = () => {
   return (
     <div>
       <Suspense fallback={<div>Cargando...</div>}>
-        <Chat />
+        <Chat business={true} />
       </Suspense>
     </div>
   )

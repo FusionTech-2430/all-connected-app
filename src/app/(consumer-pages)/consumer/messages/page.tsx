@@ -3,7 +3,7 @@ import MessagesList from '@/components/chat/MessagesList';
 const Page = async () => {
   return (
     <div>
-      <MessagesList business={true} />
+      <MessagesList business={false} />
     </div>
   );
 };

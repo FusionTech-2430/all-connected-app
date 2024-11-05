@@ -36,9 +36,9 @@ const navBarItems = [
     icon: <ShoppingBag size={20} /> 
   },
   {
-    uid: 'Chat',
-    href: '/consumer/chat',
-    title: 'Chat',
+    uid: 'Messages',
+    href: '/consumer/messages',
+    title: 'Mensajes',
     icon: <MessageSquareIcon size={20} /> 
   },
   {
