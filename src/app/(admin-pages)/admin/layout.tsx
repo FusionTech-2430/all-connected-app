@@ -1,4 +1,4 @@
-import { AppHeader } from '@/components/layout/AppHeader'
+import { AdminHeader } from '@/components/layout/AppHeader'
 import Sidebar from '@/components/ui-own/admin-sidebar'
 
 export default function AppLayout({
@@ -13,7 +13,7 @@ export default function AppLayout({
 
       <div className="flex w-full flex-col sm:gap-4 sm:py-4 overflow-y-auto">
         {/* Header */}
-        <AppHeader className="sticky flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6" />
+        <AdminHeader className="sticky flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6" />
 
         {/* Main content */}
         <main className="h-full pr-4">{children}</main>
