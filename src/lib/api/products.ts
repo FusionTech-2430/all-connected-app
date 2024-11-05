@@ -1,6 +1,6 @@
 'use server'
 
-import { Products, ProductsReport, RatingDTO, RatingCreateDTO} from "@/types/products";
+import { Products, ProductsReport, RatingDTO, RatingCreateDTO, RatingAverageDTO} from "@/types/products";
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/products-service/api/v1`;
 
@@ -107,7 +107,7 @@ export async function deleteProduct(productId: number) {
 
 
 export const getProductRating = async (productId: number) => {
-  return fetcher(`/products/${productId}/rating/average`, {
+  return fetcher<RatingAverageDTO>(`/products/rating/${productId}/average`, {
     method: 'GET',
     headers: {
       Accept: 'application/json'
