@@ -56,7 +56,7 @@ const OnboardingTwo = () => {
               <div
                 className={`bg-white shadow-md rounded-lg flex flex-col items-center p-6 text-center cursor-pointer transition-all hover:shadow-lg ${
                   selectedCard === 'bienes'
-                    ? 'bg-blue-100 transform scale-105'
+                    ? 'bg-blue-100 transform scale-105 border-4 border-[#0369A1]'
                     : 'opacity-90'
                 }`}
                 onClick={() => handleCardClick('bienes')}
@@ -78,7 +78,7 @@ const OnboardingTwo = () => {
               <div
                 className={`bg-white shadow-md rounded-lg flex flex-col items-center p-6 text-center cursor-pointer transition-all hover:shadow-lg ${
                   selectedCard === 'servicios'
-                    ? 'bg-blue-100 transform scale-105'
+                    ? 'bg-blue-100 transform scale-105 border-4 border-[#0369A1]'
                     : 'opacity-90'
                 }`}
                 onClick={() => handleCardClick('servicios')}
@@ -102,7 +102,7 @@ const OnboardingTwo = () => {
               <div
                 className={`bg-white shadow-md rounded-lg flex flex-col items-center p-6 text-center cursor-pointer transition-all hover:shadow-lg ${
                   selectedCard === 'eventos'
-                    ? 'bg-blue-100 transform scale-105'
+                    ? 'bg-blue-100 transform scale-105 border-4 border-[#0369A1]'
                     : 'opacity-90'
                 }`}
                 onClick={() => handleCardClick('eventos')}
@@ -126,7 +126,7 @@ const OnboardingTwo = () => {
               <div
                 className={`bg-white shadow-md rounded-lg flex flex-col items-center p-6 text-center cursor-pointer transition-all hover:shadow-lg ${
                   selectedCard === 'comprador'
-                    ? 'bg-blue-100 transform scale-105'
+                    ? 'bg-blue-100 transform scale-105 border-4 border-[#0369A1]'
                     : 'opacity-90'
                 }`}
                 onClick={() => handleCardClick('comprador')}
@@ -148,7 +148,7 @@ const OnboardingTwo = () => {
               <div
                 className={`bg-white shadow-md rounded-lg flex flex-col items-center p-6 text-center cursor-pointer transition-all hover:shadow-lg ${
                   selectedCard === 'organizacion'
-                    ? 'bg-blue-100 transform scale-105'
+                    ? 'bg-blue-100 transform scale-105 border-4 border-[#0369A1]'
                     : 'opacity-90'
                 }`}
                 onClick={() => handleCardClick('organizacion')}
