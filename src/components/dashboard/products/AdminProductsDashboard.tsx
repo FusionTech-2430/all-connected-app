@@ -237,10 +237,16 @@ export default function AdminProductsDashboard() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedItems.map((item) => {
+            {paginatedItems.map((item, index) => {
               const isService = 'price' in item
               return (
-                <TableRow key={isService ? item.id : item.productId}>
+                <TableRow
+                  key={
+                    isService
+                      ? `service-${item.id}`
+                      : `product-${item.productId}-${index}`
+                  }
+                >
                   <TableCell>
                     <div className="flex items-center">
                       <Image
