@@ -49,7 +49,8 @@ export const fetchUserChats = (id_user: string, business : boolean, setMessages:
   
           userChats.push({
             id: chatId,
-            name: otherUserName, // Muestra el nombre del otro usuario en lugar del ID
+            chatName: chat.name,
+            name: otherUserName,
             date: lastMessageDate,
           });
         }

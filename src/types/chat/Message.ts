@@ -1,5 +1,6 @@
 export interface Chat {
     id: string;
+    chatName: string;
     name: string;
     date: string;
   }

@@ -55,6 +55,9 @@ const MessagesList = (prop : MessagesListProps) => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700">
+                <th className="text-left py-2 text-gray-600 dark:text-gray-300">
+                    Chat
+                  </th>
                   <th className="text-left py-2 text-gray-600 dark:text-gray-300">
                     {prop.business ? 'Cliente' : 'Emprendimiento'}
                   </th>
@@ -72,6 +75,9 @@ const MessagesList = (prop : MessagesListProps) => {
                     key={message.id}
                     className="border-b border-gray-200 dark:border-gray-700"
                   >
+                    <td className="py-2 text-gray-900 dark:text-white">
+                      {message.chatName}
+                    </td>
                     <td className="py-2 text-gray-900 dark:text-white">
                       {message.name}
                     </td>
