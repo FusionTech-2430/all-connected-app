@@ -100,10 +100,36 @@ export async function updateOrganization(
   organizationId: string,
   data: FormData
 ): Promise<Organizations> {
-  return fetcher<Organizations>(`/organizations/${organizationId}`, {
-    method: 'PUT',
-    body: data
-  })
+  try {
+    const url = `${API_URL}/organizations/${organizationId}`
+    console.log(`Updating organization at URL: ${url}`)
+
+    const response = await fetch(url, {
+      method: 'PUT',
+      body: data
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(
+        `Network response was not ok: ${response.status} ${response.statusText}. ${JSON.stringify(errorData)}`
+      )
+    }
+
+    const updatedOrganization = await response.json()
+
+    // Ensure the photoUrl is correctly set from the response
+    if (updatedOrganization.photoUrl) {
+      updatedOrganization.photo_url = updatedOrganization.photoUrl
+    }
+
+    console.log('Updated organization:', updatedOrganization)
+
+    return updatedOrganization
+  } catch (error) {
+    console.error('Error updating organization:', error)
+    throw error
+  }
 }
 
 export async function deleteOrganization(

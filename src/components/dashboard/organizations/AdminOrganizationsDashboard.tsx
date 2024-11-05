@@ -19,7 +19,6 @@ import {
 import { MoreHorizontal } from 'lucide-react'
 import { Organizations } from '@/types/organizations'
 import { DeleteOrganizationButton } from '@/components/organization/DeleteOrganizationButton'
-import { EditOrganizationButton } from '@/components/organization/EditOrganizationButton'
 
 interface AdminOrganizationsDashboardProps {
   organizations: Organizations[]
@@ -96,10 +95,6 @@ export default function Component({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <EditOrganizationButton
-                        organization={organization}
-                        onEditSuccess={onOrganizationUpdated}
-                      />
                       <DeleteOrganizationButton
                         organization={organization}
                         onDeleteSuccess={onOrganizationDeleted}
