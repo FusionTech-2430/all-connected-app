@@ -152,4 +152,5 @@ export const createChat = (name:string, id_user: string, otherUserId: string) =>
         users: [id_user, otherUserId]
         }
     );
+    return newChatRef.key;
 };

@@ -27,6 +27,7 @@ import { getBusiness } from '@/lib/api/business'
 import { getOrdersByUser } from '@/lib/api/orders'
 import { createOrder, addProductToOrder } from '@/lib/api/orders'
 import {getUser} from "@/lib/api/users";
+import { createChat } from '@/services/chatService'
 
 interface Product {
   id: number
@@ -282,6 +283,20 @@ export default function ProductPage() {
       });
     }
   };
+
+  const handleChat = () => {
+    if (!userId || !product) {
+      toast({
+        title: 'Error',
+        description: 'Usuario o producto no disponible',
+        variant: 'destructive',
+      });
+      return;
+    }
+    const chatId = createChat("Compra producto "+product?.name, userId, product.idBusiness)
+    console.log(chatId)
+    window.location.href = '/consumer/messages/chat?id=' + chatId
+  }
   
 
   const renderStars = (rating: number) => {
@@ -396,6 +411,21 @@ export default function ProductPage() {
                   </svg>
                   Reportar producto o emprendimiento
                 </button>
+                <Button
+                  className="w-auto py-2 px-4 text-sm bg-[#38BDF8] hover:bg-[#0EA5E9] text-white flex items-center justify-center ml-auto"
+                  onClick={handleChat}
+                >
+                  <svg
+                    className="w-4 h-4 mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                  Chatea con el Proveedor
+                </Button>
               </div>
             </div>
           </div>
