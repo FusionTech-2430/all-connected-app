@@ -33,3 +33,8 @@ export interface RatingDTO {
     comment: string;
     date: Date;
 }
+
+export interface RatingAverageDTO {
+    code: number;
+    message: string;
+}

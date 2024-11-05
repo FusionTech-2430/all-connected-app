@@ -6,8 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Loader2 } from 'lucide-react'
 import { ProductCard } from './product-card'
 import { LabelFilter } from './label-filter'
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+import { getProducts, getProductRating } from '@/lib/api/products'
 
 interface Product {
   id: number
@@ -27,44 +26,9 @@ interface Label {
   label: string
 }
 
-export async function fetchProducts(apiUrl: string) {
-  const response = await fetch(`${apiUrl}/products-service/api/v1/products`)
-  if (!response.ok) {
-    throw new Error('Failed to fetch products')
-  }
-  return await response.json()
-}
-
-export async function fetchLabels(apiUrl: string) {
-  const response = await fetch(`${apiUrl}/products-service/api/v1/labels`)
-  if (!response.ok) {
-    throw new Error('Failed to fetch labels')
-  }
-  return await response.json()
-}
-
-export async function fetchProductRating(apiUrl: string, productId: number) {
-  try {
-    const response = await fetch(`${apiUrl}/products-service/api/v1/products/rating/${productId}/average`)
-    if (!response.ok) {
-      return null
-    }
-    const data = await response.json()
-    if (data.code === 200 && data.message) {
-      const ratingMatch = data.message.match(/(\d+(\.\d+)?)/)
-      return ratingMatch ? parseFloat(ratingMatch[1]) : null
-    }
-    return null
-  } catch (err) {
-    console.error(`Error fetching rating for product ${productId}:`, err)
-    return null
-  }
-}
-
 export default function ProductList() {
   const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
-  const [labels, setLabels] = useState<Label[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedLabels, setSelectedLabels] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -73,16 +37,13 @@ export default function ProductList() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [fetchedProducts, fetchedLabels] = await Promise.all([
-          fetchProducts(API_URL),
-          fetchLabels(API_URL)
-        ])
+        const fetchedProducts = await getProducts()
         const productsWithRatings = await Promise.all(fetchedProducts.map(async (product: Product) => {
-          const rating = await fetchProductRating(API_URL, product.id)
+          const ratingResponse = await getProductRating(product.id)
+          const rating = ratingResponse.message ? parseFloat(ratingResponse.message.split(' ')[2]) : 0
           return { ...product, rating }
         }))
         setProducts(productsWithRatings)
-        setLabels(fetchedLabels)
       } catch (err) {
         setError('Error al cargar los datos')
         console.error(err)
@@ -122,6 +83,9 @@ export default function ProductList() {
     return <div className="text-center text-red-500">{error}</div>
   }
 
+  const uniqueLabels: Label[] = Array.from(new Set(products.flatMap(product => product.labels)))
+    .map((label, index) => ({ id: index, label }))
+
   return (
     <section className="w-full p-5">
       <div className="mb-4">
@@ -137,7 +101,7 @@ export default function ProductList() {
 
       <div className="flex flex-col md:flex-row md:gap-6">
         <LabelFilter 
-          labels={labels}
+          labels={uniqueLabels}
           selectedLabels={selectedLabels}
           onLabelChange={handleLabelChange}
         />
