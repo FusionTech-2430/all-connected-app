@@ -17,3 +17,19 @@ export interface ProductsReport {
     description: string;
     reportDate: Date;
 }
+
+export interface RatingCreateDTO {
+    productId: number;
+    userId: string;
+    rating: number;
+    comment: string;
+}
+
+export interface RatingDTO {
+    idRating: number;
+    productId: number;
+    userId: string;
+    rating: number;
+    comment: string;
+    date: Date;
+}
