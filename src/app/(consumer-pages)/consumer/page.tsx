@@ -1,8 +1,8 @@
-import ProductsComponent from '@/components/consumer/products-page'
+import ProductsComponent from '@/components/consumer/products/products-page'
 
 export default function ProductsPage() {
   return (
-    <div className="container mx-auto p-6">
+    <div className="w-full">
       <ProductsComponent />
     </div>
   )

@@ -1,4 +1,4 @@
-import Component from '@/components/home/Product'
+import Component from '@/components/consumer/products/Product'
 
 export default function BusinessPage() {
   return <Component />
