@@ -56,7 +56,7 @@ export default function ServicesList() {
 
   const filteredServices = services.filter(service =>
     service.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    (selectedLabels.length === 0 || service.labels.some(label => selectedLabels.includes(label)))
+    (selectedLabels.length === 0 || (service.labels || []).some(label => selectedLabels.includes(label)))
   )
 
   const handleViewService = (serviceId: number) => {
@@ -75,7 +75,9 @@ export default function ServicesList() {
     return <div className="text-center text-red-500">{error}</div>
   }
 
+  // Asegurarse de que las etiquetas sean únicas
   const uniqueLabels: Label[] = Array.from(new Set(services.flatMap(service => service.labels)))
+    .filter(label => label) // Filtra etiquetas vacías o nulas si las hay
     .map((label, index) => ({ id: index, label }))
 
   return (
