@@ -119,7 +119,7 @@ export const getProductRating = async (productId: number) => {
 
 // Add a rating to a product
 export const addRating = (productId: string, rating: RatingCreateDTO) => {
-  return fetcher<RatingDTO>(`products/rating/${productId}`, {
+  return fetcher<RatingDTO>(`/products/rating/${productId}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -131,7 +131,7 @@ export const addRating = (productId: string, rating: RatingCreateDTO) => {
 
 // Get all ratings
 export const getRatings = () => {
-  return fetcher<RatingDTO[]>('products/rating', {
+  return fetcher<RatingDTO[]>('/products/rating', {
     method: 'GET',
     headers: {
       Accept: 'application/json'
@@ -142,7 +142,7 @@ export const getRatings = () => {
 
 // Get the average rating of a product
 export const getProductAverageRating = (productId: string) => {
-  return fetcher<{ status: number; message: string }>(`products/rating/${productId}/average`, {
+  return fetcher<{ status: number; message: string }>(`/products/rating/${productId}/average`, {
     method: 'GET',
     headers: {
       Accept: 'application/json'
@@ -152,7 +152,7 @@ export const getProductAverageRating = (productId: string) => {
 
 // Get all ratings for a specific product
 export const getRatingsByProduct = (productId: string) => {
-  return fetcher<RatingDTO[]>(`products/rating/${productId}`, {
+  return fetcher<RatingDTO[]>(`/products/rating/${productId}`, {
     method: 'GET',
     headers: {
       Accept: 'application/json'
@@ -162,7 +162,7 @@ export const getRatingsByProduct = (productId: string) => {
 
 // Delete a rating by ID
 export const deleteRating = (ratingId: string) => {
-  return fetcher<void>(`products/rating/${ratingId}`, {
+  return fetcher<void>(`/products/rating/${ratingId}`, {
     method: 'DELETE',
     headers: {
       Accept: 'application/json'
