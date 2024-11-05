@@ -24,6 +24,7 @@ import { toast } from '@/components/ui/use-toast'
 import { useUserId } from '@/hooks/use-user-id'
 import { getProductById } from '@/lib/api/products'
 import { getBusiness } from '@/lib/api/business'
+import { getOrdersByUser } from '@/lib/api/orders'
 import { createOrder, addProductToOrder } from '@/lib/api/orders'
 import {getUser} from "@/lib/api/users";
 
@@ -216,6 +217,12 @@ export default function ProductPage() {
       let orderId = sessionStorage.getItem('orderId');
 
       if (!orderId) {
+        const userOrders = await getOrdersByUser(userId);
+        const activeOrder = userOrders.find((order) => order.status === 'in_progress');
+        if (activeOrder) {
+          orderId = activeOrder.id;
+          sessionStorage.setItem('orderId', orderId);
+        } else {
         const orderData = await createOrder({
           idUser: userId,
           idBusiness: product.idBusiness,
@@ -224,6 +231,7 @@ export default function ProductPage() {
         orderId = orderData.id;
         sessionStorage.setItem('orderId', orderId);
       }
+    }
 
       await addProductToOrder(orderId, product.id, quantity);
 

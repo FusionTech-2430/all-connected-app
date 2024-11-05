@@ -4,9 +4,12 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart } from 'lucide-react';
 import { getOrderById } from '@/lib/api/orders';
+import { getOrdersByUser } from '@/lib/api/orders';
+import { useUserId } from '@/hooks/use-user-id';
 
 export function CartButton() {
     const [itemCount, setItemCount] = useState<number>(0);
+    const userId = useUserId();
 
     useEffect(() => {
         // Obtener el ID de la orden desde sessionStorage
@@ -22,8 +25,20 @@ export function CartButton() {
                 .catch((error) => {
                     console.error('Error fetching order details:', error);
                 });
+        } else{
+            if (userId) {
+                getOrdersByUser(userId).then((orders) => {
+                    const activeOrder = orders.find((order) => order.status === 'in_progress');
+                    if (activeOrder) {
+                        sessionStorage.setItem('orderId', activeOrder.id);
+                        window.location.reload();
+                    }
+                });
+            } else {
+                console.error('User ID is null');
+            }
         }
-    }, []);
+    }, [userId]);
 
     function goToCart(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
         event.preventDefault();
