@@ -25,6 +25,7 @@ import { useUserId } from '@/hooks/use-user-id'
 import { getProductById } from '@/lib/api/products'
 import { getBusiness } from '@/lib/api/business'
 import { createOrder, addProductToOrder } from '@/lib/api/orders'
+import {getUser} from "@/lib/api/users";
 
 interface Product {
   id: number
@@ -51,6 +52,14 @@ interface Rating {
   date: string
 }
 
+interface RatingShow {
+  idRating: number
+  username: string
+  rating: number
+  comment: string
+  date: string
+}
+
 interface RatingCreateDTO {
   productId: number;
   userId: string;
@@ -69,7 +78,7 @@ export default function ProductPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [quantity, setQuantity] = useState(1)
   const [isLoading, setIsLoading] = useState(true)
-  const [ratings, setRatings] = useState<Rating[]>([])
+  const [ratings, setRatings] = useState<RatingShow[]>([])
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false)
   const [newRating, setNewRating] = useState<RatingCreateDTO>({
     productId: 0,
@@ -140,10 +149,33 @@ export default function ProductPage() {
 
       if (response.ok) {
         const ratingsData = await response.json();
-        const formattedRatings = ratingsData.map((rating: Rating) => ({
-          ...rating,
-          date: rating.date.toString(),
-        }));
+
+        // Obtén el nombre de usuario para cada rating de manera asincrónica
+        const formattedRatings = await Promise.all(
+          ratingsData.map(async (rating: Rating) => {
+            try {
+              const user = await getUser(rating.userId);
+              console.log(`Datos del usuario para ID ${rating.userId}:`, user); // Verifica los datos aquí
+              return {
+                idRating: rating.idRating,
+                username: user.username || "Nombre no disponible", // Usa un nombre alternativo si `user.username` es nulo
+                rating: rating.rating,
+                comment: rating.comment,
+                date: rating.date ? new Date(rating.date).toLocaleDateString() : "Fecha no disponible",
+              };
+            } catch (error) {
+              console.error(`Error fetching user for rating ${rating.idRating}:`, error);
+              return {
+                idRating: rating.idRating,
+                username: "Usuario desconocido",
+                rating: rating.rating,
+                comment: rating.comment,
+                date: rating.date ? new Date(rating.date).toLocaleDateString() : "Fecha no disponible",
+              };
+            }
+          })
+        );
+
         setRatings(formattedRatings);
       } else {
         const errorData = await response.json();
@@ -158,6 +190,9 @@ export default function ProductPage() {
       });
     }
   };
+
+
+
 
   const handleQuantityChange = (amount: number) => {
     setQuantity((prev) =>
@@ -399,7 +434,7 @@ export default function ProductPage() {
                   <tbody>
                   {ratings.map((rating) => (
                     <tr key={rating.idRating} className="border-t">
-                      <td className="px-4 py-2">{rating.userId}</td>
+                      <td className="px-4 py-2">{rating.username}</td>
                       <td className="px-4 py-2">{renderStars(rating.rating)}</td>
                       <td className="px-4 py-2">{rating.comment}</td>
                       <td className="px-4 py-2">{new Date(rating.date).toLocaleDateString()}</td>
@@ -409,7 +444,7 @@ export default function ProductPage() {
                 </table>
               ) :
               (
-                <p className="text-gray-500">No hay opiniones disponibles para este producto.</p>
+                <p className="text-gray-500"></p>
               )}
           </div>
         </div>
