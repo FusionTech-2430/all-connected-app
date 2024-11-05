@@ -1,6 +1,6 @@
 'use server'
 
-import { Products, ProductsReport} from "@/types/products";
+import { Products, ProductsReport, RatingDTO, RatingCreateDTO} from "@/types/products";
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/products-service/api/v1`;
 
@@ -116,3 +116,60 @@ export const getProductRating = async (productId: number) => {
     }
   });
 };
+
+// RATING ENDPOINTS
+
+// Add a rating to a product
+export const addRating = (productId: string, rating: RatingCreateDTO) => {
+  return fetcher<RatingDTO>(`products/rating/${productId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    },
+    body: JSON.stringify(rating)
+  });
+};
+
+// Get all ratings
+export const getRatings = () => {
+  return fetcher<RatingDTO[]>('products/rating', {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json'
+    },
+    cache: 'no-store'
+  });
+};
+
+// Get the average rating of a product
+export const getProductAverageRating = (productId: string) => {
+  return fetcher<{ status: number; message: string }>(`products/rating/${productId}/average`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json'
+    }
+  });
+};
+
+// Get all ratings for a specific product
+export const getRatingsByProduct = (productId: string) => {
+  return fetcher<RatingDTO[]>(`products/rating/${productId}`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json'
+    }
+  });
+};
+
+// Delete a rating by ID
+export const deleteRating = (ratingId: string) => {
+  return fetcher<void>(`products/rating/${ratingId}`, {
+    method: 'DELETE',
+    headers: {
+      Accept: 'application/json'
+    }
+  });
+};
+
+

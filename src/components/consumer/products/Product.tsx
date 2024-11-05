@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { toast } from '@/components/ui/use-toast'
 import { useUserId } from '@/hooks/use-user-id'
 import { getProductById } from '@/lib/api/products'
@@ -42,6 +43,21 @@ interface Business {
   name: string
 }
 
+interface Rating {
+  idRating: number
+  userId: string
+  rating: number
+  comment: string
+  date: string
+}
+
+interface RatingCreateDTO {
+  productId: number;
+  userId: string;
+  rating: number;
+  comment: string;
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
 
 export default function ProductPage() {
@@ -53,14 +69,30 @@ export default function ProductPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [quantity, setQuantity] = useState(1)
   const [isLoading, setIsLoading] = useState(true)
+  const [ratings, setRatings] = useState<Rating[]>([])
+  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false)
+  const [newRating, setNewRating] = useState<RatingCreateDTO>({
+    productId: 0,
+    userId: '',
+    rating: 0,
+    comment: ''
+  })
+  const [shouldReload, setShouldReload] = useState(false)
 
   const userId = useUserId()
 
   useEffect(() => {
     if (productId) {
       fetchProduct(parseInt(productId))
+      fetchRatings(parseInt(productId))
     }
   }, [productId])
+
+  useEffect(() => {
+    if (shouldReload) {
+      window.location.reload()
+    }
+  }, [shouldReload])
 
   const fetchProduct = async (id: number) => {
     try {
@@ -97,6 +129,36 @@ export default function ProductPage() {
     }
   }
 
+  const fetchRatings = async (id: number) => {
+    try {
+      const response = await fetch(`${API_URL}/products-service/api/v1/products/rating/${id}`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const ratingsData = await response.json();
+        const formattedRatings = ratingsData.map((rating: Rating) => ({
+          ...rating,
+          date: rating.date.toString(),
+        }));
+        setRatings(formattedRatings);
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al cargar las opiniones");
+      }
+    } catch (error) {
+      console.error("Error fetching ratings:", error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar las opiniones",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleQuantityChange = (amount: number) => {
     setQuantity((prev) =>
       Math.max(1, Math.min(prev + amount, product?.stock || 1))
@@ -112,28 +174,24 @@ export default function ProductPage() {
       });
       return;
     }
-  
+
     setIsLoading(true);
-  
+
     try {
-      // Verificar si ya existe una orden en sessionStorage
       let orderId = sessionStorage.getItem('orderId');
-  
-      // Si no hay una orden existente, crear una nueva
+
       if (!orderId) {
         const orderData = await createOrder({
           idUser: userId,
           idBusiness: product.idBusiness,
         });
-  
-        // Guardar el ID de la nueva orden en sessionStorage
+
         orderId = orderData.id;
         sessionStorage.setItem('orderId', orderId);
       }
-  
-      // Agregar producto a la orden existente o nueva
+
       await addProductToOrder(orderId, product.id, quantity);
-  
+
       toast({
         title: 'Éxito',
         description: 'Producto agregado a la orden correctamente',
@@ -148,11 +206,59 @@ export default function ProductPage() {
       });
     } finally {
       setIsLoading(false);
-      // reload the page to update the cart button
       window.location.reload();
     }
   };
-  
+
+  const handleCreateRating = async () => {
+    if (!userId || !product) {
+      toast({
+        title: 'Error',
+        description: 'Usuario o producto no disponible',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const ratingData: RatingCreateDTO = {
+        productId: product.id,
+        userId: userId,
+        rating: newRating.rating,
+        comment: newRating.comment
+      };
+
+      const response = await fetch(`${API_URL}/products-service/api/v1/products/rating/${product.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(ratingData),
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Éxito',
+          description: 'Calificación agregada correctamente',
+          className: 'bg-[#0EA5E9] text-white',
+        });
+        setShouldReload(true);
+        setIsRatingModalOpen(false);
+        fetchRatings(product.id);
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al agregar la calificación');
+      }
+    } catch (error) {
+      console.error('Error al crear la calificación:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'No se pudo agregar la calificación',
+        variant: 'destructive',
+      });
+    }
+  };
 
   const renderStars = (rating: number) => {
     return (
@@ -177,12 +283,12 @@ export default function ProductPage() {
 
   if (!product || !business) return <div>Producto no encontrado</div>
 
- return (
-    <div className="min-h-screen bg-gray-50"> 
+  return (
+    <div className="min-h-screen bg-gray-50">
       <header className="relative w-full bg-gradient-to-br from-[#0C4A6E] via-[#075985] to-[#0369A1] overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjA1Ij48Y2lyY2xlIGN4PSIxIiBjeT0iMSIgcj0iMSIvPjwvZz48L3N2Zz4=')] opacity-30" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
-        
+
         <div className="relative max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-bold text-center text-white tracking-tight drop-shadow-lg">
             Informacion del Producto
@@ -247,8 +353,8 @@ export default function ProductPage() {
               </div>
 
               <div className="space-y-4">
-                <Button 
-                  className="w-full py-6 text-lg"
+                <Button
+                  className="w-full py-6 text-lg bg-[#0EA5E9] hover:bg-[#0284C7] text-white"
                   onClick={() => setIsModalOpen(true)}
                 >
                   Comprar
@@ -271,10 +377,40 @@ export default function ProductPage() {
           </div>
 
           <div className="mt-16">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8">
-              Opiniones del producto
-            </h2>
-            <p className="text-gray-500">No hay opiniones disponibles.</p>
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-2xl font-bold text-gray-900">Opiniones del Producto</h2>
+              <Button
+                onClick={() => setIsRatingModalOpen(true)}
+                className="bg-[#0EA5E9] hover:bg-[#0284C7] text-white"
+              >
+                Crear Calificación
+              </Button>
+            </div>
+            {ratings.length > 0 ? (
+                <table className="min-w-full bg-white border border-gray-200 rounded-md">
+                  <thead>
+                  <tr>
+                    <th className="px-4 py-2 text-left text-gray-600">Usuario</th>
+                    <th className="px-4 py-2 text-left text-gray-600">Calificación</th>
+                    <th className="px-4 py-2 text-left text-gray-600">Comentario</th>
+                    <th className="px-4 py-2 text-left text-gray-600">Fecha</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {ratings.map((rating) => (
+                    <tr key={rating.idRating} className="border-t">
+                      <td className="px-4 py-2">{rating.userId}</td>
+                      <td className="px-4 py-2">{renderStars(rating.rating)}</td>
+                      <td className="px-4 py-2">{rating.comment}</td>
+                      <td className="px-4 py-2">{new Date(rating.date).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                  </tbody>
+                </table>
+              ) :
+              (
+                <p className="text-gray-500">No hay opiniones disponibles para este producto.</p>
+              )}
           </div>
         </div>
       </main>
@@ -328,8 +464,65 @@ export default function ProductPage() {
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handlePurchase} disabled={isLoading}>
+            <Button onClick={handlePurchase} disabled={isLoading} className="bg-[#0EA5E9] hover:bg-[#0284C7] text-white">
               {isLoading ? 'Procesando...' : 'Confirmar Compra'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isRatingModalOpen} onOpenChange={setIsRatingModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-gray-900">
+              Crear Calificación
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Calificación
+              </label>
+              <div className="flex mt-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    className={`w-6 h-6 cursor-pointer ${
+                      star <= newRating.rating
+                        ? 'text-yellow-400 fill-yellow-400'
+                        : 'text-gray-300'
+                    }`}
+                    onClick={() => setNewRating({ ...newRating, rating: star })}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="mb-4">
+              <label htmlFor="comment" className="block text-sm font-medium text-gray-700">
+                Comentario
+              </label>
+              <Textarea
+                id="comment"
+                value={newRating.comment}
+                onChange={(e) => setNewRating({ ...newRating, comment: e.target.value })}
+                rows={4}
+                className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:border-[#0EA5E9] focus:ring-[#0EA5E9]"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsRatingModalOpen(false)}
+              className="text-gray-700 border-gray-300"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleCreateRating}
+              className="bg-[#0EA5E9] hover:bg-[#0284C7] text-white"
+            >
+              Enviar Calificación
             </Button>
           </DialogFooter>
         </DialogContent>
