@@ -37,13 +37,22 @@ import {
 } from '@/lib/api/products'
 import SearchInput from '@/components/shared/search-input'
 
+interface Service {
+  id: number
+  name: string
+  description: string
+  price: number
+  photoUrl: string
+}
+
+type Item = ProductsReport | Service
+
 const truncateText = (text: string, maxLength: number) => {
   if (text.length <= maxLength) return text
   return text.slice(0, maxLength) + '...'
 }
 
-// Mock data for services
-const mockServices = [
+const mockServices: Service[] = [
   {
     id: 1,
     name: 'Servicio de Limpieza',
@@ -73,9 +82,7 @@ export default function AdminProductsDashboard() {
     null
   )
   const [selectedProduct, setSelectedProduct] = useState<Products | null>(null)
-  const [selectedService, setSelectedService] = useState<
-    (typeof mockServices)[0] | null
-  >(null)
+  const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [isViewReportDialogOpen, setIsViewReportDialogOpen] = useState(false)
   const [isViewProductDialogOpen, setIsViewProductDialogOpen] = useState(false)
   const [isViewServiceDialogOpen, setIsViewServiceDialogOpen] = useState(false)
@@ -99,7 +106,6 @@ export default function AdminProductsDashboard() {
       const fetchedReports = await getReports()
       setReports(fetchedReports)
 
-      // Fetch product names and images
       const names: Record<number, string> = {}
       const images: Record<number, string> = {}
 
@@ -135,7 +141,7 @@ export default function AdminProductsDashboard() {
     }
   }
 
-  const handleViewService = (service: (typeof mockServices)[0]) => {
+  const handleViewService = (service: Service) => {
     setSelectedService(service)
     setIsViewServiceDialogOpen(true)
   }
@@ -153,32 +159,30 @@ export default function AdminProductsDashboard() {
     }
   }
 
-  const filteredItems = (() => {
-    let items: any[] = []
+  const filteredItems: Item[] = (() => {
+    let items: Item[] = []
 
     if (selectedCategory === 'todos' || selectedCategory === 'productos') {
-      items = items.concat(
-        reports.filter(
-          (report) =>
-            report.reason.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            report.description
-              .toLowerCase()
-              .includes(searchTerm.toLowerCase()) ||
-            productNames[report.productId]
-              ?.toLowerCase()
-              .includes(searchTerm.toLowerCase())
-        )
+      const filteredReports = reports.filter(
+        (report) =>
+          report.reason.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          report.description
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          productNames[report.productId]
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase())
       )
+      items = items.concat(filteredReports)
     }
 
     if (selectedCategory === 'todos' || selectedCategory === 'servicios') {
-      items = items.concat(
-        mockServices.filter(
-          (service) =>
-            service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            service.description.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+      const filteredServices = mockServices.filter(
+        (service) =>
+          service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          service.description.toLowerCase().includes(searchTerm.toLowerCase())
       )
+      items = items.concat(filteredServices)
     }
 
     return items
@@ -210,19 +214,28 @@ export default function AdminProductsDashboard() {
         <div className="mb-4 flex space-x-2">
           <Button
             variant={selectedCategory === 'todos' ? 'default' : 'outline'}
-            onClick={() => setSelectedCategory('todos')}
+            onClick={() => {
+              setSelectedCategory('todos')
+              setCurrentPage(1)
+            }}
           >
             Todos
           </Button>
           <Button
             variant={selectedCategory === 'productos' ? 'default' : 'outline'}
-            onClick={() => setSelectedCategory('productos')}
+            onClick={() => {
+              setSelectedCategory('productos')
+              setCurrentPage(1)
+            }}
           >
             Productos
           </Button>
           <Button
             variant={selectedCategory === 'servicios' ? 'default' : 'outline'}
-            onClick={() => setSelectedCategory('servicios')}
+            onClick={() => {
+              setSelectedCategory('servicios')
+              setCurrentPage(1)
+            }}
           >
             Servicios
           </Button>
@@ -253,13 +266,14 @@ export default function AdminProductsDashboard() {
                         src={
                           isService
                             ? item.photoUrl
-                            : productImages[item.productId] ||
+                            : productImages[(item as ProductsReport).productId] ||
                               '/placeholder.svg'
                         }
                         alt={
                           isService
                             ? item.name
-                            : productNames[item.productId] || 'Producto'
+                            : productNames[(item as ProductsReport).productId] ||
+                              'Producto'
                         }
                         width={48}
                         height={48}
@@ -268,20 +282,29 @@ export default function AdminProductsDashboard() {
                       <span>
                         {isService
                           ? item.name
-                          : productNames[item.productId] || 'Cargando...'}
+                          : productNames[(item as ProductsReport).productId] ||
+                            'Cargando...'}
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell title={isService ? item.description : item.reason}>
+                  <TableCell
+                    title={
+                      isService ? item.description : (item as ProductsReport).reason
+                    }
+                  >
                     {truncateText(
-                      isService ? item.description : item.reason,
+                      isService
+                        ? item.description
+                        : (item as ProductsReport).reason,
                       30
                     )}
                   </TableCell>
                   <TableCell>
                     {isService
                       ? `$${item.price.toFixed(2)}`
-                      : new Date(item.reportDate).toLocaleDateString()}
+                      : new Date(
+                          (item as ProductsReport).reportDate
+                        ).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -294,7 +317,7 @@ export default function AdminProductsDashboard() {
                       <DropdownMenuContent align="end">
                         {isService ? (
                           <DropdownMenuItem
-                            onClick={() => handleViewService(item)}
+                            onClick={() => handleViewService(item as Service)}
                           >
                             <Eye className="mr-2 h-4 w-4 text-blue-500" />
                             Ver Detalles
@@ -302,13 +325,19 @@ export default function AdminProductsDashboard() {
                         ) : (
                           <>
                             <DropdownMenuItem
-                              onClick={() => handleViewReport(item)}
+                              onClick={() =>
+                                handleViewReport(item as ProductsReport)
+                              }
                             >
                               <Eye className="mr-2 h-4 w-4 text-blue-500" />
                               Visualizar Reporte
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={() => handleViewProduct(item.productId)}
+                              onClick={() =>
+                                handleViewProduct(
+                                  (item as ProductsReport).productId
+                                )
+                              }
                             >
                               <Package className="mr-2 h-4 w-4 text-green-500" />
                               Ver Producto
@@ -389,9 +418,7 @@ export default function AdminProductsDashboard() {
                 </Label>
                 <Input
                   id="productName"
-                  value={
-                    productNames[selectedReport.productId] || 'Cargando...'
-                  }
+                  value={productNames[selectedReport.productId] || 'Cargando...'}
                   readOnly
                   className="col-span-3"
                 />
