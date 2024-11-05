@@ -28,7 +28,6 @@ import Image from 'next/image'
 import { User } from '@/types/users/user'
 import { getUsers } from '@/lib/api/users'
 import ActivateDeactivateButton from './ActivateDeactiveButton'
-import DeleteUserButton from './DeleteUserButton'
 
 export default function UserManagementTable() {
   const [users, setUsers] = useState<User[]>([])
@@ -175,10 +174,6 @@ export default function UserManagementTable() {
                     <ActivateDeactivateButton 
                       user={user}
                       onUserUpdated={handleUserUpdated}
-                    />
-                    <DeleteUserButton
-                      user={user}
-                      onUserDeleted={handleUserDeleted}
                     />
                   </DropdownMenuContent>
                 </DropdownMenu>

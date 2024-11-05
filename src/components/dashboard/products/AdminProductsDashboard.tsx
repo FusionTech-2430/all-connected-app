@@ -18,7 +18,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter
+  DialogFooter,
+  DialogDescription
 } from '@/components/ui/dialog'
 import {
   DropdownMenu,
@@ -33,8 +34,10 @@ import {
   getReports,
   getReportById,
   getProductById,
-  deleteProductReport
+  deleteProductReport,
+  updateProduct
 } from '@/lib/api/products'
+import { getBusiness } from '@/lib/api/business'
 import SearchInput from '@/components/shared/search-input'
 
 interface ServiceReport {
@@ -94,6 +97,7 @@ export default function AdminProductsDashboard() {
   const [isViewProductDialogOpen, setIsViewProductDialogOpen] = useState(false)
   const [isViewServiceReportDialogOpen, setIsViewServiceReportDialogOpen] =
     useState(false)
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<
     'todos' | 'productos' | 'servicios'
   >('todos')
@@ -101,11 +105,31 @@ export default function AdminProductsDashboard() {
   const [searchTerm, setSearchTerm] = useState('')
   const [productNames, setProductNames] = useState<Record<number, string>>({})
   const [productImages, setProductImages] = useState<Record<number, string>>({})
+  const [businessNames, setBusinessNames] = useState<Record<string, string>>({})
   const itemsPerPage = 10
 
   useEffect(() => {
     fetchReports()
   }, [])
+
+  const fetchBusinessNames = async (products: Products[]) => {
+    const names: Record<string, string> = {}
+    for (const product of products) {
+      if (!names[product.idBusiness]) {
+        try {
+          const business = await getBusiness(product.idBusiness)
+          names[product.idBusiness] = business.name
+        } catch (error) {
+          console.error(
+            `Failed to fetch business name for ID ${product.idBusiness}:`,
+            error
+          )
+          names[product.idBusiness] = 'Unknown Business'
+        }
+      }
+    }
+    setBusinessNames(names)
+  }
 
   const fetchReports = async () => {
     try {
@@ -114,14 +138,17 @@ export default function AdminProductsDashboard() {
 
       const names: Record<number, string> = {}
       const images: Record<number, string> = {}
+      const products: Products[] = []
 
       for (const report of fetchedReports) {
         const product = await getProductById(report.productId)
         names[report.productId] = product.name
         images[report.productId] = product.photoUrl || '/placeholder.svg'
+        products.push(product)
       }
       setProductNames(names)
       setProductImages(images)
+      fetchBusinessNames(products)
     } catch (error) {
       console.error('Failed to fetch reports:', error)
     }
@@ -131,6 +158,8 @@ export default function AdminProductsDashboard() {
     try {
       const fullReport = await getReportById(report.productId)
       setSelectedReport(fullReport)
+      const product = await getProductById(report.productId)
+      setSelectedProduct(product)
       setIsViewReportDialogOpen(true)
     } catch (error) {
       console.error('Failed to fetch report details:', error)
@@ -164,12 +193,45 @@ export default function AdminProductsDashboard() {
     }
   }
 
+  const handleAcceptReport = async () => {
+    if (selectedReport && selectedProduct) {
+      try {
+        const updatedProduct = {
+          ...selectedProduct,
+          status: 'inactive'
+        }
+        await updateProduct(selectedProduct.id, updatedProduct)
+        await deleteProductReport(selectedReport.productId)
+        setReports((prevReports) =>
+          prevReports.filter((report) => report.productId !== selectedReport.productId)
+        )
+        setIsViewReportDialogOpen(false)
+        setIsConfirmDialogOpen(false)
+        // Optionally, you can show a success message here
+      } catch (error) {
+        console.error('Failed to accept report:', error)
+        // Optionally, you can show an error message here
+      }
+    }
+  }
+
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('es-ES', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
     })
+  }
+
+  const translateStatus = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return 'Activo'
+      case 'inactive':
+        return 'Inactivo'
+      default:
+        return status
+    }
   }
 
   const filteredItems: Item[] = (() => {
@@ -373,7 +435,8 @@ export default function AdminProductsDashboard() {
               variant="outline"
               size="sm"
               onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
-              disabled={currentPage === 1}
+              disabled={currentPage === 
+              1}
             >
               &lt;
             </Button>
@@ -471,6 +534,38 @@ export default function AdminProductsDashboard() {
             >
               Eliminar Reporte
             </Button>
+            <Button
+              variant="default"
+              onClick={() => setIsConfirmDialogOpen(true)}
+            >
+              Aceptar Reporte
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={isConfirmDialogOpen}
+        onOpenChange={setIsConfirmDialogOpen}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Confirmar acción</DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro de aceptar el reporte? Si lo aceptas, el estado del producto pasará a estar inactivo.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setIsConfirmDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="default"
+              onClick={handleAcceptReport}
+            >
+              Confirmar
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -545,14 +640,14 @@ export default function AdminProductsDashboard() {
                 </Label>
                 <Input
                   id="productStatus"
-                  value={selectedProduct.status}
+                  value={translateStatus(selectedProduct.status)}
                   readOnly
                   className="col-span-3"
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="productLabels" className="text-right">
-                  Etiquetas
+                  Etiqueta
                 </Label>
                 <Input
                   id="productLabels"
@@ -562,12 +657,14 @@ export default function AdminProductsDashboard() {
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="productIdBusiness" className="text-right">
-                  ID de Negocio
+                <Label htmlFor="productBusiness" className="text-right">
+                  Negocio
                 </Label>
                 <Input
-                  id="productIdBusiness"
-                  value={selectedProduct.idBusiness}
+                  id="productBusiness"
+                  value={
+                    businessNames[selectedProduct.idBusiness] || 'Cargando...'
+                  }
                   readOnly
                   className="col-span-3"
                 />
