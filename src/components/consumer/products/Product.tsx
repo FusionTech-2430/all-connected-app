@@ -8,7 +8,8 @@ import {
   Minus,
   Plus,
   Star,
-  Loader2
+  Loader2,
+  AlertTriangle
 } from 'lucide-react'
 import {
   Dialog,
@@ -20,9 +21,11 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from '@/components/ui/use-toast'
 import { useUserId } from '@/hooks/use-user-id'
-import { getProductById, getProductRating, getRatingsByProduct, addRating } from '@/lib/api/products'
+import { getProductById, getProductRating, getRatingsByProduct, addRating, createProductReport } from '@/lib/api/products'
 import { getBusiness } from '@/lib/api/business'
 import { getOrdersByUser } from '@/lib/api/orders'
 import { createOrder, addProductToOrder } from '@/lib/api/orders'
@@ -63,10 +66,18 @@ interface RatingShow {
 }
 
 interface RatingCreateDTO {
-  productId: number;
-  userId: string;
-  rating: number;
-  comment: string;
+  productId: number
+  userId: string
+  rating: number
+  comment: string
+}
+
+interface ProductReportDTO {
+  category: string
+  productId: number
+  reason: string
+  description: string
+  reportDate: Date
 }
 
 export default function ProductPage() {
@@ -80,6 +91,7 @@ export default function ProductPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [ratings, setRatings] = useState<RatingShow[]>([])
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false)
+  const [reportErrorMessage, setReportErrorMessage] = useState('');
   const [newRating, setNewRating] = useState<RatingCreateDTO>({
     productId: 0,
     userId: '',
@@ -87,6 +99,14 @@ export default function ProductPage() {
     comment: ''
   })
   const [shouldReload, setShouldReload] = useState(false)
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false)
+  const [reportData, setReportData] = useState<ProductReportDTO>({
+    category: '',
+    productId: 0,
+    reason: '',
+    description: '',
+    reportDate: new Date()
+  })
 
   const userId = useUserId()
 
@@ -104,86 +124,71 @@ export default function ProductPage() {
   }, [shouldReload])
 
   const fetchProduct = async (id: number) => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      // Obtener datos del producto
-      const productData = await getProductById(id);
-  
+      const productData = await getProductById(id)
+
       if (!productData) {
-        throw new Error("Producto no encontrado");
+        throw new Error("Producto no encontrado")
       }
-  
-      // Obtener datos de la empresa
-      const businessData = await getBusiness(productData.idBusiness);
-  
-      // Obtener la calificación promedio del producto
-      const ratingResponse = await getProductRating(id);
-      const rating = ratingResponse.message ? parseFloat(ratingResponse.message.split(' ')[2]) : 0;
-  
-      // Actualizar el estado del producto y del negocio
-      setProduct({ ...productData, rating });
-      setBusiness(businessData);
+
+      const businessData = await getBusiness(productData.idBusiness)
+
+      const ratingResponse = await getProductRating(id)
+      const rating = ratingResponse.message ? parseFloat(ratingResponse.message.split(' ')[2]) : 0
+
+      setProduct({ ...productData, rating })
+      setBusiness(businessData)
     } catch (error) {
-      console.error("Error fetching product:", error);
+      console.error("Error fetching product:", error)
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "No se pudo cargar el producto",
         variant: "destructive",
-      });
+      })
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
-  
-  
+  }
 
   const fetchRatings = async (id: number) => {
-  try {
-    // Obtener las calificaciones del producto
-    const ratingsData = await getRatingsByProduct(id.toString());
+    try {
+      const ratingsData = await getRatingsByProduct(id.toString())
 
-    // Formatear cada calificación para incluir el nombre de usuario
-    const formattedRatings = await Promise.all(
-      ratingsData.map(async (rating: Rating) => {
-        try {
-          // Obtener datos del usuario
-          const user = await getUser(rating.userId);
-          return {
-            idRating: rating.idRating,
-            username: user.username || "Usuario Desconocido", 
-            rating: rating.rating,
-            comment: rating.comment,
-            date: rating.date ? new Date(rating.date).toLocaleDateString() : "Fecha no disponible",
-          };
-        } catch (error) {
-          console.error(`Error al obtener el usuario para el rating ${rating.idRating}:`, error);
-          return {
-            idRating: rating.idRating,
-            username: "Usuario desconocido",
-            rating: rating.rating,
-            comment: rating.comment,
-            date: rating.date ? new Date(rating.date).toLocaleDateString() : "Fecha no disponible",
-          };
-        }
+      const formattedRatings = await Promise.all(
+        ratingsData.map(async (rating: Rating) => {
+          try {
+            const user = await getUser(rating.userId)
+            return {
+              idRating: rating.idRating,
+              username: user.username || "Usuario Desconocido",
+              rating: rating.rating,
+              comment: rating.comment,
+              date: rating.date ? new Date(rating.date).toLocaleDateString() : "Fecha no disponible",
+            }
+          } catch (error) {
+            console.error(`Error al obtener el usuario para el rating ${rating.idRating}:`, error)
+            return {
+              idRating: rating.idRating,
+              username: "Usuario desconocido",
+              rating: rating.rating,
+              comment: rating.comment,
+              date: rating.date ? new Date(rating.date).toLocaleDateString() : "Fecha no disponible",
+            }
+          }
+        })
+      )
+
+      setRatings(formattedRatings)
+    } catch (error) {
+      console.error("Error al obtener las calificaciones:", error)
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar las opiniones",
+        variant: "destructive",
       })
-    );
-
-    // Actualizar el estado con las calificaciones formateadas
-    setRatings(formattedRatings);
-  } catch (error) {
-    console.error("Error al obtener las calificaciones:", error);
-    toast({
-      title: "Error",
-      description: "No se pudieron cargar las opiniones",
-      variant: "destructive",
-    });
+    }
   }
-};
-
-  
-
-
-
 
   const handleQuantityChange = (amount: number) => {
     setQuantity((prev) =>
@@ -197,51 +202,51 @@ export default function ProductPage() {
         title: 'Error',
         description: 'Usuario o producto no disponible',
         variant: 'destructive',
-      });
-      return;
+      })
+      return
     }
 
-    setIsLoading(true);
+    setIsLoading(true)
 
     try {
-      let orderId = sessionStorage.getItem('orderId');
+      let orderId = sessionStorage.getItem('orderId')
 
       if (!orderId) {
-        const userOrders = await getOrdersByUser(userId);
-        const activeOrder = userOrders.find((order) => order.status === 'in_progress');
+        const userOrders = await getOrdersByUser(userId)
+        const activeOrder = userOrders.find((order) => order.status === 'in_progress')
         if (activeOrder) {
-          orderId = activeOrder.id;
-          sessionStorage.setItem('orderId', orderId);
+          orderId = activeOrder.id
+          sessionStorage.setItem('orderId', orderId)
         } else {
-        const orderData = await createOrder({
-          idUser: userId,
-          idBusiness: product.idBusiness,
-        });
+          const orderData = await createOrder({
+            idUser: userId,
+            idBusiness: product.idBusiness,
+          })
 
-        orderId = orderData.id;
-        sessionStorage.setItem('orderId', orderId);
+          orderId = orderData.id
+          sessionStorage.setItem('orderId', orderId)
+        }
       }
-    }
 
-      await addProductToOrder(orderId, product.id, quantity);
+      await addProductToOrder(orderId, product.id, quantity)
 
       toast({
         title: 'Éxito',
         description: 'Producto agregado a la orden correctamente',
-      });
-      setIsModalOpen(false);
+      })
+      setIsModalOpen(false)
     } catch (error) {
-      console.error('Error procesando la compra:', error);
+      console.error('Error procesando la compra:', error)
       toast({
         title: 'Error',
         description: 'Error al procesar la compra',
         variant: 'destructive',
-      });
+      })
     } finally {
-      setIsLoading(false);
-      window.location.reload();
+      setIsLoading(false)
+      window.location.reload()
     }
-  };
+  }
 
   const handleCreateRating = async () => {
     if (!userId || !product) {
@@ -249,38 +254,107 @@ export default function ProductPage() {
         title: 'Error',
         description: 'Usuario o producto no disponible',
         variant: 'destructive',
-      });
-      return;
+      })
+      return
     }
-  
+
+    // Validación de campos
+    if (newRating.rating === 0) {
+      toast({
+        title: 'Error',
+        description: 'Por favor seleccione una calificación',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    if (!newRating.comment.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Por favor ingrese un comentario',
+        variant: 'destructive',
+      })
+      return
+    }
+
     try {
       const ratingData: RatingCreateDTO = {
         productId: product.id,
         userId: userId,
         rating: newRating.rating,
         comment: newRating.comment,
-      };
-  
-      // Llama al endpoint `addRating` con el ID del producto y los datos de la calificación
-      const response = await addRating(product.id.toString(), ratingData);
-  
+      }
+
+      const response = await addRating(product.id.toString(), ratingData)
+
       if (response) {
         toast({
           title: 'Éxito',
           description: 'Calificación agregada correctamente',
           className: 'bg-[#0EA5E9] text-white',
-        });
-        setShouldReload(true);
-        setIsRatingModalOpen(false);
-        fetchRatings(product.id); // Refresca las calificaciones del producto
+        })
+        setShouldReload(true)
+        setIsRatingModalOpen(false)
+        fetchRatings(product.id)
       }
     } catch (error) {
-      console.error('Error al crear la calificación:', error);
+      console.error('Error al crear la calificación:', error)
       toast({
         title: 'Error',
         description: error instanceof Error ? error.message : 'No se pudo agregar la calificación',
         variant: 'destructive',
+      })
+    }
+  }
+
+  const handleCreateReport = async () => {
+    setReportErrorMessage('');
+
+    if (!product) {
+      setReportErrorMessage('Producto no disponible');
+      return;
+    }
+
+    // Validación de campos
+    if (!reportData.category) {
+      setReportErrorMessage('Por favor seleccione una categoría');
+      return;
+    }
+
+    if (!reportData.reason) {
+      setReportErrorMessage('Por favor seleccione una razón');
+      return;
+    }
+
+    if (!reportData.description.trim()) {
+      setReportErrorMessage('Por favor ingrese una descripción');
+      return;
+    }
+
+    try {
+      await createProductReport(product.id, {
+        ...reportData,
+        productId: product.id,
+        reportDate: new Date(),
       });
+
+      setReportErrorMessage('');
+      setIsReportModalOpen(false);
+      setReportData({
+        category: '',
+        productId: 0,
+        reason: '',
+        description: '',
+        reportDate: new Date(),
+      });
+    } catch (error: unknown) {
+      console.error("Error al crear el reporte:", error);
+
+      if (error instanceof Error && error.message.includes("duplicate key")) {
+        setReportErrorMessage("El producto ya se encuentra reportado, el equipo de AllConnected está evaluando el caso.");
+      } else {
+        setReportErrorMessage("No se pudo enviar el reporte. Por favor intente nuevamente.");
+      }
     }
   };
 
@@ -297,7 +371,7 @@ export default function ProductPage() {
     console.log(chatId)
     window.location.href = '/consumer/messages/chat?id=' + chatId
   }
-  
+
 
   const renderStars = (rating: number) => {
     return (
@@ -321,7 +395,6 @@ export default function ProductPage() {
   }
 
   if (!product || !business) return <div>Producto no encontrado</div>
-
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="relative w-full bg-gradient-to-br from-[#0C4A6E] via-[#075985] to-[#0369A1] overflow-hidden">
@@ -399,16 +472,11 @@ export default function ProductPage() {
                   Comprar
                 </Button>
 
-                <button className="w-full text-sm text-gray-500 flex items-center justify-center hover:text-gray-700">
-                  <svg
-                    className="w-4 h-4 mr-1"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
+                <button
+                  className="w-full text-sm text-gray-500 flex  items-center justify-center hover:text-gray-700"
+                  onClick={() => setIsReportModalOpen(true)}
+                >
+                  <AlertTriangle className="w-4 h-4 mr-1" />
                   Reportar producto o emprendimiento
                 </button>
                 <Button
@@ -441,30 +509,29 @@ export default function ProductPage() {
               </Button>
             </div>
             {ratings.length > 0 ? (
-                <table className="min-w-full bg-white border border-gray-200 rounded-md">
-                  <thead>
-                  <tr>
-                    <th className="px-4 py-2 text-left text-gray-600">Usuario</th>
-                    <th className="px-4 py-2 text-left text-gray-600">Calificación</th>
-                    <th className="px-4 py-2 text-left text-gray-600">Comentario</th>
-                    <th className="px-4 py-2 text-left text-gray-600">Fecha</th>
+              <table className="min-w-full bg-white border border-gray-200 rounded-md">
+                <thead>
+                <tr>
+                  <th className="px-4 py-2 text-left text-gray-600">Usuario</th>
+                  <th className="px-4 py-2 text-left text-gray-600">Calificación</th>
+                  <th className="px-4 py-2 text-left text-gray-600">Comentario</th>
+                  <th className="px-4 py-2 text-left text-gray-600">Fecha</th>
+                </tr>
+                </thead>
+                <tbody>
+                {ratings.map((rating) => (
+                  <tr key={rating.idRating} className="border-t">
+                    <td className="px-4 py-2">{rating.username}</td>
+                    <td className="px-4 py-2">{renderStars(rating.rating)}</td>
+                    <td className="px-4 py-2">{rating.comment}</td>
+                    <td className="px-4 py-2">{new Date(rating.date).toLocaleDateString()}</td>
                   </tr>
-                  </thead>
-                  <tbody>
-                  {ratings.map((rating) => (
-                    <tr key={rating.idRating} className="border-t">
-                      <td className="px-4 py-2">{rating.username}</td>
-                      <td className="px-4 py-2">{renderStars(rating.rating)}</td>
-                      <td className="px-4 py-2">{rating.comment}</td>
-                      <td className="px-4 py-2">{new Date(rating.date).toLocaleDateString()}</td>
-                    </tr>
-                  ))}
-                  </tbody>
-                </table>
-              ) :
-              (
-                <p className="text-gray-500"></p>
-              )}
+                ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="text-gray-500">No hay opiniones disponibles.</p>
+            )}
           </div>
         </div>
       </main>
@@ -518,7 +585,8 @@ export default function ProductPage() {
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handlePurchase} disabled={isLoading} className="bg-[#0EA5E9] hover:bg-[#0284C7] text-white">
+            <Button onClick={handlePurchase} disabled={isLoading}
+                    className="bg-[#0EA5E9] hover:bg-[#0284C7] text-white">
               {isLoading ? 'Procesando...' : 'Confirmar Compra'}
             </Button>
           </DialogFooter>
@@ -577,6 +645,76 @@ export default function ProductPage() {
               className="bg-[#0EA5E9] hover:bg-[#0284C7] text-white"
             >
               Enviar Calificación
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isReportModalOpen} onOpenChange={setIsReportModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-yellow-500" />
+              Reportar Producto
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            {/* Mensaje de error en rojo */}
+            {reportErrorMessage && (
+              <p className="text-red-600 text-sm">{reportErrorMessage}</p>
+            )}
+            <div className="grid gap-2">
+              <Label htmlFor="category">Categoría</Label>
+              <Select
+                value={reportData.category}
+                onValueChange={(value) => setReportData({ ...reportData, category: value })}
+              >
+                <SelectTrigger id="category">
+                  <SelectValue placeholder="Seleccione una categoría" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="inappropriate">Contenido inapropiado</SelectItem>
+                  <SelectItem value="fake">Producto falso</SelectItem>
+                  <SelectItem value="scam">Posible estafa</SelectItem>
+                  <SelectItem value="other">Otro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="reason">Razón</Label>
+              <Select
+                value={reportData.reason}
+                onValueChange={(value) => setReportData({ ...reportData, reason: value })}
+              >
+                <SelectTrigger id="reason">
+                  <SelectValue placeholder="Seleccione una razón" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="misleading">Información engañosa</SelectItem>
+                  <SelectItem value="offensive">Contenido ofensivo</SelectItem>
+                  <SelectItem value="illegal">Producto ilegal</SelectItem>
+                  <SelectItem value="quality">Problemas de calidad</SelectItem>
+                  <SelectItem value="other">Otro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="description">Descripción</Label>
+              <Textarea
+                id="description"
+                placeholder="Describa el problema en detalle"
+                value={reportData.description}
+                onChange={(e) => setReportData({ ...reportData, description: e.target.value })}
+                className="h-32"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsReportModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateReport} className="bg-[#0EA5E9] hover:bg-[#0284C7] text-white">
+              Enviar Reporte
             </Button>
           </DialogFooter>
         </DialogContent>
