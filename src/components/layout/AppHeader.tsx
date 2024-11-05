@@ -79,6 +79,58 @@ export function AppHeader({ children, ...props }: HeaderProps) {
   )
 }
 
+export function AdminHeader({ children, ...props }: HeaderProps) {
+  return (
+    <>
+      <header {...props}>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button size="icon" variant="outline" className="sm:hidden">
+              <MenuIcon size={20} />
+              <span className="sr-only">Toggle Menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="sm:max-w-xs">
+            {/* Metadata for screen readers */}
+            <SheetHeader>
+              <SheetTitle className="sr-only">Menu</SheetTitle>
+              <SheetDescription className="sr-only">
+                Principal navigation
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex flex-col h-full gap-6">
+              <Link href="/home">
+                <Image
+                  src={'/all-connected-banner.png'}
+                  alt="All Connected banner"
+                  width={192}
+                  height={192}
+                  priority
+                />
+              </Link>
+
+              <NavBar className="grid gap-2 text-lg" />
+
+              <div className="flex flex-col justify-end items-start w-full h-full text-lg">
+                <NavItem
+                  href="/support"
+                  icon={<LifeBuoy size={20} />}
+                  title="Soporte técnico"
+                />
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+        {children}
+        <div className="ml-auto flex items-center gap-4">
+          <ThemeToggle />
+          <UserAvatar />
+        </div>
+      </header>
+    </>
+  )
+}
+
 export function PublicHeader() {
   return (
     <header className="bg-primary-900 p-4">

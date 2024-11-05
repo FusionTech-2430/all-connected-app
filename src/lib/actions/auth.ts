@@ -8,23 +8,43 @@ import {
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createUser } from './users'
+import { FirebaseError } from 'firebase/app'
 
-export async function signIn(formData: FormData) {
+export async function signIn(prevState: unknown, formData: FormData) {
   const email = formData.get('email')
   const password = formData.get('password')
 
-  const userCredential = await firebaseSignIn(
-    email as string,
-    password as string
-  )
+  try {
+    const userCredential = await firebaseSignIn(
+      email as string,
+      password as string
+    )
 
-  cookies().set('access-token', await userCredential.user.getIdToken())
+    cookies().set('access-token', await userCredential.user.getIdToken())
 
-  cookies().set('refresh-token', userCredential.user.refreshToken, {
-    httpOnly: true
-  })
+    cookies().set('refresh-token', userCredential.user.refreshToken, {
+      httpOnly: true
+    })
+  } catch (error: unknown) {
+    if (error instanceof FirebaseError) {
+      switch (error.code) {
+        case 'auth/user-not-found':
+          return { error: 'Usuario no encontrado' }
+        case 'auth/wrong-password':
+          return { error: 'Contraseña incorrecta' }
+        case 'auth/invalid-email':
+          return { error: 'Correo electrónico inválido' }
+        case 'auth/invalid-credential':
+          return { error: 'Credenciales inválidas' }
+        default:
+          return { error: 'Ocurrió un error desconocido' }
+      }
+    } else {
+      return { error: 'Ocurrió un error inesperado' }
+    }
+  }
 
-  redirect('/home')
+  // redirect('/home')
 }
 
 export async function signUp(formData: FormData) {
@@ -37,15 +57,19 @@ export async function signUp(formData: FormData) {
     mail as string,
     password as string
   )
+  formData.append('id_user', userCredential.user.uid)
+  // Wait for the user to be created in the Users Service
+  await createUser(formData)
+
+  // Refresh the access token to include custom claims
+  const user = userCredential.user
+  await user.getIdToken(true)
+  await createUser(formData)
 
   cookies().set('access-token', await userCredential.user.getIdToken())
   cookies().set('refresh-token', userCredential.user.refreshToken, {
     httpOnly: true
   })
-
-  formData.append('id_user', userCredential.user.uid)
-
-  await createUser(formData)
 
   // const [userCredential, user] = await Promise.all([
   // ])

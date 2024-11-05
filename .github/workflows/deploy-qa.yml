@@ -1,5 +1,7 @@
 name: Deploy QA
 on:
+  push:
+    branches: release
   pull_request:
     types: [closed]
     branches: ["release"]

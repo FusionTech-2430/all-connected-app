@@ -7,7 +7,11 @@ import { fetchUserChats } from '@/services/chatService'
 import { Chat } from '@/types/chat/Message'
 import { useUserId } from '@/hooks/use-user-id'
 
-const MessagesList = () => {
+interface MessagesListProps {
+  business: boolean;
+}
+
+const MessagesList = (prop : MessagesListProps) => {
   const [messages, setMessages] = useState<Chat[]>([])
   const router = useRouter()
 
@@ -20,14 +24,22 @@ const MessagesList = () => {
           router.push('/')
           return
         }
+        let id : string | null = userId;
+        if(prop.business === true){
+          id = sessionStorage.getItem('currentBusinessId')
+          if (!id) {
+            router.push('/')
+            return
+          }
+        }
 
-        fetchUserChats(userId, setMessages)
+        fetchUserChats(id, prop.business, setMessages)
       } catch (error) {
         console.error('Error getting chats:', error)
       }
     }
     fetchMessages()
-  }, [router])
+  }, [router, userId, prop.business])
 
   return (
     <section className="flex flex-col">
@@ -37,14 +49,17 @@ const MessagesList = () => {
             Ver mensajes
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Aquí se muestran todos los mensajes de tus clientes.
+            {prop.business ? 'Aquí se muestran todos los mensajes de tus clientes.' : 'Aquí se muestran todas tus conversaciones con los emprendimientos.'}
           </p>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700">
+                <th className="text-left py-2 text-gray-600 dark:text-gray-300">
+                    Chat
+                  </th>
                   <th className="text-left py-2 text-gray-600 dark:text-gray-300">
-                    Cliente
+                    {prop.business ? 'Cliente' : 'Emprendimiento'}
                   </th>
                   <th className="text-left py-2 text-gray-600 dark:text-gray-300">
                     Fecha
@@ -61,6 +76,9 @@ const MessagesList = () => {
                     className="border-b border-gray-200 dark:border-gray-700"
                   >
                     <td className="py-2 text-gray-900 dark:text-white">
+                      {message.chatName}
+                    </td>
+                    <td className="py-2 text-gray-900 dark:text-white">
                       {message.name}
                     </td>
                     <td className="py-2 text-gray-900 dark:text-white">
@@ -68,7 +86,7 @@ const MessagesList = () => {
                     </td>
                     <td className="py-2 text-right">
                       <Link
-                        href={`/chat?id=${message.id}`}
+                        href={prop.business? `/messages/chat?id=${message.id}` : `/consumer/messages/chat?id=${message.id}`}
                         className="inline-block text-blue-500 hover:text-blue-600 transition-colors"
                       >
                         <Send className="h-5 w-5" />

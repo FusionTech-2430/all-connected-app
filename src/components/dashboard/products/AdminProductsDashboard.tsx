@@ -37,21 +37,43 @@ import {
 } from '@/lib/api/products'
 import SearchInput from '@/components/shared/search-input'
 
+interface Service {
+  id: number
+  name: string
+  description: string
+  price: number
+  photoUrl: string
+}
+
+type Item = ProductsReport | Service
+
 const truncateText = (text: string, maxLength: number) => {
   if (text.length <= maxLength) return text
   return text.slice(0, maxLength) + '...'
 }
 
-// Mock data for services
-const mockServices = [
+const mockServices: Service[] = [
   {
     id: 1,
     name: 'Servicio de Limpieza',
     description: 'Limpieza profesional para hogares y oficinas',
     price: 50.0,
     photoUrl: '/placeholder.svg?height=48&width=48'
+  },
+  {
+    id: 2,
+    name: 'Servicio de Jardinería',
+    description: 'Mantenimiento y diseño de jardines',
+    price: 75.0,
+    photoUrl: '/placeholder.svg?height=48&width=48'
+  },
+  {
+    id: 3,
+    name: 'Reparación de Electrodomésticos',
+    description: 'Servicio técnico para electrodomésticos',
+    price: 60.0,
+    photoUrl: '/placeholder.svg?height=48&width=48'
   }
-  // ... (other mock services)
 ]
 
 export default function AdminProductsDashboard() {
@@ -60,9 +82,7 @@ export default function AdminProductsDashboard() {
     null
   )
   const [selectedProduct, setSelectedProduct] = useState<Products | null>(null)
-  const [selectedService, setSelectedService] = useState<
-    (typeof mockServices)[0] | null
-  >(null)
+  const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [isViewReportDialogOpen, setIsViewReportDialogOpen] = useState(false)
   const [isViewProductDialogOpen, setIsViewProductDialogOpen] = useState(false)
   const [isViewServiceDialogOpen, setIsViewServiceDialogOpen] = useState(false)
@@ -86,7 +106,6 @@ export default function AdminProductsDashboard() {
       const fetchedReports = await getReports()
       setReports(fetchedReports)
 
-      // Fetch product names and images
       const names: Record<number, string> = {}
       const images: Record<number, string> = {}
 
@@ -122,7 +141,7 @@ export default function AdminProductsDashboard() {
     }
   }
 
-  const handleViewService = (service: (typeof mockServices)[0]) => {
+  const handleViewService = (service: Service) => {
     setSelectedService(service)
     setIsViewServiceDialogOpen(true)
   }
@@ -140,25 +159,34 @@ export default function AdminProductsDashboard() {
     }
   }
 
-  const filteredItems =
-    selectedCategory === 'servicios'
-      ? mockServices.filter(
-          (service) =>
-            service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            service.description.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      : reports.filter(
-          (report) =>
-            (selectedCategory === 'todos' ||
-              selectedCategory === 'productos') &&
-            (report.reason.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              report.description
-                .toLowerCase()
-                .includes(searchTerm.toLowerCase()) ||
-              productNames[report.productId]
-                ?.toLowerCase()
-                .includes(searchTerm.toLowerCase()))
-        )
+  const filteredItems: Item[] = (() => {
+    let items: Item[] = []
+
+    if (selectedCategory === 'todos' || selectedCategory === 'productos') {
+      const filteredReports = reports.filter(
+        (report) =>
+          report.reason.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          report.description
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          productNames[report.productId]
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase())
+      )
+      items = items.concat(filteredReports)
+    }
+
+    if (selectedCategory === 'todos' || selectedCategory === 'servicios') {
+      const filteredServices = mockServices.filter(
+        (service) =>
+          service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          service.description.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      items = items.concat(filteredServices)
+    }
+
+    return items
+  })()
 
   const paginatedItems = filteredItems.slice(
     (currentPage - 1) * itemsPerPage,
@@ -186,19 +214,28 @@ export default function AdminProductsDashboard() {
         <div className="mb-4 flex space-x-2">
           <Button
             variant={selectedCategory === 'todos' ? 'default' : 'outline'}
-            onClick={() => setSelectedCategory('todos')}
+            onClick={() => {
+              setSelectedCategory('todos')
+              setCurrentPage(1)
+            }}
           >
             Todos
           </Button>
           <Button
             variant={selectedCategory === 'productos' ? 'default' : 'outline'}
-            onClick={() => setSelectedCategory('productos')}
+            onClick={() => {
+              setSelectedCategory('productos')
+              setCurrentPage(1)
+            }}
           >
             Productos
           </Button>
           <Button
             variant={selectedCategory === 'servicios' ? 'default' : 'outline'}
-            onClick={() => setSelectedCategory('servicios')}
+            onClick={() => {
+              setSelectedCategory('servicios')
+              setCurrentPage(1)
+            }}
           >
             Servicios
           </Button>
@@ -206,119 +243,113 @@ export default function AdminProductsDashboard() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Producto</TableHead>
-              <TableHead>Motivo</TableHead>
-              <TableHead>
-                {selectedCategory === 'servicios'
-                  ? 'Precio'
-                  : 'Fecha del Reporte'}
-              </TableHead>
+              <TableHead>Producto/Servicio</TableHead>
+              <TableHead>Motivo/Descripción</TableHead>
+              <TableHead>Fecha del Reporte/Precio</TableHead>
               <TableHead>Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedItems.map((item) => (
-              <TableRow
-                key={
-                  selectedCategory === 'servicios'
-                    ? (item as (typeof mockServices)[0]).id
-                    : (item as ProductsReport).productId
-                }
-              >
-                <TableCell>
-                  <div className="flex items-center">
-                    <Image
-                      src={
-                        selectedCategory === 'servicios'
-                          ? (item as (typeof mockServices)[0]).photoUrl
-                          : productImages[(item as ProductsReport).productId] ||
-                            '/placeholder.svg'
-                      }
-                      alt={
-                        selectedCategory === 'servicios'
-                          ? (item as (typeof mockServices)[0]).name
-                          : productNames[(item as ProductsReport).productId] ||
-                            'Producto'
-                      }
-                      width={48}
-                      height={48}
-                      className="rounded-md mr-2"
-                    />
-                    <span>
-                      {selectedCategory === 'servicios'
-                        ? (item as (typeof mockServices)[0]).name
-                        : productNames[(item as ProductsReport).productId] ||
-                          'Cargando...'}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell
-                  title={
-                    selectedCategory === 'servicios'
-                      ? (item as (typeof mockServices)[0]).description
-                      : (item as ProductsReport).reason
+            {paginatedItems.map((item, index) => {
+              const isService = 'price' in item
+              return (
+                <TableRow
+                  key={
+                    isService
+                      ? `service-${item.id}`
+                      : `product-${item.productId}-${index}`
                   }
                 >
-                  {selectedCategory === 'servicios'
-                    ? truncateText(
-                        (item as (typeof mockServices)[0]).description,
-                        30
-                      )
-                    : truncateText((item as ProductsReport).reason, 30)}
-                </TableCell>
-                <TableCell>
-                  {selectedCategory === 'servicios'
-                    ? `$${(item as (typeof mockServices)[0]).price.toFixed(2)}`
-                    : new Date(
-                        (item as ProductsReport).reportDate
-                      ).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Abrir menú</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {selectedCategory !== 'servicios' && (
-                        <>
+                  <TableCell>
+                    <div className="flex items-center">
+                      <Image
+                        src={
+                          isService
+                            ? item.photoUrl
+                            : productImages[(item as ProductsReport).productId] ||
+                              '/placeholder.svg'
+                        }
+                        alt={
+                          isService
+                            ? item.name
+                            : productNames[(item as ProductsReport).productId] ||
+                              'Producto'
+                        }
+                        width={48}
+                        height={48}
+                        className="rounded-md mr-2"
+                      />
+                      <span>
+                        {isService
+                          ? item.name
+                          : productNames[(item as ProductsReport).productId] ||
+                            'Cargando...'}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell
+                    title={
+                      isService ? item.description : (item as ProductsReport).reason
+                    }
+                  >
+                    {truncateText(
+                      isService
+                        ? item.description
+                        : (item as ProductsReport).reason,
+                      30
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {isService
+                      ? `$${item.price.toFixed(2)}`
+                      : new Date(
+                          (item as ProductsReport).reportDate
+                        ).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Abrir menú</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {isService ? (
                           <DropdownMenuItem
-                            onClick={() =>
-                              handleViewReport(item as ProductsReport)
-                            }
+                            onClick={() => handleViewService(item as Service)}
                           >
                             <Eye className="mr-2 h-4 w-4 text-blue-500" />
-                            Visualizar Reporte
+                            Ver Detalles
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleViewProduct(
-                                (item as ProductsReport).productId
-                              )
-                            }
-                          >
-                            <Package className="mr-2 h-4 w-4 text-green-500" />
-                            Ver Producto
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                      {selectedCategory === 'servicios' && (
-                        <DropdownMenuItem
-                          onClick={() =>
-                            handleViewService(item as (typeof mockServices)[0])
-                          }
-                        >
-                          <Eye className="mr-2 h-4 w-4 text-blue-500" />
-                          Ver Detalles
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
+                        ) : (
+                          <>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleViewReport(item as ProductsReport)
+                              }
+                            >
+                              <Eye className="mr-2 h-4 w-4 text-blue-500" />
+                              Visualizar Reporte
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleViewProduct(
+                                  (item as ProductsReport).productId
+                                )
+                              }
+                            >
+                              <Package className="mr-2 h-4 w-4 text-green-500" />
+                              Ver Producto
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
           </TableBody>
         </Table>
         <div className="flex items-center justify-between mt-4">
@@ -387,9 +418,7 @@ export default function AdminProductsDashboard() {
                 </Label>
                 <Input
                   id="productName"
-                  value={
-                    productNames[selectedReport.productId] || 'Cargando...'
-                  }
+                  value={productNames[selectedReport.productId] || 'Cargando...'}
                   readOnly
                   className="col-span-3"
                 />

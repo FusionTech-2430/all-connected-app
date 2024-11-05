@@ -39,6 +39,7 @@ export default async function UserAvatar() {
 
   const decodedToken = jwtDecode<JwtClaims>(token?.value)
   const userId = decodedToken.user_id
+  const roles = decodedToken.roles
 
   const { photo_url, username } = await getUser(userId)
 
@@ -70,17 +71,21 @@ export default async function UserAvatar() {
               Ajustes
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Link className="w-full" href="/my-orders">
-              Mis Pedidos
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Link className="w-full" href="/use-token">
-              Usar Token
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem>Soporte</DropdownMenuItem>
+            {!roles.includes('admin') && (
+            <>
+              <DropdownMenuItem>
+              <Link className="w-full" href="/my-orders">
+                Mis Pedidos
+              </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+              <Link className="w-full" href="/use-token">
+                Usar Token
+              </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>Soporte</DropdownMenuItem>
+            </>
+            )}
           <DropdownMenuSeparator />
           <SignOut />
         </DropdownMenuContent>

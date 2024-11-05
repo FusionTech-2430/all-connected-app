@@ -44,6 +44,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/forbidden', request.nextUrl))
   }
 
+  if (pathname.startsWith('/home') && roles.includes('admin')) {
+    return NextResponse.redirect(new URL('/admin/business', request.nextUrl))
+  }
+
   return NextResponse.next()
 }
 
