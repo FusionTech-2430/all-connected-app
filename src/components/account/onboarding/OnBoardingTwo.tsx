@@ -8,13 +8,22 @@ const OnboardingTwo = () => {
 
   const handleCardClick = (card: string) => {
     setSelectedCard(card)
-    if (card === 'bienes') {
-      window.location.href = '/business-creation'
-    }
   }
 
   const handleNextClick = () => {
-    window.location.href = '/my-business'
+    if (selectedCard === 'bienes') {
+      window.location.href = '/business-creation'
+    } else if (selectedCard === 'servicios') {
+      window.location.href = '/service-creation'
+    } else if (selectedCard === 'eventos') {
+      window.location.href = '/event-creation'
+    } else if (selectedCard === 'comprador') {
+      window.location.href = '/consumer'
+    } else if (selectedCard === 'organizacion') {
+      window.location.href = '/organization-dashboard'
+    } else {
+      alert('Por favor, selecciona un rol antes de continuar.')
+    }
   }
 
   return (
