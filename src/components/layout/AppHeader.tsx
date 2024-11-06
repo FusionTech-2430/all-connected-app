@@ -64,7 +64,14 @@ export function AppHeader({ children, ...props }: HeaderProps) {
         </Sheet>
         {children}
         <div className="ml-auto flex items-center gap-4">
-          <Button variant="outline">Comprar</Button>
+      
+
+        <Button className="bg-primary hover:bg-primary-600">
+            <Link href="/consumer">
+              Comprar
+            </Link>
+          </Button>
+
           <Button className="bg-primary hover:bg-primary-600">
             <Link href="/my-membership">
               Mejora tu membresía
