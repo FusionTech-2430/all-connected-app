@@ -45,7 +45,7 @@ interface ServiceReportDTO {
   id_service: number
   reason: string
   description: string
-  report_date: Date 
+  report_date: Date
 }
 
 export default function ServicePage() {
