@@ -4,6 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { FiShoppingCart } from 'react-icons/fi'
 
 export default function HomeContent() {
   return (
@@ -12,7 +13,7 @@ export default function HomeContent() {
       <div className="grid md:grid-cols-2 gap-8">
         <Card className="bg-card">
           <CardHeader>
-            <CardTitle>Ver Landing Page</CardTitle>
+            <CardTitle>Ir a Comprar</CardTitle>
             <CardDescription>Explora nuestros productos, servicios y eventos</CardDescription>
           </CardHeader>
           <CardContent>
@@ -22,9 +23,10 @@ export default function HomeContent() {
           </CardContent>
           <CardFooter>
             <Link href="/consumer" passHref>
-              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                Ir a Landing Page
-              </Button>
+            <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+              <FiShoppingCart className="inline mr-2" />
+              Comprar
+            </Button>
             </Link>
           </CardFooter>
         </Card>
