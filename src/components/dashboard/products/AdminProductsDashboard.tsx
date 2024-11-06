@@ -28,7 +28,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Label } from '@/components/ui/label'
-import { MoreHorizontal, Search, Eye, Package } from 'lucide-react'
+import { MoreHorizontal, Search, Eye, Package, Trash2 } from 'lucide-react'
 import { ProductsReport, Products } from '@/types/products'
 import {
   getReports,
@@ -42,11 +42,21 @@ import SearchInput from '@/components/shared/search-input'
 
 interface ServiceReport {
   id: number
+  id_service: number
+  reason: string
+  description: string
+  report_date: string
+}
+
+interface Service {
+  id: number
+  id_service: number
+  id_business: string
   name: string
   description: string
-  reason: string
-  reportDate: string
-  photoUrl: string
+  labels: string[]
+  photo_url: string
+  state: string
 }
 
 type Item = ProductsReport | ServiceReport
@@ -56,43 +66,16 @@ const truncateText = (text: string, maxLength: number) => {
   return text.slice(0, maxLength) + '...'
 }
 
-const mockServiceReports: ServiceReport[] = [
-  {
-    id: 1,
-    name: 'Servicio de Limpieza',
-    description:
-      'El servicio no cumplió con los estándares de limpieza acordados',
-    reason: 'Calidad insatisfactoria',
-    reportDate: '2023-06-15',
-    photoUrl: '/placeholder.svg?height=48&width=48'
-  },
-  {
-    id: 2,
-    name: 'Servicio de Jardinería',
-    description: 'El jardinero no se presentó en la fecha y hora acordadas',
-    reason: 'Incumplimiento de horario',
-    reportDate: '2023-06-18',
-    photoUrl: '/placeholder.svg?height=48&width=48'
-  },
-  {
-    id: 3,
-    name: 'Reparación de Electrodomésticos',
-    description:
-      'El técnico no logró reparar el electrodoméstico correctamente',
-    reason: 'Reparación deficiente',
-    reportDate: '2023-06-20',
-    photoUrl: '/placeholder.svg?height=48&width=48'
-  }
-]
-
 export default function AdminProductsDashboard() {
   const [reports, setReports] = useState<ProductsReport[]>([])
+  const [serviceReports, setServiceReports] = useState<ServiceReport[]>([])
   const [selectedReport, setSelectedReport] = useState<ProductsReport | null>(
     null
   )
   const [selectedProduct, setSelectedProduct] = useState<Products | null>(null)
   const [selectedServiceReport, setSelectedServiceReport] =
     useState<ServiceReport | null>(null)
+  const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [isViewReportDialogOpen, setIsViewReportDialogOpen] = useState(false)
   const [isViewProductDialogOpen, setIsViewProductDialogOpen] = useState(false)
   const [isViewServiceReportDialogOpen, setIsViewServiceReportDialogOpen] =
@@ -105,11 +88,14 @@ export default function AdminProductsDashboard() {
   const [searchTerm, setSearchTerm] = useState('')
   const [productNames, setProductNames] = useState<Record<number, string>>({})
   const [productImages, setProductImages] = useState<Record<number, string>>({})
+  const [serviceNames, setServiceNames] = useState<Record<number, string>>({})
+  const [serviceImages, setServiceImages] = useState<Record<number, string>>({})
   const [businessNames, setBusinessNames] = useState<Record<string, string>>({})
   const itemsPerPage = 10
 
   useEffect(() => {
     fetchReports()
+    fetchServiceReports()
   }, [])
 
   const fetchBusinessNames = async (products: Products[]) => {
@@ -154,6 +140,36 @@ export default function AdminProductsDashboard() {
     }
   }
 
+  const fetchServiceReports = async () => {
+    try {
+      const response = await fetch(
+        'https://mockserverservices-production.up.railway.app/api/v1/reports'
+      )
+      const fetchedReports = await response.json()
+      setServiceReports(fetchedReports)
+
+      const names: Record<number, string> = {}
+      const images: Record<number, string> = {}
+
+      for (const report of fetchedReports) {
+        const service = await fetchService(report.id_service)
+        names[report.id_service] = service.name
+        images[report.id_service] = service.photo_url
+      }
+      setServiceNames(names)
+      setServiceImages(images)
+    } catch (error) {
+      console.error('Failed to fetch service reports:', error)
+    }
+  }
+
+  const fetchService = async (id: number): Promise<Service> => {
+    const response = await fetch(
+      `https://mockserverservices-production.up.railway.app/api/v1/services/${id}`
+    )
+    return await response.json()
+  }
+
   const handleViewReport = async (report: ProductsReport) => {
     try {
       const fullReport = await getReportById(report.productId)
@@ -176,8 +192,10 @@ export default function AdminProductsDashboard() {
     }
   }
 
-  const handleViewServiceReport = (serviceReport: ServiceReport) => {
-    setSelectedServiceReport(serviceReport)
+  const handleViewServiceReport = async (report: ServiceReport) => {
+    setSelectedServiceReport(report)
+    const service = await fetchService(report.id_service)
+    setSelectedService(service)
     setIsViewServiceReportDialogOpen(true)
   }
 
@@ -193,6 +211,23 @@ export default function AdminProductsDashboard() {
     }
   }
 
+  const handleDeleteServiceReport = async (reportId: number) => {
+    try {
+      await fetch(
+        `https://mockserverservices-production.up.railway.app/api/v1/reports/${reportId}`,
+        {
+          method: 'DELETE'
+        }
+      )
+      setServiceReports((prevReports) =>
+        prevReports.filter((report) => report.id !== reportId)
+      )
+      setIsViewServiceReportDialogOpen(false)
+    } catch (error) {
+      console.error('Failed to delete service report:', error)
+    }
+  }
+
   const handleAcceptReport = async () => {
     if (selectedReport && selectedProduct) {
       try {
@@ -203,7 +238,9 @@ export default function AdminProductsDashboard() {
         await updateProduct(selectedProduct.id, updatedProduct)
         await deleteProductReport(selectedReport.productId)
         setReports((prevReports) =>
-          prevReports.filter((report) => report.productId !== selectedReport.productId)
+          prevReports.filter(
+            (report) => report.productId !== selectedReport.productId
+          )
         )
         setIsViewReportDialogOpen(false)
         setIsConfirmDialogOpen(false)
@@ -215,7 +252,7 @@ export default function AdminProductsDashboard() {
     }
   }
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date | string) => {
     return new Date(date).toLocaleDateString('es-ES', {
       day: '2-digit',
       month: '2-digit',
@@ -250,11 +287,13 @@ export default function AdminProductsDashboard() {
     }
 
     if (selectedCategory === 'todos' || selectedCategory === 'servicios') {
-      const filteredServiceReports = mockServiceReports.filter(
+      const filteredServiceReports = serviceReports.filter(
         (report) =>
-          report.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          report.reason.toLowerCase().includes(searchTerm.toLowerCase()) ||
           report.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          report.reason.toLowerCase().includes(searchTerm.toLowerCase())
+          serviceNames[report.id_service]
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase())
       )
       items = items.concat(filteredServiceReports)
     }
@@ -326,13 +365,13 @@ export default function AdminProductsDashboard() {
           </TableHeader>
           <TableBody>
             {paginatedItems.map((item, index) => {
-              const isServiceReport = 'name' in item
+              const isServiceReport = 'id_service' in item
               return (
                 <TableRow
                   key={
                     isServiceReport
                       ? `service-${item.id}`
-                      : `product-${item.productId}-${index}`
+                      : `product-${(item as ProductsReport).productId}-${index}`
                   }
                 >
                   <TableCell>
@@ -340,14 +379,15 @@ export default function AdminProductsDashboard() {
                       <Image
                         src={
                           isServiceReport
-                            ? item.photoUrl
+                            ? 
+                              '/placeholder.svg'
                             : productImages[
                                 (item as ProductsReport).productId
                               ] || '/placeholder.svg'
                         }
                         alt={
                           isServiceReport
-                            ? item.name
+                            ? serviceNames[item.id_service] || 'Servicio'
                             : productNames[
                                 (item as ProductsReport).productId
                               ] || 'Producto'
@@ -358,7 +398,7 @@ export default function AdminProductsDashboard() {
                       />
                       <span>
                         {isServiceReport
-                          ? item.name
+                          ? serviceNames[item.id_service] || 'Cargando...'
                           : productNames[(item as ProductsReport).productId] ||
                             'Cargando...'}
                       </span>
@@ -372,10 +412,8 @@ export default function AdminProductsDashboard() {
                   </TableCell>
                   <TableCell>
                     {isServiceReport
-                      ? formatDate(new Date(item.reportDate))
-                      : formatDate(
-                          new Date((item as ProductsReport).reportDate)
-                        )}
+                      ? formatDate(item.report_date)
+                      : formatDate((item as ProductsReport).reportDate)}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -408,6 +446,20 @@ export default function AdminProductsDashboard() {
                             Ver Producto
                           </DropdownMenuItem>
                         )}
+                        <DropdownMenuItem
+                          onClick={() =>
+                            isServiceReport
+                              ? handleDeleteServiceReport(
+                                  (item as ServiceReport).id
+                                )
+                              : handleDeleteReport(
+                                  (item as ProductsReport).productId
+                                )
+                          }
+                        >
+                          <Trash2 className="mr-2 h-4 w-4 text-red-500" />
+                          Eliminar Reporte
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -435,8 +487,7 @@ export default function AdminProductsDashboard() {
               variant="outline"
               size="sm"
               onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
-              disabled={currentPage === 
-              1}
+              disabled={currentPage === 1}
             >
               &lt;
             </Button>
@@ -465,26 +516,33 @@ export default function AdminProductsDashboard() {
         </div>
       </div>
 
-      {/* Dialog for viewing reports */}
+      {/* Dialog for viewing product reports */}
       <Dialog
         open={isViewReportDialogOpen}
         onOpenChange={setIsViewReportDialogOpen}
       >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Visualizar reporte</DialogTitle>
+            <DialogTitle>Visualizar reporte de producto</DialogTitle>
           </DialogHeader>
-          {selectedReport && (
+          {selectedReport && selectedProduct && (
             <div className="grid gap-4 py-4">
+              <div className="w-full h-40 relative mb-4">
+                <Image
+                  src={selectedProduct.photoUrl || '/placeholder.svg'}
+                  alt={selectedProduct.name}
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-lg"
+                />
+              </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="productName" className="text-right">
                   Producto
                 </Label>
                 <Input
                   id="productName"
-                  value={
-                    productNames[selectedReport.productId] || 'Cargando...'
-                  }
+                  value={selectedProduct.name}
                   readOnly
                   className="col-span-3"
                 />
@@ -517,7 +575,7 @@ export default function AdminProductsDashboard() {
                 </Label>
                 <Input
                   id="reportDate"
-                  value={formatDate(new Date(selectedReport.reportDate))}
+                  value={formatDate(selectedReport.reportDate)}
                   readOnly
                   className="col-span-3"
                 />
@@ -530,7 +588,9 @@ export default function AdminProductsDashboard() {
             </Button>
             <Button
               variant="destructive"
-              onClick={() => handleDeleteReport(selectedReport!.productId)}
+              onClick={() =>
+                selectedReport && handleDeleteReport(selectedReport.productId)
+              }
             >
               Eliminar Reporte
             </Button>
@@ -545,25 +605,20 @@ export default function AdminProductsDashboard() {
       </Dialog>
 
       {/* Confirmation Dialog */}
-      <Dialog
-        open={isConfirmDialogOpen}
-        onOpenChange={setIsConfirmDialogOpen}
-      >
+      <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Confirmar acción</DialogTitle>
             <DialogDescription>
-              ¿Estás seguro de aceptar el reporte? Si lo aceptas, el estado del producto pasará a estar inactivo.
+              ¿Estás seguro de aceptar el reporte? Si lo aceptas, el estado del
+              producto pasará a estar inactivo.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button onClick={() => setIsConfirmDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button
-              variant="default"
-              onClick={handleAcceptReport}
-            >
+            <Button variant="default" onClick={handleAcceptReport}>
               Confirmar
             </Button>
           </DialogFooter>
@@ -688,15 +743,24 @@ export default function AdminProductsDashboard() {
           <DialogHeader>
             <DialogTitle>Visualizar reporte de servicio</DialogTitle>
           </DialogHeader>
-          {selectedServiceReport && (
+          {selectedServiceReport && selectedService && (
             <div className="grid gap-4 py-4">
+              <div className="w-full h-40 relative mb-4">
+                <Image
+                  src={'/placeholder.svg'}
+                  alt={selectedService.name}
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-lg"
+                />
+              </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="serviceName" className="text-right">
                   Servicio
                 </Label>
                 <Input
                   id="serviceName"
-                  value={selectedServiceReport.name}
+                  value={selectedService.name}
                   readOnly
                   className="col-span-3"
                 />
@@ -729,7 +793,7 @@ export default function AdminProductsDashboard() {
                 </Label>
                 <Input
                   id="serviceReportDate"
-                  value={formatDate(new Date(selectedServiceReport.reportDate))}
+                  value={formatDate(selectedServiceReport.report_date)}
                   readOnly
                   className="col-span-3"
                 />
@@ -739,6 +803,15 @@ export default function AdminProductsDashboard() {
           <DialogFooter>
             <Button onClick={() => setIsViewServiceReportDialogOpen(false)}>
               Cerrar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() =>
+                selectedServiceReport &&
+                handleDeleteServiceReport(selectedServiceReport.id)
+              }
+            >
+              Eliminar Reporte
             </Button>
           </DialogFooter>
         </DialogContent>
