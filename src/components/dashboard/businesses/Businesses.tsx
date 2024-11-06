@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
   Card,
@@ -12,7 +13,7 @@ import {
 } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Plus } from 'lucide-react'
 import { toast } from '@/components/ui/use-toast'
 import { useUserId } from '@/hooks/use-user-id'
 
@@ -46,7 +47,6 @@ export default function BusinessList() {
   }, [userId])
 
   const fetchBusinesses = async () => {
-
     setIsLoading(true)
     setError(null)
 
@@ -106,16 +106,34 @@ export default function BusinessList() {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Mis Emprendimientos</h1>
+      <h1 className="text-3xl font-bold mb-6">Mis Emprendimientos</h1>
+
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-semibold">Emprendimientos propios</h2>
         <Link href="/business-creation">
-          <Button>Crear Emprendimiento</Button>
+          <Button>
+            <Plus className="mr-2 h-4 w-4" /> Crear Emprendimiento
+          </Button>
         </Link>
       </div>
 
-      <h2 className="text-2xl font-semibold mb-4">Emprendimientos propios</h2>
+      {(ownedBusinesses.length === 0 && memberBusinesses.length === 0) && (
+        <div className="text-center">
+          <Image
+            src="/noMiembros.png"
+            alt="No tienes emprendimientos"
+            width={200}
+            height={200}
+            className="mx-auto mb-4"
+          />
+          <p className="text-xl text-gray-600">
+            Aún no eres miembro de ningún emprendimiento.
+          </p>
+        </div>
+      )}
+
       {ownedBusinesses.length === 0 ? (
-        <p className="text-center text-gray-500">
+        <p className="text-center text-gray-500 mb-8">
           No tienes emprendimientos propios registrados.
         </p>
       ) : (
@@ -162,9 +180,18 @@ export default function BusinessList() {
         Emprendimientos como miembro
       </h2>
       {memberBusinesses.length === 0 ? (
-        <p className="text-center text-gray-500">
-          No eres miembro de ningún emprendimiento.
-        </p>
+        <div className="text-center">
+          <Image
+            src="/noMiembros.png"
+            alt="No eres miembro de ningún emprendimiento"
+            width={500}
+            height={500}
+            className="mx-auto mb-4"
+          />
+          <p className="text-xl text-gray-600">
+            Aún no eres miembro de ningún emprendimiento.
+          </p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {memberBusinesses.map((business) => (

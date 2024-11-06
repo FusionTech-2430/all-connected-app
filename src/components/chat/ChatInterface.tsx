@@ -44,7 +44,11 @@ function Modal({
   )
 }
 
-export default function ChatInterface() {
+interface ChatProps {
+  business: boolean;
+}
+
+export default function ChatInterface(prop : ChatProps) {
   const searchParams = useSearchParams()
   const id = searchParams.get('id')
   const [messages, setMessages] = useState<Message[]>([])
@@ -52,13 +56,18 @@ export default function ChatInterface() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [modalImage, setModalImage] = useState<string | null>(null)
   const [chatName, setChatName] = useState('Cliente All Connected')
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [currentUserId, setCurrentUserId] = useState<string>("")
 
   const userId = useUserId()
 
   useEffect(() => {
-    setCurrentUserId(userId)
-  }, [])
+    let senderId = userId ? userId : ""
+      if(prop.business === true){
+        const sessionBusinessId = sessionStorage.getItem('currentBusinessId')
+        senderId = sessionBusinessId ? sessionBusinessId : ""
+      }
+    setCurrentUserId(senderId)
+  }, [userId, prop.business])
 
   useEffect(() => {
     if (id) {
@@ -69,7 +78,7 @@ export default function ChatInterface() {
 
   const handleSendMessage = () => {
     if (id && userId) {
-      sendMessage(id, inputMessage, userId)
+      sendMessage(id, inputMessage, currentUserId)
       setInputMessage('')
     }
   }
@@ -77,7 +86,7 @@ export default function ChatInterface() {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file && id && userId) {
-      uploadFileAndSendMessage(id, file, userId, (error: string) =>
+      uploadFileAndSendMessage(id, file, currentUserId, (error: string) =>
         console.error(error)
       )
     }
@@ -88,7 +97,7 @@ export default function ChatInterface() {
       <section className="flex-1 flex flex-col">
         <header className="bg-white dark:bg-gray-800 shadow-sm p-4 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center mb-4 md:mb-0">
-            <Link href="/messages" className="text-blue-500 flex items-center">
+            <Link href={prop.business ? "/messages" : "/consumer/messages"} className="text-blue-500 flex items-center">
               <ArrowLeft className="mr-2" />
               Volver a mensajes
             </Link>

@@ -35,7 +35,6 @@ export const getBusinesses = () => {
 }
 
 export const getBusiness = (businessId: string) => {
-  
   return fetcher<Business>(`/businesses/${businessId}`, {
     method: 'GET',
     headers: {
