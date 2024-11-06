@@ -27,23 +27,26 @@ interface Product {
   labels: string[]
 }
 
-interface Label {
-  id: number
-  label: string
-  products: string[]
-}
-
 type SortField = 'name' | 'stock' | 'price'
 type SortOrder = 'asc' | 'desc'
 
 export default function Component() {
-  // Obtener el ID del negocio del sessionStorage
+  // Lista predefinida de etiquetas
+  const AVAILABLE_LABELS = [
+    'oferta',
+    'nuevo',
+    'popular',
+    'limitado',
+    'descuento',
+    'destacado'
+  ]
+
   const [businessId, setBusinessId] = useState<string>('')
   const [products, setProducts] = useState<Product[]>([])
-  const [labels, setLabels] = useState<Label[]>([])
+  // Removemos el estado labels ya que usaremos AVAILABLE_LABELS
   const [searchTerm, setSearchTerm] = useState("")
   const [newProduct, setNewProduct] = useState<Partial<Product>>({
-    idBusiness: '', // Se actualizará cuando tengamos el businessId
+    idBusiness: '',
     name: "",
     description: "",
     stock: 0,
@@ -70,7 +73,7 @@ export default function Component() {
     const storedBusinessId = sessionStorage.getItem('currentBusinessId')
     if (storedBusinessId) {
       setBusinessId(storedBusinessId)
-      setNewProduct(prev => ({
+      setNewProduct((prev: any) => ({
         ...prev,
         idBusiness: storedBusinessId
       }))
@@ -82,7 +85,6 @@ export default function Component() {
   useEffect(() => {
     if (businessId) {
       fetchProducts()
-      fetchLabels()
     }
   }, [businessId])
 
@@ -104,26 +106,6 @@ export default function Component() {
     }
   }
 
-  const fetchLabels = async () => {
-    try {
-      const response = await fetch(`${API_URL}/products-service/api/v1/labels`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch labels')
-      }
-      const data = await response.json()
-      console.log('Labels:', data)
-      setLabels(data)
-    } catch (err) {
-      console.error('Error fetching labels:', err)
-      setLabels([])
-      toast({
-        title: "Error",
-        description: "No se pudieron cargar las etiquetas",
-        variant: "destructive",
-      })
-    }
-  }
-
   const filteredAndSortedProducts = products
     .filter(product => product.name.toLowerCase().includes(searchTerm.toLowerCase()))
     .sort((a, b) => {
@@ -141,6 +123,7 @@ export default function Component() {
       formData.append('stock', newProduct.stock?.toString() || '0')
       formData.append('price', newProduct.price?.toString() || '0')
       formData.append('status', newProduct.status || 'active')
+      formData.append('labels', JSON.stringify(selectedLabels)) // Enviamos las etiquetas como array de strings
 
       if (fileInputRef.current?.files?.[0]) {
         formData.append('photo_url', fileInputRef.current.files[0])
@@ -156,15 +139,7 @@ export default function Component() {
       }
 
       const createdProduct = await response.json()
-
-      // Add labels to the created product
-      for (const labelId of selectedLabels) {
-        await fetch(`${API_URL}/products-service/api/v1/products/${createdProduct.id}/labels/${labelId}`, {
-          method: 'POST',
-        })
-      }
-
-      setProducts([...products, { ...createdProduct, labels: selectedLabels.map(id => labels.find(l => l.id.toString() === id)?.label || '') }])
+      setProducts([...products, { ...createdProduct, labels: selectedLabels }])
       setIsAddDialogOpen(false)
       resetNewProductForm()
       toast({
@@ -222,6 +197,7 @@ export default function Component() {
       formData.append('stock', selectedProduct.stock.toString())
       formData.append('price', selectedProduct.price.toString())
       formData.append('status', selectedProduct.status)
+      formData.append('labels', JSON.stringify(selectedProduct.labels)) // Enviamos las etiquetas como array de strings
 
       if (fileInputRef.current?.files?.[0]) {
         formData.append('photo_url', fileInputRef.current.files[0])
@@ -237,25 +213,7 @@ export default function Component() {
       }
 
       const updatedProduct = await response.json()
-
-      // Update labels
-      const currentLabelIds = selectedProduct.labels.map(label => labels.find(l => l.label === label)?.id.toString() || '')
-      const labelsToAdd = selectedLabels.filter(id => !currentLabelIds.includes(id))
-      const labelsToRemove = currentLabelIds.filter(id => !selectedLabels.includes(id))
-
-      for (const labelId of labelsToAdd) {
-        await fetch(`${API_URL}/products-service/api/v1/products/${selectedProduct.id}/labels/${labelId}`, {
-          method: 'POST',
-        })
-      }
-
-      for (const labelId of labelsToRemove) {
-        await fetch(`${API_URL}/products-service/api/v1/products/${selectedProduct.id}/labels/${labelId}`, {
-          method: 'DELETE',
-        })
-      }
-
-      setProducts(products.map(p => p.id === selectedProduct.id ? { ...updatedProduct, labels: selectedLabels.map(id => labels.find(l => l.id.toString() === id)?.label || '') } : p))
+      setProducts(products.map(p => p.id === selectedProduct.id ? { ...updatedProduct, labels: selectedProduct.labels } : p))
       setIsModifyDialogOpen(false)
       toast({
         title: "Éxito",
@@ -348,9 +306,9 @@ export default function Component() {
   if (isLoading) return <div>Cargando productos...</div>
   if (error) return <div>Error: {error}</div>
 
-  const labelOptions = labels.map(label => ({
-    value: label.id.toString(),
-    label: label.label
+  const labelOptions = AVAILABLE_LABELS.map(label => ({
+    value: label,
+    label: label
   }))
 
   return (
