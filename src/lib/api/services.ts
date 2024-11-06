@@ -2,7 +2,7 @@
 
 import { Labels, Service, ServiceReport } from '@/types/services'
 
-const API_URL = `${process.env.NEXT_PUBLIC_API_URL_SERVICES}/api/v1`;
+const API_URL = `https://mockserverservices-production.up.railway.app/api/v1`;
 
 // src/lib/api/services.ts
 
