@@ -28,7 +28,6 @@ interface AdminOrganizationsDashboardProps {
 
 export default function Component({
   organizations,
-  onOrganizationUpdated,
   onOrganizationDeleted
 }: AdminOrganizationsDashboardProps) {
   const [isLoading, setIsLoading] = useState(true)

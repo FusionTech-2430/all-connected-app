@@ -60,10 +60,6 @@ export default function UserManagementTable() {
     )
   }
 
-  const handleUserDeleted = (userId: string) => {
-    setUsers((prevUsers) => prevUsers.filter((user) => user.id_user !== userId))
-  }
-
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
       (user.fullname?.toLowerCase().includes(searchTerm.toLowerCase()) ??

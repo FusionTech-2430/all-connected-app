@@ -89,7 +89,6 @@ export default function AdminProductsDashboard() {
   const [productNames, setProductNames] = useState<Record<number, string>>({})
   const [productImages, setProductImages] = useState<Record<number, string>>({})
   const [serviceNames, setServiceNames] = useState<Record<number, string>>({})
-  const [serviceImages, setServiceImages] = useState<Record<number, string>>({})
   const [businessNames, setBusinessNames] = useState<Record<string, string>>({})
   const itemsPerPage = 10
 
@@ -157,7 +156,6 @@ export default function AdminProductsDashboard() {
         images[report.id_service] = service.photo_url
       }
       setServiceNames(names)
-      setServiceImages(images)
     } catch (error) {
       console.error('Failed to fetch service reports:', error)
     }
@@ -593,33 +591,6 @@ export default function AdminProductsDashboard() {
               }
             >
               Eliminar Reporte
-            </Button>
-            <Button
-              variant="default"
-              onClick={() => setIsConfirmDialogOpen(true)}
-            >
-              Aceptar Reporte
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Confirmation Dialog */}
-      <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Confirmar acción</DialogTitle>
-            <DialogDescription>
-              ¿Estás seguro de aceptar el reporte? Si lo aceptas, el estado del
-              producto pasará a estar inactivo.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button onClick={() => setIsConfirmDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button variant="default" onClick={handleAcceptReport}>
-              Confirmar
             </Button>
           </DialogFooter>
         </DialogContent>
