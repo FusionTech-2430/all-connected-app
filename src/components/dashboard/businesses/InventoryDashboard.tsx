@@ -27,12 +27,6 @@ interface Product {
   labels: string[]
 }
 
-interface Label {
-  id: number
-  label: string
-  products: string[]
-}
-
 type SortField = 'name' | 'stock' | 'price'
 type SortOrder = 'asc' | 'desc'
 
@@ -55,10 +49,9 @@ export default function InventoryDashboard() {
 
   const [businessId, setBusinessId] = useState<string>('')
   const [products, setProducts] = useState<Product[]>([])
-  const [labels, setLabels] = useState<Label[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [newProduct, setNewProduct] = useState<Partial<Product>>({
-    idBusiness: '', // Se actualizará cuando tengamos el businessId
+    idBusiness: '',
     name: "",
     description: "",
     stock: 0,
@@ -70,8 +63,6 @@ export default function InventoryDashboard() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isModifyDialogOpen, setIsModifyDialogOpen] = useState(false)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
-  const [isAddLabelDialogOpen, setIsAddLabelDialogOpen] = useState(false)
-  const [newLabelName, setNewLabelName] = useState("")
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [sortField, setSortField] = useState<SortField>('name')
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc')
@@ -79,7 +70,6 @@ export default function InventoryDashboard() {
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Efecto para obtener el businessId del sessionStorage
   useEffect(() => {
     const storedBusinessId = sessionStorage.getItem('currentBusinessId')
     if (storedBusinessId) {
@@ -96,7 +86,6 @@ export default function InventoryDashboard() {
   useEffect(() => {
     if (businessId) {
       fetchProducts()
-      fetchLabels()
     }
   }, [businessId])
 
@@ -207,7 +196,6 @@ export default function InventoryDashboard() {
   }
 
   const handleDeleteProduct = async () => {
-    console.log("Hola")
     if (!selectedProduct) return
 
     try {
@@ -247,6 +235,7 @@ export default function InventoryDashboard() {
       formData.append('stock', selectedProduct.stock.toString())
       formData.append('price', selectedProduct.price.toString())
       formData.append('status', selectedProduct.status)
+      formData.append('labels', JSON.stringify(selectedProduct.labels))
 
       if (fileInputRef.current?.files?.[0]) {
         formData.append('photo', fileInputRef.current.files[0])
@@ -770,37 +759,6 @@ export default function InventoryDashboard() {
             </Button>
             <Button onClick={handleModifyProduct}>
               Guardar Cambios
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add Label Dialog */}
-      <Dialog open={isAddLabelDialogOpen} onOpenChange={setIsAddLabelDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Agregar Nueva Etiqueta</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="new-label" className="text-right">
-                Nombre
-              </Label>
-              <Input
-                id="new-label"
-                value={newLabelName}
-                onChange={(e) => setNewLabelName(e.target.value)}
-                className="col-span-3"
-                placeholder="Ingrese el nombre de la etiqueta"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddLabelDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleAddLabel}>
-              Crear Etiqueta
             </Button>
           </DialogFooter>
         </DialogContent>
