@@ -1,23 +1,20 @@
-import NavBar from '@/components/ui-own/nav-bar-consumer';  // Reutilizamos la barra de navegación
+import NavBar from '@/components/ui-own/nav-bar-consumer'; 
 
 const ContactPage = () => {
   return (
     <div>
-      {/* Barra de navegación */}
       <NavBar />
 
-      {/* Título de la página */}
       <section className="bg-[#0C4A6E] text-white py-20 mt-10">
         <h1 className="text-4xl font-bold text-center">Contacto</h1>
       </section>
 
-      {/* Formulario de contacto */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
         <section className="bg-white shadow-md rounded-lg p-8">
           <h2 className="text-2xl font-semibold mb-6">Envíanos un mensaje</h2>
 
           <form action="#" method="POST" className="space-y-6">
-            {/* Nombre */}
+
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                 Nombre
@@ -31,7 +28,6 @@ const ContactPage = () => {
               />
             </div>
 
-            {/* Correo electrónico */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Correo electrónico
@@ -45,7 +41,6 @@ const ContactPage = () => {
               />
             </div>
 
-            {/* Mensaje */}
             <div>
               <label htmlFor="message" className="block text-sm font-medium text-gray-700">
                 Mensaje
@@ -59,7 +54,6 @@ const ContactPage = () => {
               />
             </div>
 
-            {/* Botón de envío */}
             <div>
               <button
                 type="submit"
