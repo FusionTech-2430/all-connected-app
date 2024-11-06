@@ -43,7 +43,6 @@ export default function Component() {
 
   const [businessId, setBusinessId] = useState<string>('')
   const [products, setProducts] = useState<Product[]>([])
-  // Removemos el estado labels ya que usaremos AVAILABLE_LABELS
   const [searchTerm, setSearchTerm] = useState("")
   const [newProduct, setNewProduct] = useState<Partial<Product>>({
     idBusiness: '',
@@ -59,8 +58,6 @@ export default function Component() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isModifyDialogOpen, setIsModifyDialogOpen] = useState(false)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
-  const [isAddLabelDialogOpen, setIsAddLabelDialogOpen] = useState(false)
-  const [newLabelName, setNewLabelName] = useState("")
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [sortField, setSortField] = useState<SortField>('name')
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc')
@@ -68,12 +65,11 @@ export default function Component() {
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Efecto para obtener el businessId del sessionStorage
   useEffect(() => {
     const storedBusinessId = sessionStorage.getItem('currentBusinessId')
     if (storedBusinessId) {
       setBusinessId(storedBusinessId)
-      setNewProduct((prev: any) => ({
+      setNewProduct(prev => ({
         ...prev,
         idBusiness: storedBusinessId
       }))
@@ -123,7 +119,7 @@ export default function Component() {
       formData.append('stock', newProduct.stock?.toString() || '0')
       formData.append('price', newProduct.price?.toString() || '0')
       formData.append('status', newProduct.status || 'active')
-      formData.append('labels', JSON.stringify(selectedLabels)) // Enviamos las etiquetas como array de strings
+      formData.append('labels', JSON.stringify(selectedLabels))
 
       if (fileInputRef.current?.files?.[0]) {
         formData.append('photo_url', fileInputRef.current.files[0])
@@ -157,7 +153,6 @@ export default function Component() {
   }
 
   const handleDeleteProduct = async () => {
-    console.log("Hola")
     if (!selectedProduct) return
 
     try {
@@ -197,7 +192,7 @@ export default function Component() {
       formData.append('stock', selectedProduct.stock.toString())
       formData.append('price', selectedProduct.price.toString())
       formData.append('status', selectedProduct.status)
-      formData.append('labels', JSON.stringify(selectedProduct.labels)) // Enviamos las etiquetas como array de strings
+      formData.append('labels', JSON.stringify(selectedProduct.labels))
 
       if (fileInputRef.current?.files?.[0]) {
         formData.append('photo_url', fileInputRef.current.files[0])
@@ -245,63 +240,21 @@ export default function Component() {
     }
   }
 
-  const handleAddLabel = async () => {
-    if (!/^[a-z]+$/.test(newLabelName)) {
-      toast({
-        title: "Error",
-        description: "El nombre de la etiqueta debe contener solo letras minúsculas",
-        variant: "destructive",
-      })
-      return
-    }
-
-    try {
-      const formData = new FormData()
-      formData.append('name', newLabelName)
-
-      const response = await fetch(`${API_URL}/products-service/api/v1/labels`, {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to create label')
-      }
-
-      const createdLabel = await response.json()
-      setLabels([...labels, createdLabel])
-      setSelectedLabels([...selectedLabels, createdLabel.id.toString()])
-      setIsAddLabelDialogOpen(false)
-      setNewLabelName("")
-      toast({
-        title: "Éxito",
-        description: "Etiqueta creada exitosamente",
-      })
-    } catch (err) {
-      console.error('Error creating label:', err)
-      toast({
-        title: "Error",
-        description: "Error al crear la etiqueta",
-        variant: "destructive",
-      })
-    }
-  }
-
   const resetNewProductForm = () => {
-  setNewProduct({
-    idBusiness: businessId, // Usar el businessId del estado
-    name: "",
-    description: "",
-    stock: 0,
-    price: 0,
-    status: "active",
-    labels: []
-  })
-  setSelectedLabels([])
-  if (fileInputRef.current) {
-    fileInputRef.current.value = ''
+    setNewProduct({
+      idBusiness: businessId,
+      name: "",
+      description: "",
+      stock: 0,
+      price: 0,
+      status: "active",
+      labels: []
+    })
+    setSelectedLabels([])
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
   }
-}
 
   if (isLoading) return <div>Cargando productos...</div>
   if (error) return <div>Error: {error}</div>
@@ -311,6 +264,7 @@ export default function Component() {
     label: label
   }))
 
+  
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Mis productos</h1>
