@@ -264,7 +264,7 @@ export default function Component() {
     label: label
   }))
 
-  
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Mis productos</h1>
@@ -359,9 +359,6 @@ export default function Component() {
                     onChange={setSelectedLabels}
                     className="flex-grow"
                   />
-                  <Button onClick={() => setIsAddLabelDialogOpen(true)} type="button">
-                    <Plus className="h-4 w-4" />
-                  </Button>
                 </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
