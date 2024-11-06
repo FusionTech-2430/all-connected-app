@@ -264,7 +264,7 @@ export default function Component() {
     label: label
   }))
 
-
+  
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Mis productos</h1>
@@ -318,7 +318,6 @@ export default function Component() {
                   className="col-span-3"
                 />
               </div>
-
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="price" className="text-right">
                   Precio
@@ -352,12 +351,12 @@ export default function Component() {
                 <Label htmlFor="labels" className="text-right">
                   Etiquetas
                 </Label>
-                <div className="col-span-3 flex items-center space-x-2">
+                <div className="col-span-3">
                   <MultiSelect
                     options={labelOptions}
                     selected={selectedLabels}
                     onChange={setSelectedLabels}
-                    className="flex-grow"
+                    className="w-full"
                   />
                 </div>
               </div>
@@ -592,10 +591,10 @@ export default function Component() {
                   <Label htmlFor="modify-labels">Etiquetas</Label>
                   <MultiSelect
                     options={labelOptions}
-                    selected={selectedProduct.labels.map(label => labels.find(l => l.label === label)?.id.toString() || '')}
+                    selected={selectedProduct.labels}
                     onChange={(selected) => setSelectedProduct({
                       ...selectedProduct,
-                      labels: selected.map(id => labels.find(l => l.id.toString() === id)?.label || '')
+                      labels: selected
                     })}
                   />
                 </div>
@@ -624,34 +623,6 @@ export default function Component() {
             </Button>
             <Button onClick={handleModifyProduct}>
               Guardar Cambios
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add Label Dialog */}
-      <Dialog open={isAddLabelDialogOpen} onOpenChange={setIsAddLabelDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Agregar Nueva Etiqueta</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="new-label" className="text-right">
-                Nombre
-              </Label>
-              <Input
-                id="new-label"
-                value={newLabelName}
-                onChange={(e) => setNewLabelName(e.target.value)}
-                className="col-span-3"
-                placeholder="Ingrese el nombre de la etiqueta"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddLabelDialogOpen(false)}>
-              Cancelar
             </Button>
           </DialogFooter>
         </DialogContent>
