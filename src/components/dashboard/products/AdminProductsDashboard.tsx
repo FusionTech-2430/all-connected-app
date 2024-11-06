@@ -584,14 +584,6 @@ export default function AdminProductsDashboard() {
             <Button onClick={() => setIsViewReportDialogOpen(false)}>
               Cerrar
             </Button>
-            <Button
-              variant="destructive"
-              onClick={() =>
-                selectedReport && handleDeleteReport(selectedReport.productId)
-              }
-            >
-              Eliminar Reporte
-            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
