@@ -139,10 +139,6 @@ export default function InventoryDashboard() {
         formData.append('photo', fileInputRef.current.files[0]);
       }
   
-      for (let pair of formData.entries()) {
-        console.log(pair[0], pair[1]);
-      }
-  
       // POST request to create the product
       const response = await fetch(`${API_URL}/products-service/api/v1/products`, {
         method: 'POST',
@@ -326,14 +322,19 @@ export default function InventoryDashboard() {
   }
 
   const handleModifyLabelChange = (value: string) => {
-    if (!selectedProduct) return
+    if (!selectedProduct) return;
 
-    setSelectedProduct(prev => ({
-      ...prev,
-      labels: prev.labels.includes(value)
-        ? prev.labels.filter(label => label !== value)
-        : [...prev.labels, value]
-    }))
+    setSelectedProduct(prev => {
+      if (!prev) return prev;
+      
+      const currentLabels = prev.labels || [];
+      return {
+        ...prev,
+        labels: currentLabels.includes(value)
+          ? currentLabels.filter(label => label !== value)
+          : [...currentLabels, value]
+      };
+    });
   }
 
   const filteredAndSortedProducts = products
