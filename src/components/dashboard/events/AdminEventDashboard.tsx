@@ -88,7 +88,7 @@ export default function AdminEventDashboard() {
     if (currentEvent) {
       try {
         await fetch(
-          `https://mockeventsconfesiones-production.up.railway.app/api/v1/eventos-confesiones/${currentEvent.id}`,
+          `https://mockserverevents-production.up.railway.app/api/v1/eventos/${currentEvent.id}`,
           {
             method: 'DELETE'
           }
