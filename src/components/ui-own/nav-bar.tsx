@@ -1,13 +1,11 @@
 import NavItem from './nav-item'
 
 import {
-  Calendar,
   House,
   LineChart,
   Package,
   ShoppingCart,
   Users,
-  NotebookPen,
 } from 'lucide-react'
 
 const navBarItems = [
