@@ -8,8 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Eye, Trash2, MoreVertical, Edit, ArrowUpDown, Upload, Plus } from 'lucide-react'
-import { MultiSelect } from "@/components/ui/multi-select"
+import { Badge } from "@/components/ui/badge"
+import { Eye, Trash2, MoreVertical, Edit, ArrowUpDown, Upload, X } from 'lucide-react'
 import { toast } from "@/components/ui/use-toast"
 import Image from 'next/image'
 
@@ -30,16 +30,22 @@ interface Product {
 type SortField = 'name' | 'stock' | 'price'
 type SortOrder = 'asc' | 'desc'
 
-export default function Component() {
-  // Lista predefinida de etiquetas
-  const AVAILABLE_LABELS = [
-    'oferta',
-    'nuevo',
-    'popular',
-    'limitado',
-    'descuento',
-    'destacado'
-  ]
+interface Label {
+  id: number
+  label: string
+}
+
+export default function InventoryDashboard() {
+  const AVAILABLE_LABELS: Label[] = [
+    { id: 7, label: "Tecnologia" },
+    { id: 8, label: "Ropa" },
+    { id: 9, label: "Hogar" },
+    { id: 10, label: "Cocinas" },
+    { id: 11, label: "Belleza" },
+    { id: 12, label: "Salud" },
+    { id: 13, label: "Juguetes" },
+    { id: 14, label: "Libros" }
+  ];
 
   const [businessId, setBusinessId] = useState<string>('')
   const [products, setProducts] = useState<Product[]>([])
@@ -53,7 +59,6 @@ export default function Component() {
     status: "active",
     labels: []
   })
-  const [selectedLabels, setSelectedLabels] = useState<string[]>([])
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isModifyDialogOpen, setIsModifyDialogOpen] = useState(false)
@@ -93,7 +98,11 @@ export default function Component() {
         throw new Error('Failed to fetch products')
       }
       const data = await response.json()
-      setProducts(data)
+      const productsWithLabels = data.map((product: Product) => ({
+        ...product,
+        labels: Array.isArray(product.labels) ? product.labels : []
+      }))
+      setProducts(productsWithLabels)
     } catch (err) {
       setError('Error al cargar los productos')
       console.error(err)
@@ -102,53 +111,87 @@ export default function Component() {
     }
   }
 
-  const filteredAndSortedProducts = products
-    .filter(product => product.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    .sort((a, b) => {
-      if (a[sortField] < b[sortField]) return sortOrder === 'asc' ? -1 : 1
-      if (a[sortField] > b[sortField]) return sortOrder === 'asc' ? 1 : -1
-      return 0
-    })
-
   const handleAddProduct = async () => {
     try {
-      const formData = new FormData()
-      formData.append('idBusiness', newProduct.idBusiness || '')
-      formData.append('name', newProduct.name || '')
-      formData.append('description', newProduct.description || '')
-      formData.append('stock', newProduct.stock?.toString() || '0')
-      formData.append('price', newProduct.price?.toString() || '0')
-      formData.append('status', newProduct.status || 'active')
-      formData.append('labels', JSON.stringify(selectedLabels))
-
+      const productData = {
+        idBusiness: newProduct.idBusiness || '',
+        name: newProduct.name || '',
+        description: newProduct.description || '',
+        stock: newProduct.stock || 0,
+        price: newProduct.price || 0,
+        status: newProduct.status || 'active',
+        labels: newProduct.labels || []
+      };
+  
+      console.log('Sending product data:', productData);
+  
+      const formData = new FormData();
+      
+      Object.entries(productData).forEach(([key, value]) => {
+        if (key === 'labels') {
+          formData.append('labels', JSON.stringify(value));
+        } else {
+          formData.append(key, String(value));
+        }
+      });
+  
       if (fileInputRef.current?.files?.[0]) {
-        formData.append('photo_url', fileInputRef.current.files[0])
+        formData.append('photo', fileInputRef.current.files[0]);
       }
-
+  
+      for (let pair of formData.entries()) {
+        console.log(pair[0], pair[1]);
+      }
+  
+      // POST request to create the product
       const response = await fetch(`${API_URL}/products-service/api/v1/products`, {
         method: 'POST',
         body: formData,
-      })
-
+      });
+  
       if (!response.ok) {
-        throw new Error('Failed to create product')
+        const errorData = await response.json().catch(() => null);
+        console.error('Server response:', errorData);
+        throw new Error('Failed to create product');
       }
-
-      const createdProduct = await response.json()
-      setProducts([...products, { ...createdProduct, labels: selectedLabels }])
-      setIsAddDialogOpen(false)
-      resetNewProductForm()
+  
+      const createdProduct = await response.json();
+      console.log('Created product:', createdProduct);
+  
+      // Now handle the multiple POST requests for each associated label
+      for (const labelName of productData.labels) {
+        const labelData = AVAILABLE_LABELS.find((l) => l.label === labelName);
+        if (labelData) {
+          const response2 = await fetch(`${API_URL}/products-service/api/v1/products/${createdProduct.id}/labels/${labelData.id}`, {
+            method: 'POST'
+          });
+  
+          if (!response2.ok) {
+            console.error(`Failed to associate label ${labelData.label} with product ${createdProduct.id}`);
+          }
+        }
+      }
+  
+      const normalizedProduct = {
+        ...createdProduct,
+        labels: productData.labels // Use the labels from productData
+      };
+  
+      setProducts(prevProducts => [...prevProducts, normalizedProduct]);
+      setIsAddDialogOpen(false);
+      resetNewProductForm();
+  
       toast({
         title: "Éxito",
         description: "Producto creado correctamente",
-      })
+      });
     } catch (err) {
-      console.error('Error creating product:', err)
+      console.error('Error creating product:', err);
       toast({
         title: "Error",
         description: "Error al crear el producto",
         variant: "destructive",
-      })
+      });
     }
   }
 
@@ -195,7 +238,7 @@ export default function Component() {
       formData.append('labels', JSON.stringify(selectedProduct.labels))
 
       if (fileInputRef.current?.files?.[0]) {
-        formData.append('photo_url', fileInputRef.current.files[0])
+        formData.append('photo', fileInputRef.current.files[0])
       }
 
       const response = await fetch(`${API_URL}/products-service/api/v1/products/${selectedProduct.id}`, {
@@ -208,7 +251,18 @@ export default function Component() {
       }
 
       const updatedProduct = await response.json()
-      setProducts(products.map(p => p.id === selectedProduct.id ? { ...updatedProduct, labels: selectedProduct.labels } : p))
+
+      // Update labels associations
+      for (const labelName of selectedProduct.labels) {
+        const labelData = AVAILABLE_LABELS.find((l) => l.label === labelName);
+        if (labelData) {
+          await fetch(`${API_URL}/products-service/api/v1/products/${updatedProduct.id}/labels/${labelData.id}`, {
+            method: 'POST'
+          });
+        }
+      }
+
+      setProducts(products.map(p => p.id === selectedProduct.id ? {...updatedProduct, labels: selectedProduct.labels} : p))
       setIsModifyDialogOpen(false)
       toast({
         title: "Éxito",
@@ -250,21 +304,49 @@ export default function Component() {
       status: "active",
       labels: []
     })
-    setSelectedLabels([])
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
   }
 
+  const handleLabelChange = (value: string) => {
+    setNewProduct(prev => ({
+      ...prev,
+      labels: prev.labels?.includes(value)
+        ? prev.labels.filter(label => label !== value)
+        : [...(prev.labels || []), value]
+    }))
+  }
+
+  const handleRemoveLabel = (labelToRemove: string) => {
+    setNewProduct(prev => ({
+      ...prev,
+      labels: prev.labels?.filter(label => label !== labelToRemove) || []
+    }))
+  }
+
+  const handleModifyLabelChange = (value: string) => {
+    if (!selectedProduct) return
+
+    setSelectedProduct(prev => ({
+      ...prev,
+      labels: prev.labels.includes(value)
+        ? prev.labels.filter(label => label !== value)
+        : [...prev.labels, value]
+    }))
+  }
+
+  const filteredAndSortedProducts = products
+    .filter(product => product.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a, b) => {
+      if (a[sortField] < b[sortField]) return sortOrder === 'asc' ? -1 : 1
+      if (a[sortField] > b[sortField]) return sortOrder === 'asc' ? 1 : -1
+      return 0
+    })
+
   if (isLoading) return <div>Cargando productos...</div>
   if (error) return <div>Error: {error}</div>
 
-  const labelOptions = AVAILABLE_LABELS.map(label => ({
-    value: label,
-    label: label
-  }))
-
-  
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Mis productos</h1>
@@ -318,7 +400,6 @@ export default function Component() {
                   className="col-span-3"
                 />
               </div>
-
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="price" className="text-right">
                   Precio
@@ -349,16 +430,34 @@ export default function Component() {
                 </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="labels" className="text-right">
-                  Etiquetas
-                </Label>
-                <div className="col-span-3">
-                  <MultiSelect
-                    options={labelOptions}
-                    selected={selectedLabels}
-                    onChange={setSelectedLabels}
-                    className="w-full"
-                  />
+                <Label className="text-right">Etiquetas</Label>
+                <div className="col-span-3 space-y-4">
+                  <Select onValueChange={handleLabelChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar etiquetas" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {AVAILABLE_LABELS.map((label) => (
+                        <SelectItem key={label.id} value={label.label}>
+                          {label.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="flex flex-wrap gap-2">
+                    {newProduct.labels?.map((label) => (
+                      <Badge key={label} variant="secondary" className="flex items-center gap-1">
+                        {label}
+                        <button
+                          onClick={() => handleRemoveLabel(label)}
+                          className="ml-1 rounded-full hover:bg-muted"
+                        >
+                          <X className="h-3 w-3" />
+                          <span className="sr-only">Remove {label} tag</span>
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
@@ -380,11 +479,12 @@ export default function Component() {
                 </div>
               </div>
             </div>
-            <Button onClick={handleAddProduct}>Guardar producto</Button>
+            <DialogFooter>
+              <Button onClick={handleAddProduct}>Guardar producto</Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
-
       <Table>
         <TableHeader>
           <TableRow>
@@ -413,7 +513,15 @@ export default function Component() {
               <TableCell>{product.name}</TableCell>
               <TableCell>{product.stock}</TableCell>
               <TableCell>${product.price.toFixed(2)}</TableCell>
-              <TableCell>{product.labels.join(', ')}</TableCell>
+              <TableCell>
+                <div className="flex flex-wrap gap-1">
+                  {product.labels.map(label => (
+                    <Badge key={label} variant="secondary">
+                      {label}
+                    </Badge>
+                  ))}
+                </div>
+              </TableCell>
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -451,7 +559,6 @@ export default function Component() {
         </TableBody>
       </Table>
 
-      {/* View Product Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -498,7 +605,13 @@ export default function Component() {
                   </div>
                   <div>
                     <Label>Etiquetas</Label>
-                    <p className="font-medium">{selectedProduct.labels.join(', ')}</p>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {selectedProduct.labels.map(label => (
+                        <Badge key={label} variant="secondary">
+                          {label}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -510,7 +623,6 @@ export default function Component() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Product Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -529,7 +641,6 @@ export default function Component() {
         </DialogContent>
       </Dialog>
 
-      {/* Modify Product Dialog */}
       <Dialog open={isModifyDialogOpen} onOpenChange={setIsModifyDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -590,15 +701,38 @@ export default function Component() {
                   </Select>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="modify-labels">Etiquetas</Label>
-                  <MultiSelect
-                    options={labelOptions}
-                    selected={selectedProduct.labels}
-                    onChange={(selected) => setSelectedProduct({
-                      ...selectedProduct,
-                      labels: selected
-                    })}
-                  />
+                  <Label>Etiquetas</Label>
+                  <div className="space-y-4">
+                    <Select onValueChange={handleModifyLabelChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar etiquetas" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {AVAILABLE_LABELS.map((label) => (
+                          <SelectItem key={label.id} value={label.label}>
+                            {label.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedProduct.labels.map((label) => (
+                        <Badge key={label} variant="secondary" className="flex items-center gap-1">
+                          {label}
+                          <button
+                            onClick={() => setSelectedProduct({
+                              ...selectedProduct,
+                              labels: selectedProduct.labels.filter(l => l !== label)
+                            })}
+                            className="ml-1 rounded-full hover:bg-muted"
+                          >
+                            <X className="h-3 w-3" />
+                            <span className="sr-only">Remove {label} tag</span>
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="modify-image">Imagen</Label>
