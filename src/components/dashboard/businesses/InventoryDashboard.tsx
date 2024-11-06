@@ -37,11 +37,13 @@ type SortField = 'name' | 'stock' | 'price'
 type SortOrder = 'asc' | 'desc'
 
 export default function Component() {
+  // Obtener el ID del negocio del sessionStorage
+  const [businessId, setBusinessId] = useState<string>('')
   const [products, setProducts] = useState<Product[]>([])
   const [labels, setLabels] = useState<Label[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [newProduct, setNewProduct] = useState<Partial<Product>>({
-    idBusiness: "1cf3dfe8-8687-4d34-b5ea-e5d09af8f139",
+    idBusiness: '', // Se actualizará cuando tengamos el businessId
     name: "",
     description: "",
     stock: 0,
@@ -63,16 +65,32 @@ export default function Component() {
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Efecto para obtener el businessId del sessionStorage
   useEffect(() => {
-    fetchProducts()
-    fetchLabels()
+    const storedBusinessId = sessionStorage.getItem('currentBusinessId')
+    if (storedBusinessId) {
+      setBusinessId(storedBusinessId)
+      setNewProduct(prev => ({
+        ...prev,
+        idBusiness: storedBusinessId
+      }))
+    } else {
+      setError('No se encontró el ID del negocio')
+    }
   }, [])
+
+  useEffect(() => {
+    if (businessId) {
+      fetchProducts()
+      fetchLabels()
+    }
+  }, [businessId])
 
   const fetchProducts = async () => {
     setIsLoading(true)
     setError(null)
     try {
-      const response = await fetch(`${API_URL}/products-service/api/v1/products/businesses/1cf3dfe8-8687-4d34-b5ea-e5d09af8f139`)
+      const response = await fetch(`${API_URL}/products-service/api/v1/products/businesses/${businessId}`)
       if (!response.ok) {
         throw new Error('Failed to fetch products')
       }
@@ -312,20 +330,20 @@ export default function Component() {
   }
 
   const resetNewProductForm = () => {
-    setNewProduct({
-      idBusiness: "1cf3dfe8-8687-4d34-b5ea-e5d09af8f139",
-      name: "",
-      description: "",
-      stock: 0,
-      price: 0,
-      status: "active",
-      labels: []
-    })
-    setSelectedLabels([])
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
+  setNewProduct({
+    idBusiness: businessId, // Usar el businessId del estado
+    name: "",
+    description: "",
+    stock: 0,
+    price: 0,
+    status: "active",
+    labels: []
+  })
+  setSelectedLabels([])
+  if (fileInputRef.current) {
+    fileInputRef.current.value = ''
   }
+}
 
   if (isLoading) return <div>Cargando productos...</div>
   if (error) return <div>Error: {error}</div>
