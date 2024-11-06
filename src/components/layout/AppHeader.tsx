@@ -66,7 +66,9 @@ export function AppHeader({ children, ...props }: HeaderProps) {
         <div className="ml-auto flex items-center gap-4">
           <Button variant="outline">Comprar</Button>
           <Button className="bg-primary hover:bg-primary-600">
-            Mejora tu membresía
+            <Link href="/my-membership">
+              Mejora tu membresía
+            </Link>
           </Button>
           <Button variant="ghost" size="icon">
             <Bell size={20} />
