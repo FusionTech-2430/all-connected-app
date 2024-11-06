@@ -19,7 +19,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogDescription
 } from '@/components/ui/dialog'
 import {
   DropdownMenu,
@@ -35,7 +34,6 @@ import {
   getReportById,
   getProductById,
   deleteProductReport,
-  updateProduct
 } from '@/lib/api/products'
 import { getBusiness } from '@/lib/api/business'
 import SearchInput from '@/components/shared/search-input'
@@ -80,7 +78,6 @@ export default function AdminProductsDashboard() {
   const [isViewProductDialogOpen, setIsViewProductDialogOpen] = useState(false)
   const [isViewServiceReportDialogOpen, setIsViewServiceReportDialogOpen] =
     useState(false)
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<
     'todos' | 'productos' | 'servicios'
   >('todos')
@@ -223,30 +220,6 @@ export default function AdminProductsDashboard() {
       setIsViewServiceReportDialogOpen(false)
     } catch (error) {
       console.error('Failed to delete service report:', error)
-    }
-  }
-
-  const handleAcceptReport = async () => {
-    if (selectedReport && selectedProduct) {
-      try {
-        const updatedProduct = {
-          ...selectedProduct,
-          status: 'inactive'
-        }
-        await updateProduct(selectedProduct.id, updatedProduct)
-        await deleteProductReport(selectedReport.productId)
-        setReports((prevReports) =>
-          prevReports.filter(
-            (report) => report.productId !== selectedReport.productId
-          )
-        )
-        setIsViewReportDialogOpen(false)
-        setIsConfirmDialogOpen(false)
-        // Optionally, you can show a success message here
-      } catch (error) {
-        console.error('Failed to accept report:', error)
-        // Optionally, you can show an error message here
-      }
     }
   }
 
