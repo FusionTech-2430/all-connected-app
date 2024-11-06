@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -40,12 +40,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
 
 interface Item {
-  id: string
-  name: string
-  category: string
-  price: number
-  date: string
-  type: 'expense' | 'income'
+  id: number
+  eventoId: number
+  nombre: string
+  categoria: string
+  precio: number
+  fecha: string
 }
 
 interface AdminConfDashboardProps {
@@ -55,71 +55,60 @@ interface AdminConfDashboardProps {
 export default function AdminConfEventDashboard({
   id
 }: AdminConfDashboardProps) {
-  const [items, setItems] = useState<Item[]>([
-    {
-      id: '1',
-      name: 'Tutoría física',
-      category: 'Educación',
-      price: 42000,
-      date: '10/02/2024',
-      type: 'expense'
-    },
-    {
-      id: '2',
-      name: 'Tutoría matemáticas',
-      category: 'Tecnología',
-      price: 450000,
-      date: '16/03/2024',
-      type: 'expense'
-    },
-    {
-      id: '3',
-      name: 'Serenata',
-      category: 'Entretenimiento',
-      price: 32000,
-      date: '22/03/2024',
-      type: 'income'
-    },
-    {
-      id: '4',
-      name: 'Brownies',
-      category: 'Alimento',
-      price: 600000,
-      date: '1/04/2024',
-      type: 'income'
-    },
-    {
-      id: '5',
-      name: 'Galletas',
-      category: 'Viaje',
-      price: 2500000,
-      date: '12/04/2024',
-      type: 'expense'
-    }
-  ])
+  const [items, setItems] = useState<Item[]>([])
   const [activeTab, setActiveTab] = useState<'expense' | 'income'>('expense')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [currentItem, setCurrentItem] = useState<Item | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
+  const [totalExpenses, setTotalExpenses] = useState(0)
+  const [totalIncome, setTotalIncome] = useState(0)
   const itemsPerPage = 10
-  const totalPages = Math.ceil(
-    items.filter((item) => item.type === activeTab && item.name.toLowerCase().includes(searchTerm.toLowerCase())).length / itemsPerPage
-  )
 
-  const filteredItems = items.filter((item) => item.type === activeTab && item.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  useEffect(() => {
+    fetchItems()
+    fetchTotals()
+  }, [id, activeTab])
+
+  const fetchItems = async () => {
+    try {
+      const response = await fetch(
+        `https://mockeventsconfesiones-production.up.railway.app/api/v1/eventos-confesiones/${id}/${activeTab === 'expense' ? 'gastos' : 'ingresos'}`
+      )
+      const data = await response.json()
+      setItems(data)
+    } catch (error) {
+      console.error(`Error fetching ${activeTab}:`, error)
+    }
+  }
+
+  const fetchTotals = async () => {
+    try {
+      const expensesResponse = await fetch(
+        `https://mockeventsconfesiones-production.up.railway.app/api/v1/eventos-confesiones/${id}/gastos-totales`
+      )
+      const expensesTotal = await expensesResponse.json()
+      setTotalExpenses(expensesTotal.total || 0)
+
+      const incomeResponse = await fetch(
+        `https://mockeventsconfesiones-production.up.railway.app/api/v1/eventos-confesiones/${id}/ingresos-totales`
+      )
+      const incomeTotal = await incomeResponse.json()
+      setTotalIncome(incomeTotal.total || 0)
+    } catch (error) {
+      console.error('Error fetching totals:', error)
+    }
+  }
+
+  const filteredItems = items.filter((item) =>
+    item.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage)
   const paginatedItems = filteredItems.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   )
-
-  const totalExpenses = items
-    .filter((item) => item.type === 'expense')
-    .reduce((sum, item) => sum + item.price, 0)
-  const totalIncome = items
-    .filter((item) => item.type === 'income')
-    .reduce((sum, item) => sum + item.price, 0)
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage)
@@ -135,27 +124,51 @@ export default function AdminConfEventDashboard({
     setIsDialogOpen(false)
   }
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
-    const newItem: Item = {
-      id: currentItem?.id || String(items.length + 1),
-      name: formData.get('name')?.toString() || '',
-      category: formData.get('category')?.toString() || '',
-      price: Number(formData.get('price')) || 0,
-      date: formData.get('date')?.toString() || '',
-      type: activeTab
+    const newItem = {
+      eventoId: Number(id),
+      nombre: formData.get('name')?.toString() || '',
+      categoria: formData.get('category')?.toString() || '',
+      precio: parseFloat(formData.get('price')?.toString() || '0'),
+      fecha: formData.get('date')?.toString() || ''
     }
 
-    if (currentItem) {
-      setItems(
-        items.map((item) => (item.id === currentItem.id ? newItem : item))
-      )
-    } else {
-      setItems([...items, newItem])
-    }
+    console.log('Submitting new item:', newItem)
 
-    handleCloseDialog()
+    try {
+      if (currentItem) {
+        // Update existing item
+        await fetch(
+          `https://mockeventsconfesiones-production.up.railway.app/api/v1/${activeTab === 'expense' ? 'gastos' : 'ingresos'}/${currentItem.id}`,
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newItem)
+          }
+        )
+      } else {
+        // Create new item
+        await fetch(
+          `https://mockeventsconfesiones-production.up.railway.app/api/v1/${activeTab === 'expense' ? 'gastos' : 'ingresos'}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newItem)
+          }
+        )
+      }
+      fetchItems()
+      fetchTotals()
+      handleCloseDialog()
+    } catch (error) {
+      console.error(`Error saving ${activeTab}:`, error)
+    }
   }
 
   const handleDelete = (item: Item) => {
@@ -163,19 +176,28 @@ export default function AdminConfEventDashboard({
     setIsDeleteDialogOpen(true)
   }
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (currentItem) {
-      setItems(items.filter((item) => item.id !== currentItem.id))
-      setCurrentItem(null)
+      try {
+        await fetch(
+          `https://mockeventsconfesiones-production.up.railway.app/api/v1/${activeTab === 'expense' ? 'gastos' : 'ingresos'}/${currentItem.id}`,
+          {
+            method: 'DELETE'
+          }
+        )
+        fetchItems()
+        fetchTotals()
+      } catch (error) {
+        console.error(`Error deleting ${activeTab}:`, error)
+      }
     }
     setIsDeleteDialogOpen(false)
+    setCurrentItem(null)
   }
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">
-        Feria Emprende Creativo - Event ID: {id}
-      </h1>
+      <h1 className="text-2xl font-bold mb-4">Event ID: {id}</h1>
       <div className="grid grid-cols-2 gap-4 mb-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -199,9 +221,6 @@ export default function AdminConfEventDashboard({
             <div className="text-2xl font-bold">
               ${totalExpenses.toFixed(2)}
             </div>
-            <p className="text-xs text-muted-foreground">
-              +20.1% desde el último mes
-            </p>
           </CardContent>
         </Card>
         <Card>
@@ -226,9 +245,6 @@ export default function AdminConfEventDashboard({
             <div className="text-2xl font-bold text-green-600">
               ${totalIncome.toFixed(2)}
             </div>
-            <p className="text-xs text-muted-foreground">
-              +19% desde el último mes
-            </p>
           </CardContent>
         </Card>
       </div>
@@ -265,10 +281,10 @@ export default function AdminConfEventDashboard({
             <TableBody>
               {paginatedItems.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell>{item.name}</TableCell>
-                  <TableCell>{item.category}</TableCell>
-                  <TableCell>${item.price.toFixed(2)}</TableCell>
-                  <TableCell>{item.date}</TableCell>
+                  <TableCell>{item.nombre}</TableCell>
+                  <TableCell>{item.categoria}</TableCell>
+                  <TableCell>${item.precio.toFixed(2)}</TableCell>
+                  <TableCell>{item.fecha}</TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -278,12 +294,14 @@ export default function AdminConfEventDashboard({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleOpenDialog(item)}>
-                          <Pencil className="mr-2 h-4 w-4 text-yellow-500" /> {/* Change color to yellow */}
+                        <DropdownMenuItem
+                          onClick={() => handleOpenDialog(item)}
+                        >
+                          <Pencil className="mr-2 h-4 w-4 text-yellow-500" />
                           Editar
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDelete(item)}>
-                          <Trash2 className="mr-2 h-4 w-4 text-red-500" /> {/* Change color to red */}
+                          <Trash2 className="mr-2 h-4 w-4 text-red-500" />
                           Eliminar
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -319,10 +337,10 @@ export default function AdminConfEventDashboard({
             <TableBody>
               {paginatedItems.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell>{item.name}</TableCell>
-                  <TableCell>{item.category}</TableCell>
-                  <TableCell>${item.price.toFixed(2)}</TableCell>
-                  <TableCell>{item.date}</TableCell>
+                  <TableCell>{item.nombre}</TableCell>
+                  <TableCell>{item.categoria}</TableCell>
+                  <TableCell>${item.precio.toFixed(2)}</TableCell>
+                  <TableCell>{item.fecha}</TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -332,12 +350,14 @@ export default function AdminConfEventDashboard({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleOpenDialog(item)}>
-                          <Pencil className="mr-2 h-4 w-4 text-yellow-500" /> {/* Change color to yellow */}
+                        <DropdownMenuItem
+                          onClick={() => handleOpenDialog(item)}
+                        >
+                          <Pencil className="mr-2 h-4 w-4 text-yellow-500" />
                           Editar
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDelete(item)}>
-                          <Trash2 className="mr-2 h-4 w-4 text-red-500" /> {/* Change color to red */}
+                          <Trash2 className="mr-2 h-4 w-4 text-red-500" />
                           Eliminar
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -401,12 +421,18 @@ export default function AdminConfEventDashboard({
             <DialogTitle className="flex justify-between items-center">
               {currentItem
                 ? `Editar ${activeTab === 'expense' ? 'gasto' : 'ingreso'}`
-                : `Crear nuevo ${activeTab === 'expense' ? 'gasto' : 'ingreso'}`}
+                : `Crear nuevo ${
+                    activeTab === 'expense' ? 'gasto' : 'ingreso'
+                  }`}
             </DialogTitle>
             <DialogDescription>
               {currentItem
-                ? `Modifica la información del ${activeTab === 'expense' ? 'gasto' : 'ingreso'}`
-                : `Ingresa la información del nuevo ${activeTab === 'expense' ? 'gasto' : 'ingreso'}`}
+                ? `Modifica la información del ${
+                    activeTab === 'expense' ? 'gasto' : 'ingreso'
+                  }`
+                : `Ingresa la información del nuevo ${
+                    activeTab === 'expense' ? 'gasto' : 'ingreso'
+                  }`}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -415,7 +441,7 @@ export default function AdminConfEventDashboard({
               <Input
                 id="name"
                 name="name"
-                defaultValue={currentItem?.name}
+                defaultValue={currentItem?.nombre}
                 required
               />
             </div>
@@ -424,7 +450,7 @@ export default function AdminConfEventDashboard({
               <Input
                 id="category"
                 name="category"
-                defaultValue={currentItem?.category}
+                defaultValue={currentItem?.categoria}
                 required
               />
             </div>
@@ -434,7 +460,8 @@ export default function AdminConfEventDashboard({
                 id="price"
                 name="price"
                 type="number"
-                defaultValue={currentItem?.price}
+                step="0.01"
+                defaultValue={currentItem?.precio}
                 required
               />
             </div>
@@ -444,7 +471,7 @@ export default function AdminConfEventDashboard({
                 id="date"
                 name="date"
                 type="date"
-                defaultValue={currentItem?.date}
+                defaultValue={currentItem?.fecha}
                 required
               />
             </div>

@@ -183,9 +183,6 @@ export default function AdminSpecificEventDashboard({ id }: AdminSpecificEventDa
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <Button onClick={handleOpenDialog}>
-              <Plus className="mr-2 h-4 w-4" /> Añadir
-            </Button>
           </div>
           <Table>
             <TableHeader>
@@ -233,9 +230,6 @@ export default function AdminSpecificEventDashboard({ id }: AdminSpecificEventDa
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <Button onClick={handleOpenDialog}>
-              <Plus className="mr-2 h-4 w-4" /> Añadir
-            </Button>
           </div>
           <Table>
             <TableHeader>
@@ -322,37 +316,6 @@ export default function AdminSpecificEventDashboard({ id }: AdminSpecificEventDa
           </Button>
         </div>
       </div>
-      <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="flex justify-between items-center">
-              Crear nuevo {activeTab === 'expense' ? 'gasto' : 'ingreso'}
-            </DialogTitle>
-            <DialogDescription>
-              Ingresa la información del nuevo {activeTab === 'expense' ? 'gasto' : 'ingreso'}
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nombre</Label>
-              <Input id="name" name="name" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="category">Categoría</Label>
-              <Input id="category" name="category" required />
-            </div>
-            <div className="space-y-2">
-              <Label  htmlFor="price">Precio</Label>
-              <Input id="price" name="price" type="number" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="date">Fecha</Label>
-              <Input id="date" name="date" type="date" required />
-            </div>
-            <Button type="submit" className="w-full">Crear {activeTab === 'expense' ? 'gasto' : 'ingreso'}</Button>
-          </form>
-        </DialogContent>
-      </Dialog>
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

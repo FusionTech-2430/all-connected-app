@@ -127,9 +127,6 @@ export default function AdminEventDashboard() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <Button onClick={handleOpenDialog}>
-          <Plus className="mr-2 h-4 w-4" /> Añadir
-        </Button>
       </div>
       <Table>
         <TableHeader>
@@ -216,33 +213,6 @@ export default function AdminEventDashboard() {
           </Button>
         </div>
       </div>
-      <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="flex justify-between items-center">
-              Crear nuevo evento
-            </DialogTitle>
-            <DialogDescription>
-              Ingresa la información del nuevo evento
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nombre</Label>
-              <Input id="name" name="name" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="capacity">Aforo</Label>
-              <Input id="capacity" name="capacity" type="number" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="date">Fecha</Label>
-              <Input id="date" name="date" type="date" required />
-            </div>
-            <Button type="submit" className="w-full">Crear evento</Button>
-          </form>
-        </DialogContent>
-      </Dialog>
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
