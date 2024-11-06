@@ -1,10 +1,10 @@
 export interface Service {
   id: number;
-  idBusiness: string;
+  id_business: string;
   name: string;
   description: string;
   photoUrl: string;
-  status: string;
+  state: string;
   labels: string[];
 }
 
@@ -16,10 +16,10 @@ export interface Labels {
 
 export interface ServiceReport {
   category: string;
-  serviceId: number;
+  id_service: number;
   reason: string;
   description: string;
-  reportDate: Date;
+  report_date: Date;
 }
 
 

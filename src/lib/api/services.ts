@@ -84,7 +84,7 @@ export const getServiceById = async (serviceId: number) => {
 }
 
 export async function createServiceReport(serviceId: number, report: ServiceReport) {
-  return fetcher<void>(`/services/${serviceId}/report`, {
+  return fetcher<void>(`/services/${serviceId}/reports`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -95,7 +95,7 @@ export async function createServiceReport(serviceId: number, report: ServiceRepo
 }
 
 export async function deleteServiceReport(serviceId: number) {
-  return fetcher<void>(`/services/${serviceId}/report`, {
+  return fetcher<void>(`/services/${serviceId}/reports`, {
     method: 'DELETE',
     headers: {
       Accept: 'application/json'

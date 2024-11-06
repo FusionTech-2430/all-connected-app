@@ -10,11 +10,11 @@ import { getServices } from '@/lib/api/services'
 
 interface Service {
   id: number
-  idBusiness: string
+  id_business: string
   name: string
   description: string
-  photoUrl: string | null
-  status: string
+  photoUrl: string
+  state: string
   labels: string[]
 }
 
