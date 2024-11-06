@@ -8,13 +8,22 @@ const OnboardingTwo = () => {
 
   const handleCardClick = (card: string) => {
     setSelectedCard(card)
-    if (card === 'bienes') {
-      window.location.href = '/business-creation'
-    }
   }
 
   const handleNextClick = () => {
-    window.location.href = '/my-business'
+    if (selectedCard === 'bienes') {
+      window.location.href = '/business-creation'
+    } else if (selectedCard === 'servicios') {
+      window.location.href = '/service-creation'
+    } else if (selectedCard === 'eventos') {
+      window.location.href = '/event-creation'
+    } else if (selectedCard === 'comprador') {
+      window.location.href = '/consumer'
+    } else if (selectedCard === 'organizacion') {
+      window.location.href = '/organization-dashboard'
+    } else {
+      alert('Por favor, selecciona un rol antes de continuar.')
+    }
   }
 
   return (
@@ -47,7 +56,7 @@ const OnboardingTwo = () => {
               <div
                 className={`bg-white shadow-md rounded-lg flex flex-col items-center p-6 text-center cursor-pointer transition-all hover:shadow-lg ${
                   selectedCard === 'bienes'
-                    ? 'bg-blue-100 transform scale-105'
+                    ? 'bg-blue-100 transform scale-105 border-4 border-[#0369A1]'
                     : 'opacity-90'
                 }`}
                 onClick={() => handleCardClick('bienes')}
@@ -69,7 +78,7 @@ const OnboardingTwo = () => {
               <div
                 className={`bg-white shadow-md rounded-lg flex flex-col items-center p-6 text-center cursor-pointer transition-all hover:shadow-lg ${
                   selectedCard === 'servicios'
-                    ? 'bg-blue-100 transform scale-105'
+                    ? 'bg-blue-100 transform scale-105 border-4 border-[#0369A1]'
                     : 'opacity-90'
                 }`}
                 onClick={() => handleCardClick('servicios')}
@@ -93,7 +102,7 @@ const OnboardingTwo = () => {
               <div
                 className={`bg-white shadow-md rounded-lg flex flex-col items-center p-6 text-center cursor-pointer transition-all hover:shadow-lg ${
                   selectedCard === 'eventos'
-                    ? 'bg-blue-100 transform scale-105'
+                    ? 'bg-blue-100 transform scale-105 border-4 border-[#0369A1]'
                     : 'opacity-90'
                 }`}
                 onClick={() => handleCardClick('eventos')}
@@ -117,7 +126,7 @@ const OnboardingTwo = () => {
               <div
                 className={`bg-white shadow-md rounded-lg flex flex-col items-center p-6 text-center cursor-pointer transition-all hover:shadow-lg ${
                   selectedCard === 'comprador'
-                    ? 'bg-blue-100 transform scale-105'
+                    ? 'bg-blue-100 transform scale-105 border-4 border-[#0369A1]'
                     : 'opacity-90'
                 }`}
                 onClick={() => handleCardClick('comprador')}
@@ -139,7 +148,7 @@ const OnboardingTwo = () => {
               <div
                 className={`bg-white shadow-md rounded-lg flex flex-col items-center p-6 text-center cursor-pointer transition-all hover:shadow-lg ${
                   selectedCard === 'organizacion'
-                    ? 'bg-blue-100 transform scale-105'
+                    ? 'bg-blue-100 transform scale-105 border-4 border-[#0369A1]'
                     : 'opacity-90'
                 }`}
                 onClick={() => handleCardClick('organizacion')}
