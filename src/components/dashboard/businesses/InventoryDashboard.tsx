@@ -653,9 +653,6 @@ export default function Component() {
             <Button variant="outline" onClick={() => setIsAddLabelDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleAddLabel}>
-              Crear Etiqueta
-            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
