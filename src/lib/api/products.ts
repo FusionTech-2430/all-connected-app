@@ -86,6 +86,20 @@ export async function updateProductReport(productId: number, report: ProductsRep
   });
 }
 
+
+// Update the product
+export async function updateProduct(productId: number, product: Products) {
+  return fetcher<void>(`/products/${productId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    },
+    body: JSON.stringify(product)
+  });
+}
+
+
 export async function deleteProductReport(productId: number) {
   return fetcher<void>(`/products/${productId}/report`, {
     method: 'DELETE',

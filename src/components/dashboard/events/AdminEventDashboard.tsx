@@ -1,29 +1,22 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  TableRow
+} from '@/components/ui/table'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,29 +25,20 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { Label } from "@/components/ui/label"
-import { Eye, MoreHorizontal, Plus, Trash2 } from "lucide-react"
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
+import { Eye, MoreHorizontal, Trash2 } from 'lucide-react'
 
 interface Event {
-  id: string
-  name: string
-  capacity: number
-  date: string
+  id: number
+  nombre: string
+  aforo: number
+  fecha: string
 }
 
 export default function AdminEventDashboard() {
-  const [events, setEvents] = useState<Event[]>([
-    { id: '1', name: 'Summer Music Festival', capacity: 100, date: '21/08/2024' },
-    { id: '2', name: 'Annual Developer Conference', capacity: 400, date: '12/09/2024' },
-    { id: '3', name: 'City Marathon', capacity: 50, date: '16/09/2024' },
-    { id: '4', name: 'Modern Art Exhibition', capacity: 20, date: '10/10/2024' },
-    { id: '5', name: 'International Cuisine Expo', capacity: 800, date: '14/11/2024' },
-    { id: '6', name: 'International Cuisine Expo', capacity: 800, date: '14/11/2024' },
-  ])
-  const [filteredEvents, setFilteredEvents] = useState<Event[]>(events)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [events, setEvents] = useState<Event[]>([])
+  const [filteredEvents, setFilteredEvents] = useState<Event[]>([])
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
@@ -63,11 +47,28 @@ export default function AdminEventDashboard() {
   const totalPages = Math.ceil(filteredEvents.length / itemsPerPage)
 
   useEffect(() => {
+    fetchEvents()
+  }, [])
+
+  useEffect(() => {
     const filtered = events.filter((event) =>
-      event.name.toLowerCase().includes(searchTerm.toLowerCase())
+      event.nombre.toLowerCase().includes(searchTerm.toLowerCase())
     )
     setFilteredEvents(filtered)
   }, [searchTerm, events])
+
+  const fetchEvents = async () => {
+    try {
+      const response = await fetch(
+        'https://mockserverevents-production.up.railway.app/api/v1/eventos'
+      )
+      const data = await response.json()
+      setEvents(data)
+      setFilteredEvents(data)
+    } catch (error) {
+      console.error('Error fetching events:', error)
+    }
+  }
 
   const paginatedEvents = filteredEvents.slice(
     (currentPage - 1) * itemsPerPage,
@@ -78,39 +79,27 @@ export default function AdminEventDashboard() {
     setCurrentPage(newPage)
   }
 
-  const handleOpenDialog = () => {
-    setIsDialogOpen(true)
-  }
-
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false)
-  }
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const formData = new FormData(event.currentTarget)
-    const newEvent: Event = {
-      id: String(events.length + 1),
-      name: formData.get('name')?.toString() || '',
-      capacity: Number(formData.get('capacity')) || 0,
-      date: formData.get('date')?.toString() || '',
-    }
-
-    setEvents([...events, newEvent])
-    handleCloseDialog()
-  }
-
   const handleDelete = (event: Event) => {
     setCurrentEvent(event)
     setIsDeleteDialogOpen(true)
   }
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (currentEvent) {
-      setEvents(events.filter(evt => evt.id !== currentEvent.id))
-      setCurrentEvent(null)
+      try {
+        await fetch(
+          `https://mockserverevents-production.up.railway.app/api/v1/eventos/${currentEvent.id}`,
+          {
+            method: 'DELETE'
+          }
+        )
+        fetchEvents()
+      } catch (error) {
+        console.error('Error deleting event:', error)
+      }
     }
     setIsDeleteDialogOpen(false)
+    setCurrentEvent(null)
   }
 
   const handleView = (event: Event) => {
@@ -119,7 +108,7 @@ export default function AdminEventDashboard() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Eventos</h1>
+      <h1 className="text-2xl font-bold mb-4">Eventos confesiones</h1>
       <div className="flex justify-between mb-4">
         <Input
           className="w-1/3"
@@ -127,9 +116,6 @@ export default function AdminEventDashboard() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <Button onClick={handleOpenDialog}>
-          <Plus className="mr-2 h-4 w-4" /> Añadir
-        </Button>
       </div>
       <Table>
         <TableHeader>
@@ -143,9 +129,9 @@ export default function AdminEventDashboard() {
         <TableBody>
           {paginatedEvents.map((event) => (
             <TableRow key={event.id}>
-              <TableCell>{event.name}</TableCell>
-              <TableCell>{event.capacity}</TableCell>
-              <TableCell>{event.date}</TableCell>
+              <TableCell>{event.nombre}</TableCell>
+              <TableCell>{event.aforo}</TableCell>
+              <TableCell>{event.fecha}</TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -156,11 +142,11 @@ export default function AdminEventDashboard() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => handleView(event)}>
-                      <Eye className="mr-2 h-4 w-4 text-blue-500" /> {/* Change color to blue */}
-                      Visualizar
+                      <Eye className="mr-2 h-4 w-4 text-blue-500" />
+                      Ver Detalles
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleDelete(event)}>
-                      <Trash2 className="mr-2 h-4 w-4 text-red-500" /> {/* Change color to red */}
+                      <Trash2 className="mr-2 h-4 w-4 text-red-500" />
                       Eliminar
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -173,8 +159,8 @@ export default function AdminEventDashboard() {
       <div className="flex justify-between items-center mt-4">
         <p className="text-sm text-gray-500">
           Mostrando {(currentPage - 1) * itemsPerPage + 1} -{' '}
-          {Math.min(currentPage * itemsPerPage, filteredEvents.length)} de {filteredEvents.length}{' '}
-          eventos.
+          {Math.min(currentPage * itemsPerPage, filteredEvents.length)} de{' '}
+          {filteredEvents.length} eventos.
         </p>
         <div className="flex gap-2">
           <Button
@@ -216,44 +202,25 @@ export default function AdminEventDashboard() {
           </Button>
         </div>
       </div>
-      <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="flex justify-between items-center">
-              Crear nuevo evento
-            </DialogTitle>
-            <DialogDescription>
-              Ingresa la información del nuevo evento
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nombre</Label>
-              <Input id="name" name="name" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="capacity">Aforo</Label>
-              <Input id="capacity" name="capacity" type="number" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="date">Fecha</Label>
-              <Input id="date" name="date" type="date" required />
-            </div>
-            <Button type="submit" className="w-full">Crear evento</Button>
-          </form>
-        </DialogContent>
-      </Dialog>
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro de que quieres eliminar este evento?</AlertDialogTitle>
+            <AlertDialogTitle>
+              ¿Estás seguro de que quieres eliminar este evento?
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Esto eliminará permanentemente el evento y todos los datos asociados.
+              Esta acción no se puede deshacer. Esto eliminará permanentemente
+              el evento y todos los datos asociados.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Eliminar</AlertDialogAction>
+            <AlertDialogAction onClick={confirmDelete}>
+              Eliminar
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

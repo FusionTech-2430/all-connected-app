@@ -18,7 +18,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter
+  DialogFooter,
 } from '@/components/ui/dialog'
 import {
   DropdownMenu,
@@ -33,60 +33,50 @@ import {
   getReports,
   getReportById,
   getProductById,
-  deleteProduct
+  deleteProductReport,
 } from '@/lib/api/products'
+import { getBusiness } from '@/lib/api/business'
 import SearchInput from '@/components/shared/search-input'
+
+interface ServiceReport {
+  id: number
+  id_service: number
+  reason: string
+  description: string
+  report_date: string
+}
 
 interface Service {
   id: number
+  id_service: number
+  id_business: string
   name: string
   description: string
-  price: number
-  photoUrl: string
+  labels: string[]
+  photo_url: string
+  state: string
 }
 
-type Item = ProductsReport | Service
+type Item = ProductsReport | ServiceReport
 
 const truncateText = (text: string, maxLength: number) => {
   if (text.length <= maxLength) return text
   return text.slice(0, maxLength) + '...'
 }
 
-const mockServices: Service[] = [
-  {
-    id: 1,
-    name: 'Servicio de Limpieza',
-    description: 'Limpieza profesional para hogares y oficinas',
-    price: 50.0,
-    photoUrl: '/placeholder.svg?height=48&width=48'
-  },
-  {
-    id: 2,
-    name: 'Servicio de Jardinería',
-    description: 'Mantenimiento y diseño de jardines',
-    price: 75.0,
-    photoUrl: '/placeholder.svg?height=48&width=48'
-  },
-  {
-    id: 3,
-    name: 'Reparación de Electrodomésticos',
-    description: 'Servicio técnico para electrodomésticos',
-    price: 60.0,
-    photoUrl: '/placeholder.svg?height=48&width=48'
-  }
-]
-
 export default function AdminProductsDashboard() {
   const [reports, setReports] = useState<ProductsReport[]>([])
+  const [serviceReports, setServiceReports] = useState<ServiceReport[]>([])
   const [selectedReport, setSelectedReport] = useState<ProductsReport | null>(
     null
   )
   const [selectedProduct, setSelectedProduct] = useState<Products | null>(null)
+  const [selectedServiceReport, setSelectedServiceReport] =
+    useState<ServiceReport | null>(null)
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [isViewReportDialogOpen, setIsViewReportDialogOpen] = useState(false)
   const [isViewProductDialogOpen, setIsViewProductDialogOpen] = useState(false)
-  const [isViewServiceDialogOpen, setIsViewServiceDialogOpen] = useState(false)
-  const [isDeleteProductDialogOpen, setIsDeleteProductDialogOpen] =
+  const [isViewServiceReportDialogOpen, setIsViewServiceReportDialogOpen] =
     useState(false)
   const [selectedCategory, setSelectedCategory] = useState<
     'todos' | 'productos' | 'servicios'
@@ -95,11 +85,33 @@ export default function AdminProductsDashboard() {
   const [searchTerm, setSearchTerm] = useState('')
   const [productNames, setProductNames] = useState<Record<number, string>>({})
   const [productImages, setProductImages] = useState<Record<number, string>>({})
+  const [serviceNames, setServiceNames] = useState<Record<number, string>>({})
+  const [businessNames, setBusinessNames] = useState<Record<string, string>>({})
   const itemsPerPage = 10
 
   useEffect(() => {
     fetchReports()
+    fetchServiceReports()
   }, [])
+
+  const fetchBusinessNames = async (products: Products[]) => {
+    const names: Record<string, string> = {}
+    for (const product of products) {
+      if (!names[product.idBusiness]) {
+        try {
+          const business = await getBusiness(product.idBusiness)
+          names[product.idBusiness] = business.name
+        } catch (error) {
+          console.error(
+            `Failed to fetch business name for ID ${product.idBusiness}:`,
+            error
+          )
+          names[product.idBusiness] = 'Unknown Business'
+        }
+      }
+    }
+    setBusinessNames(names)
+  }
 
   const fetchReports = async () => {
     try {
@@ -108,23 +120,57 @@ export default function AdminProductsDashboard() {
 
       const names: Record<number, string> = {}
       const images: Record<number, string> = {}
+      const products: Products[] = []
 
       for (const report of fetchedReports) {
         const product = await getProductById(report.productId)
         names[report.productId] = product.name
         images[report.productId] = product.photoUrl || '/placeholder.svg'
+        products.push(product)
       }
       setProductNames(names)
       setProductImages(images)
+      fetchBusinessNames(products)
     } catch (error) {
       console.error('Failed to fetch reports:', error)
     }
+  }
+
+  const fetchServiceReports = async () => {
+    try {
+      const response = await fetch(
+        'https://mockserverservices-production.up.railway.app/api/v1/reports'
+      )
+      const fetchedReports = await response.json()
+      setServiceReports(fetchedReports)
+
+      const names: Record<number, string> = {}
+      const images: Record<number, string> = {}
+
+      for (const report of fetchedReports) {
+        const service = await fetchService(report.id_service)
+        names[report.id_service] = service.name
+        images[report.id_service] = service.photo_url
+      }
+      setServiceNames(names)
+    } catch (error) {
+      console.error('Failed to fetch service reports:', error)
+    }
+  }
+
+  const fetchService = async (id: number): Promise<Service> => {
+    const response = await fetch(
+      `https://mockserverservices-production.up.railway.app/api/v1/services/${id}`
+    )
+    return await response.json()
   }
 
   const handleViewReport = async (report: ProductsReport) => {
     try {
       const fullReport = await getReportById(report.productId)
       setSelectedReport(fullReport)
+      const product = await getProductById(report.productId)
+      setSelectedProduct(product)
       setIsViewReportDialogOpen(true)
     } catch (error) {
       console.error('Failed to fetch report details:', error)
@@ -141,21 +187,58 @@ export default function AdminProductsDashboard() {
     }
   }
 
-  const handleViewService = (service: Service) => {
+  const handleViewServiceReport = async (report: ServiceReport) => {
+    setSelectedServiceReport(report)
+    const service = await fetchService(report.id_service)
     setSelectedService(service)
-    setIsViewServiceDialogOpen(true)
+    setIsViewServiceReportDialogOpen(true)
   }
 
-  const handleDeleteProduct = async () => {
-    if (selectedProduct) {
-      try {
-        await deleteProduct(selectedProduct.id)
-        setIsDeleteProductDialogOpen(false)
-        setIsViewProductDialogOpen(false)
-        fetchReports()
-      } catch (error) {
-        console.error('Failed to delete product:', error)
-      }
+  const handleDeleteReport = async (reportId: number) => {
+    try {
+      await deleteProductReport(reportId)
+      setReports((prevReports) =>
+        prevReports.filter((report) => report.productId !== reportId)
+      )
+      setIsViewReportDialogOpen(false)
+    } catch (error) {
+      console.error('Failed to delete report:', error)
+    }
+  }
+
+  const handleDeleteServiceReport = async (reportId: number) => {
+    try {
+      await fetch(
+        `https://mockserverservices-production.up.railway.app/api/v1/reports/${reportId}`,
+        {
+          method: 'DELETE'
+        }
+      )
+      setServiceReports((prevReports) =>
+        prevReports.filter((report) => report.id !== reportId)
+      )
+      setIsViewServiceReportDialogOpen(false)
+    } catch (error) {
+      console.error('Failed to delete service report:', error)
+    }
+  }
+
+  const formatDate = (date: Date | string) => {
+    return new Date(date).toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    })
+  }
+
+  const translateStatus = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return 'Activo'
+      case 'inactive':
+        return 'Inactivo'
+      default:
+        return status
     }
   }
 
@@ -166,9 +249,7 @@ export default function AdminProductsDashboard() {
       const filteredReports = reports.filter(
         (report) =>
           report.reason.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          report.description
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
+          report.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
           productNames[report.productId]
             ?.toLowerCase()
             .includes(searchTerm.toLowerCase())
@@ -177,12 +258,15 @@ export default function AdminProductsDashboard() {
     }
 
     if (selectedCategory === 'todos' || selectedCategory === 'servicios') {
-      const filteredServices = mockServices.filter(
-        (service) =>
-          service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          service.description.toLowerCase().includes(searchTerm.toLowerCase())
+      const filteredServiceReports = serviceReports.filter(
+        (report) =>
+          report.reason.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          report.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          serviceNames[report.id_service]
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase())
       )
-      items = items.concat(filteredServices)
+      items = items.concat(filteredServiceReports)
     }
 
     return items
@@ -244,67 +328,63 @@ export default function AdminProductsDashboard() {
           <TableHeader>
             <TableRow>
               <TableHead>Producto/Servicio</TableHead>
-              <TableHead>Motivo/Descripción</TableHead>
-              <TableHead>Fecha del Reporte/Precio</TableHead>
+              <TableHead>Motivo</TableHead>
+              <TableHead>Descripción</TableHead>
+              <TableHead>Fecha del Reporte</TableHead>
               <TableHead>Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedItems.map((item, index) => {
-              const isService = 'price' in item
+              const isServiceReport = 'id_service' in item
               return (
                 <TableRow
                   key={
-                    isService
+                    isServiceReport
                       ? `service-${item.id}`
-                      : `product-${item.productId}-${index}`
+                      : `product-${(item as ProductsReport).productId}-${index}`
                   }
                 >
                   <TableCell>
                     <div className="flex items-center">
                       <Image
                         src={
-                          isService
-                            ? item.photoUrl
-                            : productImages[(item as ProductsReport).productId] ||
+                          isServiceReport
+                            ? 
                               '/placeholder.svg'
+                            : productImages[
+                                (item as ProductsReport).productId
+                              ] || '/placeholder.svg'
                         }
                         alt={
-                          isService
-                            ? item.name
-                            : productNames[(item as ProductsReport).productId] ||
-                              'Producto'
+                          isServiceReport
+                            ? serviceNames[item.id_service] || 'Servicio'
+                            : productNames[
+                                (item as ProductsReport).productId
+                              ] || 'Producto'
                         }
                         width={48}
                         height={48}
                         className="rounded-md mr-2"
                       />
                       <span>
-                        {isService
-                          ? item.name
+                        {isServiceReport
+                          ? serviceNames[item.id_service] || 'Cargando...'
                           : productNames[(item as ProductsReport).productId] ||
                             'Cargando...'}
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell
-                    title={
-                      isService ? item.description : (item as ProductsReport).reason
-                    }
-                  >
-                    {truncateText(
-                      isService
-                        ? item.description
-                        : (item as ProductsReport).reason,
-                      30
-                    )}
+                  <TableCell title={item.reason}>
+                    {truncateText(item.reason, 30)}
+                  </TableCell>
+                  <TableCell title={item.description}>
+                    {truncateText(item.description, 30)}
                   </TableCell>
                   <TableCell>
-                    {isService
-                      ? `$${item.price.toFixed(2)}`
-                      : new Date(
-                          (item as ProductsReport).reportDate
-                        ).toLocaleDateString()}
+                    {isServiceReport
+                      ? formatDate(item.report_date)
+                      : formatDate((item as ProductsReport).reportDate)}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -315,35 +395,42 @@ export default function AdminProductsDashboard() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        {isService ? (
+                        <DropdownMenuItem
+                          onClick={() =>
+                            isServiceReport
+                              ? handleViewServiceReport(item as ServiceReport)
+                              : handleViewReport(item as ProductsReport)
+                          }
+                        >
+                          <Eye className="mr-2 h-4 w-4 text-blue-500" />
+                          Visualizar Reporte
+                        </DropdownMenuItem>
+                        {!isServiceReport && (
                           <DropdownMenuItem
-                            onClick={() => handleViewService(item as Service)}
+                            onClick={() =>
+                              handleViewProduct(
+                                (item as ProductsReport).productId
+                              )
+                            }
                           >
-                            <Eye className="mr-2 h-4 w-4 text-blue-500" />
-                            Ver Detalles
+                            <Package className="mr-2 h-4 w-4 text-green-500" />
+                            Ver Producto
                           </DropdownMenuItem>
-                        ) : (
-                          <>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                handleViewReport(item as ProductsReport)
-                              }
-                            >
-                              <Eye className="mr-2 h-4 w-4 text-blue-500" />
-                              Visualizar Reporte
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                handleViewProduct(
+                        )}
+                        <DropdownMenuItem
+                          onClick={() =>
+                            isServiceReport
+                              ? handleDeleteServiceReport(
+                                  (item as ServiceReport).id
+                                )
+                              : handleDeleteReport(
                                   (item as ProductsReport).productId
                                 )
-                              }
-                            >
-                              <Package className="mr-2 h-4 w-4 text-green-500" />
-                              Ver Producto
-                            </DropdownMenuItem>
-                          </>
-                        )}
+                          }
+                        >
+                          <Trash2 className="mr-2 h-4 w-4 text-red-500" />
+                          Eliminar Reporte
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -356,8 +443,7 @@ export default function AdminProductsDashboard() {
           <p className="text-sm text-gray-500">
             Mostrando {(currentPage - 1) * itemsPerPage + 1} -{' '}
             {Math.min(currentPage * itemsPerPage, filteredItems.length)} de{' '}
-            {filteredItems.length}{' '}
-            {selectedCategory === 'servicios' ? 'servicios' : 'reportes'}.
+            {filteredItems.length} reportes.
           </p>
           <div className="flex items-center space-x-2">
             <Button
@@ -401,24 +487,33 @@ export default function AdminProductsDashboard() {
         </div>
       </div>
 
-      {/* Dialog for viewing reports */}
+      {/* Dialog for viewing product reports */}
       <Dialog
         open={isViewReportDialogOpen}
         onOpenChange={setIsViewReportDialogOpen}
       >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Visualizar reporte</DialogTitle>
+            <DialogTitle>Visualizar reporte de producto</DialogTitle>
           </DialogHeader>
-          {selectedReport && (
+          {selectedReport && selectedProduct && (
             <div className="grid gap-4 py-4">
+              <div className="w-full h-40 relative mb-4">
+                <Image
+                  src={selectedProduct.photoUrl || '/placeholder.svg'}
+                  alt={selectedProduct.name}
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-lg"
+                />
+              </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="productName" className="text-right">
                   Producto
                 </Label>
                 <Input
                   id="productName"
-                  value={productNames[selectedReport.productId] || 'Cargando...'}
+                  value={selectedProduct.name}
                   readOnly
                   className="col-span-3"
                 />
@@ -451,7 +546,7 @@ export default function AdminProductsDashboard() {
                 </Label>
                 <Input
                   id="reportDate"
-                  value={new Date(selectedReport.reportDate).toLocaleString()}
+                  value={formatDate(selectedReport.reportDate)}
                   readOnly
                   className="col-span-3"
                 />
@@ -536,14 +631,14 @@ export default function AdminProductsDashboard() {
                 </Label>
                 <Input
                   id="productStatus"
-                  value={selectedProduct.status}
+                  value={translateStatus(selectedProduct.status)}
                   readOnly
                   className="col-span-3"
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="productLabels" className="text-right">
-                  Etiquetas
+                  Etiqueta
                 </Label>
                 <Input
                   id="productLabels"
@@ -553,12 +648,14 @@ export default function AdminProductsDashboard() {
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="productIdBusiness" className="text-right">
-                  ID de Negocio
+                <Label htmlFor="productBusiness" className="text-right">
+                  Negocio
                 </Label>
                 <Input
-                  id="productIdBusiness"
-                  value={selectedProduct.idBusiness}
+                  id="productBusiness"
+                  value={
+                    businessNames[selectedProduct.idBusiness] || 'Cargando...'
+                  }
                   readOnly
                   className="col-span-3"
                 />
@@ -566,37 +663,27 @@ export default function AdminProductsDashboard() {
             </div>
           )}
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsViewProductDialogOpen(false)}
-            >
+            <Button onClick={() => setIsViewProductDialogOpen(false)}>
               Cerrar
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => setIsDeleteProductDialogOpen(true)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Eliminar Producto
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Dialog for viewing services */}
+      {/* Dialog for viewing service reports */}
       <Dialog
-        open={isViewServiceDialogOpen}
-        onOpenChange={setIsViewServiceDialogOpen}
+        open={isViewServiceReportDialogOpen}
+        onOpenChange={setIsViewServiceReportDialogOpen}
       >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Información del Servicio</DialogTitle>
+            <DialogTitle>Visualizar reporte de servicio</DialogTitle>
           </DialogHeader>
-          {selectedService && (
+          {selectedServiceReport && selectedService && (
             <div className="grid gap-4 py-4">
               <div className="w-full h-40 relative mb-4">
                 <Image
-                  src={selectedService.photoUrl}
+                  src={'/placeholder.svg'}
                   alt={selectedService.name}
                   layout="fill"
                   objectFit="cover"
@@ -605,11 +692,22 @@ export default function AdminProductsDashboard() {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="serviceName" className="text-right">
-                  Nombre
+                  Servicio
                 </Label>
                 <Input
                   id="serviceName"
                   value={selectedService.name}
+                  readOnly
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="serviceReason" className="text-right">
+                  Motivo
+                </Label>
+                <Input
+                  id="serviceReason"
+                  value={selectedServiceReport.reason}
                   readOnly
                   className="col-span-3"
                 />
@@ -620,18 +718,18 @@ export default function AdminProductsDashboard() {
                 </Label>
                 <Textarea
                   id="serviceDescription"
-                  value={selectedService.description}
+                  value={selectedServiceReport.description}
                   readOnly
                   className="col-span-3"
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="servicePrice" className="text-right">
-                  Precio
+                <Label htmlFor="serviceReportDate" className="text-right">
+                  Fecha del Reporte
                 </Label>
                 <Input
-                  id="servicePrice"
-                  value={`$${selectedService.price.toFixed(2)}`}
+                  id="serviceReportDate"
+                  value={formatDate(selectedServiceReport.report_date)}
                   readOnly
                   className="col-span-3"
                 />
@@ -639,33 +737,17 @@ export default function AdminProductsDashboard() {
             </div>
           )}
           <DialogFooter>
-            <Button onClick={() => setIsViewServiceDialogOpen(false)}>
+            <Button onClick={() => setIsViewServiceReportDialogOpen(false)}>
               Cerrar
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Dialog for confirming product deletion */}
-      <Dialog
-        open={isDeleteProductDialogOpen}
-        onOpenChange={setIsDeleteProductDialogOpen}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirmar Eliminación</DialogTitle>
-          </DialogHeader>
-          <p>¿Está seguro de que desea eliminar este producto?</p>
-
-          <DialogFooter>
             <Button
-              variant="outline"
-              onClick={() => setIsDeleteProductDialogOpen(false)}
+              variant="destructive"
+              onClick={() =>
+                selectedServiceReport &&
+                handleDeleteServiceReport(selectedServiceReport.id)
+              }
             >
-              Cancelar
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteProduct}>
-              Eliminar
+              Eliminar Reporte
             </Button>
           </DialogFooter>
         </DialogContent>
