@@ -1,100 +1,294 @@
+import Footer from '@/components/ui-own/footer'
+import { PublicHeader } from '@/components/layout/AppHeader'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  MessageSquare,
+  Users,
+  Calendar,
+  TrendingUp,
+  Target
+} from 'lucide-react'
 import Image from 'next/image'
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{' '}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <div className="flex flex-col h-dvh">
+      <PublicHeader />
+      <HeroSection />
+      <FeaturesSection />
+      <BenefitsSection />
+      <PricingSection />
+      <TestimonialsSection />
+      <Footer />
     </div>
+  )
+}
+
+function HeroSection() {
+  return (
+    <section className="flex flex-col items-center min-h-full bg-primary-50">
+      <div className="flex flex-col items-center pt-12">
+        <h1 className="text-3xl md:text-5xl font-bold mb-4 text-primary">
+          Conecta con el mundo
+        </h1>
+        <p className="text-primary text-lg md:text-xl mb-8">
+          AllConnected es la plataforma que te permite conectar con personas,
+          negocios y oportunidades de una manera fácil y eficiente.
+        </p>
+        <Button className="bg-blue-500 hover:bg-blue-600 text-lg px-6 py-3 md:px-8 md:py-4">
+          Empezar ahora
+        </Button>
+      </div>
+      <div className="flex flex-col items-center justify-end  w-full h-full self-center place-self-end">
+        <Image
+          src="/placeholder.png"
+          width={1203}
+          height={518}
+          alt="Dashboard"
+          className="rounded-lg shadow-2xl"
+        />
+      </div>
+    </section>
+  )
+}
+
+function FeaturesSection() {
+  const features = [
+    {
+      icon: <Users className="h-10 w-10 text-blue-500" />,
+      title: 'Crea comunidad',
+      description:
+        'Conecta y crea comunidad con otros usuarios de tu organización.'
+    },
+    {
+      icon: <MessageSquare className="h-10 w-10 text-blue-500" />,
+      title: 'Gestiona tu emprendimiento',
+      description: 'Controla tus ventas, contactos y finanzas.'
+    },
+    {
+      icon: <Calendar className="h-10 w-10 text-blue-500" />,
+      title: 'Anuncia tus eventos',
+      description: 'Publica y gestiona tus eventos y seminarios fácilmente.'
+    },
+    {
+      icon: <TrendingUp className="h-10 w-10 text-blue-500" />,
+      title: 'Potencia tus ventas',
+      description:
+        'Aumenta tus oportunidades comerciales con nuestras herramientas.'
+    },
+    {
+      icon: <Target className="h-10 w-10 text-blue-500" />,
+      title: 'Segmenta tu mercado',
+      description:
+        'Haga análisis detallados con estrategias de geolocalización.'
+    }
+  ]
+
+  return (
+    <section
+      id="features"
+      className="py-12 md:py-20 bg-primary-800 min-h-screen"
+    >
+      <div className="container mx-auto px-4">
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-12">
+          Descubre las principales funcionalidades de AllConnected
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {features.map((feature, index) => (
+            <Card key={index} className="text-center">
+              <CardHeader>
+                <div className="flex justify-center mb-4">{feature.icon}</div>
+                <CardTitle>{feature.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>{feature.description}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function BenefitsSection() {
+  const benefits = [
+    {
+      title: 'Eficiencia',
+      description: 'Ahorra tiempo y recursos con una interfaz fácil y amigable.'
+    },
+    {
+      title: 'Seguridad',
+      description:
+        'Protege tus datos con nuestras funciones de seguridad robustas.'
+    },
+    {
+      title: 'Crecimiento',
+      description: 'Expande y potencia tu negocio con nuestras herramientas.'
+    },
+    {
+      title: 'Satisfacción',
+      description:
+        'Consigue los mejores productos y servicios en pocos minutos.'
+    }
+  ]
+
+  return (
+    <section
+      id="benefits"
+      className="py-12 md:py-20 bg-primary-200 min-h-screen"
+    >
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col md:flex-row items-center">
+          <div className="md:w-1/2 mb-8 md:mb-0">
+            <h2 className="text-2xl md:text-3xl font-bold mb-4">
+              Descubre los beneficios de usar AllConnected
+            </h2>
+            <p className="text-lg mb-4">
+              AllConnected te ayuda a conectar con personas, negocios y
+              oportunidades de una manera más eficiente y segura.
+            </p>
+          </div>
+          <div className="md:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {benefits.map((benefit, index) => (
+              <Card key={index}>
+                <CardHeader>
+                  <CardTitle className="text-blue-600">
+                    {benefit.title}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p>{benefit.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function PricingSection() {
+  const plans = [
+    {
+      name: 'Básico',
+      price: '$35 / mes',
+      features: [
+        'Funcionalidades del Plan Gratuito',
+        'Acceso ilimitado a la plataforma',
+        'Soporte por correo electrónico'
+      ]
+    },
+    {
+      name: 'Pro',
+      price: '$40 / mes',
+      features: [
+        'Todas las características del Plan Básico',
+        'Funcionalidades avanzadas',
+        'Soporte prioritario',
+        'Acceso a seminarios exclusivos'
+      ]
+    },
+    {
+      name: 'Empresa',
+      price: '$50 / mes',
+      features: [
+        'Todas las características del Plan Pro',
+        'Integración con otras plataformas',
+        'Soporte 24/7',
+        'Personalización avanzada'
+      ]
+    }
+  ]
+
+  return (
+    <section id="pricing" className="py-12 md:py-20 bg-primary-50 min-h-screen">
+      <div className="container mx-auto px-4">
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-4">
+          ¡Escoge el plan perfecto para ti!
+        </h2>
+        <p className="text-center mb-8 md:mb-12">
+          Selecciona entre los mejores planes, asegurando una coincidencia
+          perfecta. ¡Necesitas más o menos? ¡Personaliza tu suscripción para un
+          ajuste perfecto!
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+          {plans.map((plan, index) => (
+            <Card
+              key={index}
+              className={`text-center ${index === 1 ? 'border-blue-500 border-2' : ''}`}
+            >
+              <CardHeader>
+                <CardTitle className="text-xl md:text-2xl">
+                  {plan.name}
+                </CardTitle>
+                <p className="text-2xl md:text-3xl font-bold">{plan.price}</p>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2">
+                  {plan.features.map((feature, featureIndex) => (
+                    <li key={featureIndex} className="flex items-center">
+                      <svg
+                        className="h-5 w-5 text-green-500 mr-2"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path d="M5 13l4 4L19 7"></path>
+                      </svg>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Button className="mt-6 w-full">Comprar</Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function TestimonialsSection() {
+  const testimonials = [
+    {
+      name: 'Juan Pérez',
+      comment:
+        'AllConnected ha sido una herramienta fundamental para el crecimiento de mi negocio. La interfaz es intuitiva y las funcionalidades son exactamente lo que necesitaba.'
+    },
+    {
+      name: 'María González',
+      comment:
+        'Gracias a AllConnected, he podido expandir mi red de contactos y encontrar nuevas oportunidades de negocio. ¡Lo recomiendo totalmente!'
+    }
+  ]
+
+  return (
+    <section
+      id="contact-us"
+      className="py-12 md:py-20 bg-primary-800 text-white"
+    >
+      <div className="container mx-auto px-4">
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-12">
+          Lo que dicen nuestros usuarios
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+          {testimonials.map((testimonial, index) => (
+            <Card key={index} className="bg-blue-800">
+              <CardContent className="pt-6">
+                <p className="mb-4">&quot;{testimonial.comment}&quot;</p>
+                <p className="font-bold">- {testimonial.name}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
   )
 }

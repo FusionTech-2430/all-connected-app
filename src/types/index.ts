@@ -1,3 +1,2 @@
-export interface Foo {
-  bar: string
-}
+export * from '@/types/events'
+export * from '@/types/users'
