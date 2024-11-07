@@ -1,7 +1,6 @@
 import Image from 'next/image';
-import { Bell } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';  // Mantiene consistencia con el proyecto
+
 import UserAvatar from '@/components/account/profile/UserAvatar';  // Componente de avatar
 import NotificationIcon from '../layout/NotificationIcon';
 
