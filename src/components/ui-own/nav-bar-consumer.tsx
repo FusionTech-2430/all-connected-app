@@ -1,8 +1,8 @@
 import Image from 'next/image';
-import { Bell } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';  // Mantiene consistencia con el proyecto
+
 import UserAvatar from '@/components/account/profile/UserAvatar';  // Componente de avatar
+import NotificationIcon from '../layout/NotificationIcon';
 
 const NavBar = () => {
   return (
@@ -43,9 +43,7 @@ const NavBar = () => {
 
           {/* Iconos de notificación y usuario */}
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon">
-              <Bell size={20} />
-            </Button>
+            <NotificationIcon />
             <UserAvatar />
           </div>
         </div>

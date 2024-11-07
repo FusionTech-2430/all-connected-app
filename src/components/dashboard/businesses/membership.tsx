@@ -4,6 +4,8 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Check } from "lucide-react"
+import { ConfirmacionInicialModal } from "@/components/dashboard/businesses/modals/ConfirmacionInicialModal"
+import { ConfirmacionCompraModal } from "@/components/dashboard/businesses/modals/buyModal"
 
 const plans = [
   {
@@ -42,6 +44,24 @@ const plans = [
 
 export default function Component() {
   const [selectedPlan, setSelectedPlan] = useState("Powerful")
+  const [isConfirmacionInicialOpen, setIsConfirmacionInicialOpen] = useState(false)
+  const [isConfirmacionCompraOpen, setIsConfirmacionCompraOpen] = useState(false)
+
+  const handlePurchase = () => {
+    setIsConfirmacionInicialOpen(true)
+  }
+
+  const handleConfirmPurchase = () => {
+    setIsConfirmacionInicialOpen(false)
+    setIsConfirmacionCompraOpen(true)
+  }
+
+  const handleFinalPurchase = () => {
+    // Aquí iría la lógica para procesar la compra
+    console.log(`Compra confirmada para el plan ${selectedPlan}`)
+    setIsConfirmacionCompraOpen(false)
+    alert('¡Compra realizada con éxito!')
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -94,6 +114,7 @@ export default function Component() {
                 className="w-full" 
                 size="lg"
                 variant={selectedPlan === plan.name ? "secondary" : "default"}
+                onClick={handlePurchase}
               >
                 Comprar
               </Button>
@@ -101,6 +122,19 @@ export default function Component() {
           </Card>
         ))}
       </div>
+
+      <ConfirmacionInicialModal
+        isOpen={isConfirmacionInicialOpen}
+        onClose={() => setIsConfirmacionInicialOpen(false)}
+        onConfirm={handleConfirmPurchase}
+        planName={selectedPlan}
+      />
+
+      <ConfirmacionCompraModal
+        isOpen={isConfirmacionCompraOpen}
+        onClose={() => setIsConfirmacionCompraOpen(false)}
+        onSubmit={handleFinalPurchase}
+      />
     </div>
   )
 }
