@@ -82,7 +82,8 @@ export default function InventoryDashboard() {
           description: `El archivo es demasiado grande. El tamaño máximo permitido es ${MAX_FILE_SIZE / 1024}KB.`,
           variant: "destructive",
         });
-        event.target.value = ''; // Clear the input
+        event.target.value = ''; // Limpiar el input
+        setImagePreview(null); // Limpiar la previsualización existente
         return;
       }
   
@@ -94,6 +95,7 @@ export default function InventoryDashboard() {
       console.log('File selected:', file.name)
     }
   }
+
 
 
   useEffect(() => {
@@ -513,7 +515,7 @@ export default function InventoryDashboard() {
                     Tamaño máximo de archivo: {MAX_FILE_SIZE / 1024}KB
                   </p>
                 </div>
-                
+
               </div>
             </div>
             <DialogFooter>
