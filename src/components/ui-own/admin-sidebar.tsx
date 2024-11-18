@@ -10,7 +10,7 @@ export default function Sidebar() {
         {/* Sidebar header */}
         <div className="pl-2">
           <Image
-            src={'/all-connected-banner.png'}
+            src="https://firebasestorage.googleapis.com/v0/b/allconnected-p.appspot.com/o/static_images%2Fall-connected-banner.png?alt=media"
             alt="All Connected banner"
             width={192}
             height={192}
