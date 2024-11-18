@@ -122,8 +122,8 @@ export default function BusinessList() {
           <Image
             src="/noMiembros.png"
             alt="No tienes emprendimientos"
-            width={200}
-            height={200}
+            width={500}
+            height={500}
             className="mx-auto mb-4"
           />
           <p className="text-xl text-gray-600">
