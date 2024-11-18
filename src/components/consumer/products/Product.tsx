@@ -9,7 +9,8 @@ import {
   Plus,
   Star,
   Loader2,
-  AlertTriangle
+  AlertTriangle,
+  XCircle
 } from 'lucide-react'
 import {
   Dialog,
@@ -29,7 +30,7 @@ import { getProductById, getProductRating, getRatingsByProduct, addRating, creat
 import { getBusiness } from '@/lib/api/business'
 import { getOrdersByUser } from '@/lib/api/orders'
 import { createOrder, addProductToOrder } from '@/lib/api/orders'
-import {getUser} from "@/lib/api/users";
+import {getUser} from "@/lib/api/users"
 import { createChat } from '@/services/chatService'
 
 interface Product {
@@ -91,7 +92,7 @@ export default function ProductPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [ratings, setRatings] = useState<RatingShow[]>([])
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false)
-  const [reportErrorMessage, setReportErrorMessage] = useState('');
+  const [reportErrorMessage, setReportErrorMessage] = useState('')
   const [newRating, setNewRating] = useState<RatingCreateDTO>({
     productId: 0,
     userId: '',
@@ -206,6 +207,15 @@ export default function ProductPage() {
       return
     }
 
+    if (product.stock <= 0) {
+      toast({
+        title: 'Error',
+        description: 'Este producto está agotado',
+        variant: 'destructive',
+      })
+      return
+    }
+
     setIsLoading(true)
 
     try {
@@ -308,27 +318,27 @@ export default function ProductPage() {
   }
 
   const handleCreateReport = async () => {
-    setReportErrorMessage('');
+    setReportErrorMessage('')
 
     if (!product) {
-      setReportErrorMessage('Producto no disponible');
-      return;
+      setReportErrorMessage('Producto no disponible')
+      return
     }
 
     // Validación de campos
     if (!reportData.category) {
-      setReportErrorMessage('Por favor seleccione una categoría');
-      return;
+      setReportErrorMessage('Por favor seleccione una categoría')
+      return
     }
 
     if (!reportData.reason) {
-      setReportErrorMessage('Por favor seleccione una razón');
-      return;
+      setReportErrorMessage('Por favor seleccione una razón')
+      return
     }
 
     if (!reportData.description.trim()) {
-      setReportErrorMessage('Por favor ingrese una descripción');
-      return;
+      setReportErrorMessage('Por favor ingrese una descripción')
+      return
     }
 
     try {
@@ -336,27 +346,27 @@ export default function ProductPage() {
         ...reportData,
         productId: product.id,
         reportDate: new Date(),
-      });
+      })
 
-      setReportErrorMessage('');
-      setIsReportModalOpen(false);
+      setReportErrorMessage('')
+      setIsReportModalOpen(false)
       setReportData({
         category: '',
         productId: 0,
         reason: '',
         description: '',
         reportDate: new Date(),
-      });
+      })
     } catch (error: unknown) {
-      console.error("Error al crear el reporte:", error);
+      console.error("Error al crear el reporte:", error)
 
       if (error instanceof Error && error.message.includes("duplicate key")) {
-        setReportErrorMessage("El producto ya se encuentra reportado, el equipo de AllConnected está evaluando el caso.");
+        setReportErrorMessage("El producto ya se encuentra reportado, el equipo de AllConnected está evaluando el caso.")
       } else {
-        setReportErrorMessage("No se pudo enviar el reporte. Por favor intente nuevamente.");
+        setReportErrorMessage("No se pudo enviar el reporte. Por favor intente nuevamente.")
       }
     }
-  };
+  }
 
   const handleChat = () => {
     if (!userId || !product) {
@@ -364,8 +374,8 @@ export default function ProductPage() {
         title: 'Error',
         description: 'Usuario o producto no disponible',
         variant: 'destructive',
-      });
-      return;
+      })
+      return
     }
     const chatId = createChat("Compra producto "+product?.name, userId, product.idBusiness)
     console.log(chatId)
@@ -457,10 +467,18 @@ export default function ProductPage() {
                 <p className="text-3xl font-bold text-gray-900">
                   ${product.price.toLocaleString()}
                 </p>
-
-                <div className="mt-4 flex items-center">
-                  <CheckCircle className="text-green-500 mr-2" />
-                  <span className="text-green-500 font-medium">En stock</span>
+                <div className="mt-2">
+                  {product.stock > 0 ? (
+                    <div className="flex items-center text-green-500">
+                      <CheckCircle className="w-5 h-5 mr-2" />
+                      <span className="font-medium">En stock</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center text-red-500">
+                      <XCircle className="w-5 h-5 mr-2" />
+                      <span className="font-medium">Sin stock</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -468,8 +486,9 @@ export default function ProductPage() {
                 <Button
                   className="w-full py-6 text-lg bg-[#0EA5E9] hover:bg-[#0284C7] text-white"
                   onClick={() => setIsModalOpen(true)}
+                  disabled={product.stock <= 0}
                 >
-                  Comprar
+                  {product.stock > 0 ? 'Comprar' : 'Agotado'}
                 </Button>
 
                 <button
@@ -549,6 +568,7 @@ export default function ProductPage() {
                   variant="outline"
                   size="icon"
                   onClick={() => handleQuantityChange(-1)}
+                  disabled={quantity <= 1 || product.stock <= 0}
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
@@ -564,11 +584,13 @@ export default function ProductPage() {
                     )
                   }
                   className="w-16 mx-2 text-center"
+                  disabled={product.stock <= 0}
                 />
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={() => handleQuantityChange(1)}
+                  disabled={quantity >= product.stock || product.stock <= 0}
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -585,9 +607,12 @@ export default function ProductPage() {
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handlePurchase} disabled={isLoading}
-                    className="bg-[#0EA5E9] hover:bg-[#0284C7] text-white">
-              {isLoading ? 'Procesando...' : 'Confirmar Compra'}
+            <Button 
+              onClick={handlePurchase} 
+              disabled={isLoading || product.stock <= 0}
+              className="bg-[#0EA5E9] hover:bg-[#0284C7] text-white"
+            >
+              {isLoading ? 'Procesando...' : (product.stock > 0 ? 'Confirmar Compra' : 'Agotado')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -659,7 +684,6 @@ export default function ProductPage() {
             </DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            {/* Mensaje de error en rojo */}
             {reportErrorMessage && (
               <p className="text-red-600 text-sm">{reportErrorMessage}</p>
             )}

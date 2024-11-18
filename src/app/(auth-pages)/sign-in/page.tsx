@@ -28,7 +28,7 @@ export default function SignInPage() {
         {/* Sección del banner */}
         <div className="relative bg-[#075985] flex justify-center items-center rounded-lg">
           <Image
-            src="/Banner1-removebg-preview.png"
+            src="https://firebasestorage.googleapis.com/v0/b/allconnected-p.appspot.com/o/static_images%2FBanner2-removebg-preview%201.png?alt=media"
             alt="AllConnected"
             className="z-10 w-2/3"
             width={800}

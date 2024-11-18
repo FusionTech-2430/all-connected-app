@@ -14,6 +14,7 @@ import { toast } from "@/components/ui/use-toast"
 import Image from 'next/image'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+const MAX_FILE_SIZE = 500 * 1024;
 
 interface Product {
   id: number
@@ -69,6 +70,33 @@ export default function InventoryDashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      if (file.size > MAX_FILE_SIZE) {
+        toast({
+          title: "Error",
+          description: `El archivo es demasiado grande. El tamaño máximo permitido es ${MAX_FILE_SIZE / 1024}KB.`,
+          variant: "destructive",
+        });
+        event.target.value = ''; // Limpiar el input
+        setImagePreview(null); // Limpiar la previsualización existente
+        return;
+      }
+  
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+      console.log('File selected:', file.name)
+    }
+  }
+
+
 
   useEffect(() => {
     const storedBusinessId = sessionStorage.getItem('currentBusinessId')
@@ -283,12 +311,6 @@ export default function InventoryDashboard() {
     }
   }
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      console.log('File selected:', file.name)
-    }
-  }
 
   const resetNewProductForm = () => {
     setNewProduct({
@@ -461,11 +483,23 @@ export default function InventoryDashboard() {
                   </div>
                 </div>
               </div>
+              
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="image" className="text-right">
                   Imagen
                 </Label>
                 <div className="col-span-3">
+                  {imagePreview && (
+                    <div className="mb-4">
+                      <Image
+                        src={imagePreview}
+                        alt="Preview"
+                        width={200}
+                        height={200}
+                        className="rounded-lg object-cover"
+                      />
+                    </div>
+                  )}
                   <Input
                     id="image"
                     type="file"
@@ -475,9 +509,13 @@ export default function InventoryDashboard() {
                     ref={fileInputRef}
                   />
                   <Button onClick={() => fileInputRef.current?.click()} type="button">
-                    <Upload className="mr-2 h-4 w-4" /> Subir imagen
+                    <Upload className="mr-2 h-4 w-4" /> {imagePreview ? 'Cambiar imagen' : 'Subir imagen'}
                   </Button>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Tamaño máximo de archivo: {MAX_FILE_SIZE / 1024}KB
+                  </p>
                 </div>
+
               </div>
             </div>
             <DialogFooter>
@@ -735,22 +773,47 @@ export default function InventoryDashboard() {
                     </div>
                   </div>
                 </div>
+                
+
                 <div className="grid gap-2">
                   <Label htmlFor="modify-image">Imagen</Label>
-                  <div className="flex items-center space-x-2">
-                    <Input
-                      id="modify-image"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                      ref={fileInputRef}
-                    />
-                    <Button onClick={() => fileInputRef.current?.click()} type="button">
-                      <Upload className="mr-2 h-4 w-4" /> Cambiar imagen
-                    </Button>
+                  <div className="space-y-4">
+                    {imagePreview ? (
+                      <div className="mb-4">
+                        <Image
+                          src={imagePreview}
+                          alt="Preview"
+                          width={200}
+                          height={200}
+                          className="rounded-lg object-cover"
+                        />
+                      </div>
+                    ) : selectedProduct?.photoUrl ? (
+                      <div className="mb-4">
+                        <Image
+                          src={selectedProduct.photoUrl}
+                          alt="Current product image"
+                          width={200}
+                          height={200}
+                          className="rounded-lg object-cover"
+                        />
+                      </div>
+                    ) : null}
+                    <div className="flex items-center space-x-2">
+                      <Input
+                        id="modify-image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        ref={fileInputRef}
+                      />
+                      <Button onClick={() => fileInputRef.current?.click()} type="button">
+                        <Upload className="mr-2 h-4 w-4" /> {imagePreview ? 'Cambiar imagen' : 'Subir imagen'}
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                </div>                
               </div>
             </div>
           )}

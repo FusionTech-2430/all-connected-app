@@ -1,0 +1,38 @@
+name: Deploy PROD
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+jobs:
+  Deploy:
+    name: Deploy on PROD
+    runs-on: self-hosted
+    steps:
+      - name: executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.PROD_FRONT_HOST }}
+          username: ${{ secrets.HOSTS_USERNAME }}
+          key: ${{ secrets.PROD_FRONT_SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd AllConnected/all-connected-app
+            echo "Fetching latest code..."
+            git fetch
+            git checkout main
+            git pull
+            echo "Creating .env file..."
+            echo "NEXT_PUBLIC_FIREBASE_API_KEY=${{ secrets.PROD_FIREBASE_API_KEY }}" >> .env.local
+            echo "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${{ secrets.PROD_FIREBASE_AUTH_DOMAIN }}" >> .env.local
+            echo "NEXT_PUBLIC_FIREBASE_DATABASE_URL=${{ secrets.PROD_FIREBASE_DATABASE_URL }}" >> .env.local
+            echo "NEXT_PUBLIC_FIREBASE_PROJECT_ID=${{ secrets.PROD_FIREBASE_PROJECT_ID }}" >> .env.local
+            echo "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${{ secrets.PROD_FIREBASE_STORAGE_BUCKET }}" >> .env.local
+            echo "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.PROD_FIREBASE_MESSAGING_SENDER_ID }}" >> .env.local
+            echo "NEXT_PUBLIC_API_URL=http://${{ secrets.PROD_INTEG_HOST }}:8080" >> .env.local
+            echo "Building Docker image..."
+            docker build -t all-connected-app .
+            docker rm -f all-connected-app
+            docker run --name all-connected-app --network all_connected -d -p 3000:3000 all-connected-app
+            echo "Docker container running..."
+            rm .env.local

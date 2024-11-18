@@ -117,13 +117,13 @@ export default function BusinessList() {
         </Link>
       </div>
 
-      {(ownedBusinesses.length === 0 && memberBusinesses.length === 0) && (
+      {ownedBusinesses.length === 0 && memberBusinesses.length === 0 && (
         <div className="text-center">
           <Image
-            src="/noMiembros.png"
+            src="https://firebasestorage.googleapis.com/v0/b/allconnected-p.appspot.com/o/static_images%2FnoMiembros.png?alt=media"
             alt="No tienes emprendimientos"
-            width={200}
-            height={200}
+            width={500}
+            height={500}
             className="mx-auto mb-4"
           />
           <p className="text-xl text-gray-600">
@@ -182,7 +182,7 @@ export default function BusinessList() {
       {memberBusinesses.length === 0 ? (
         <div className="text-center">
           <Image
-            src="/noMiembros.png"
+            src="https://firebasestorage.googleapis.com/v0/b/allconnected-p.appspot.com/o/static_images%2FnoMiembros.png?alt=media"
             alt="No eres miembro de ningún emprendimiento"
             width={500}
             height={500}

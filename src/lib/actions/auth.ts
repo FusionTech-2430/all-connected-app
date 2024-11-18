@@ -44,7 +44,7 @@ export async function signIn(prevState: unknown, formData: FormData) {
     }
   }
 
-  // redirect('/home')
+  redirect('/home')
 }
 
 export async function signUp(formData: FormData) {

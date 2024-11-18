@@ -11,7 +11,7 @@ const NavBar = () => {
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Image
-                src="/logo.png"
+                src="https://firebasestorage.googleapis.com/v0/b/allconnected-p.appspot.com/o/static_images%2Flogo.png?alt=media"
                 alt="AllConnected Logo"
                 width={32}
                 height={32}
@@ -19,7 +19,7 @@ const NavBar = () => {
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <Link
-                href="/features"
+                href="/#features"
                 className="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 hover:text-blue-700 hover:border-blue-700"
               >
                 Características
@@ -31,13 +31,13 @@ const NavBar = () => {
                 Precios
               </Link>
               <Link
-                href="/about"
+                href="/#about"
                 className="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 hover:text-blue-700 hover:border-blue-700"
               >
                 Acerca de
               </Link>
               <Link
-                href="/contact"
+                href="/#contact"
                 className="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 hover:text-blue-700 hover:border-blue-700"
               >
                 Contacto
