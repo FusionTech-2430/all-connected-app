@@ -67,7 +67,7 @@ export default async function UserAvatar() {
           <DropdownMenuLabel>Mi perfil</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem>
-            <Link className="w-full" href="/profile">
+            <Link className="w-full" href= {roles.includes('admin')?'/admin/profile':'/profile'} >
               Ajustes
             </Link>
           </DropdownMenuItem>

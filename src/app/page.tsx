@@ -42,7 +42,7 @@ function HeroSection() {
       </div>
       <div className="flex flex-col items-center justify-end  w-full h-full self-center place-self-end">
         <Image
-          src="/placeholder.png"
+          src="https://firebasestorage.googleapis.com/v0/b/allconnected-p.appspot.com/o/static_images%2Fplaceholder.png?alt=media"
           width={1203}
           height={518}
           alt="Dashboard"
