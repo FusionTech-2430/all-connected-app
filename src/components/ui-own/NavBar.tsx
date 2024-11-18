@@ -11,7 +11,7 @@ const NavBar = () => {
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Image
-                src="/logo.png"
+                src="https://firebasestorage.googleapis.com/v0/b/allconnected-p.appspot.com/o/static_images%2Flogo.png?alt=media"
                 alt="AllConnected Logo"
                 width={32}
                 height={32}

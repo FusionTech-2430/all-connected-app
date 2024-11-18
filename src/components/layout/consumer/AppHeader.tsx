@@ -42,7 +42,7 @@ export function AppHeader({ children, ...props }: HeaderProps) {
             <div className="flex flex-col h-full gap-6">
               <Link href="/home">
                 <Image
-                  src={'/all-connected-banner.png'}
+                  src="https://firebasestorage.googleapis.com/v0/b/allconnected-p.appspot.com/o/static_images%2Fall-connected-banner.png?alt=media&token=835367b5-9f16-4606-b451-1e90ffb85bc7"
                   alt="All Connected banner"
                   width={192}
                   height={192}
@@ -80,7 +80,7 @@ export function PublicHeader() {
         <div className="flex items-center space-x-2">
           {/* <Globe className="h-6 w-6" /> */}
           <Image
-            src={'/white-logo.png'}
+            src="https://firebasestorage.googleapis.com/v0/b/allconnected-p.appspot.com/o/static_images%2Fwhite-logo.png?alt=media"
             alt="AllConnected logo"
             width={32}
             height={32}
@@ -107,7 +107,7 @@ export function PublicHeader() {
             </SheetHeader>
             <div className="flex flex-col h-full gap-6">
               <Image
-                src={'/all-connected-banner.png'}
+                src="https://firebasestorage.googleapis.com/v0/b/allconnected-p.appspot.com/o/static_images%2Fall-connected-banner.png?alt=media"
                 alt="All Connected banner"
                 width={192}
                 height={192}

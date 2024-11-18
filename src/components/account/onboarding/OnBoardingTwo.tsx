@@ -62,7 +62,7 @@ const OnboardingTwo = () => {
                 onClick={() => handleCardClick('bienes')}
               >
                 <Image
-                  src="/bienes.png"
+                  src="https://firebasestorage.googleapis.com/v0/b/allconnected-p.appspot.com/o/static_images%2Fbienes.png?alt=media"
                   alt="Emprendedor de Bienes"
                   width={128}
                   height={112}
@@ -84,7 +84,7 @@ const OnboardingTwo = () => {
                 onClick={() => handleCardClick('servicios')}
               >
                 <Image
-                  src="/servicios.png"
+                  src="https://firebasestorage.googleapis.com/v0/b/allconnected-p.appspot.com/o/static_images%2Fservicios.png?alt=media"
                   alt="Emprendedor de Servicios"
                   width={128}
                   height={128}
@@ -108,7 +108,7 @@ const OnboardingTwo = () => {
                 onClick={() => handleCardClick('eventos')}
               >
                 <Image
-                  src="/eventos.png"
+                  src="https://firebasestorage.googleapis.com/v0/b/allconnected-p.appspot.com/o/static_images%2Feventos.png?alt=media"
                   alt="Organizador de Eventos"
                   width={128}
                   height={128}
@@ -132,7 +132,7 @@ const OnboardingTwo = () => {
                 onClick={() => handleCardClick('comprador')}
               >
                 <Image
-                  src="/comprador.png"
+                  src="https://firebasestorage.googleapis.com/v0/b/allconnected-p.appspot.com/o/static_images%2Fcomprador.png?alt=media"
                   alt="Comprador"
                   width={128}
                   height={128}
@@ -154,7 +154,7 @@ const OnboardingTwo = () => {
                 onClick={() => handleCardClick('organizacion')}
               >
                 <Image
-                  src="/organizaciones.png"
+                  src="https://firebasestorage.googleapis.com/v0/b/allconnected-p.appspot.com/o/static_images%2Forganizaciones.png?alt=media"
                   alt="Organización"
                   width={128}
                   height={128}

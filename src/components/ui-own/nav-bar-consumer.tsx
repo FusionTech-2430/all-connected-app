@@ -12,16 +12,16 @@ const NavBar = () => {
           {/* Banner */}
           <div className="flex items-center">
             <Image
-              src="/all-connected-banner.png"
+              src="https://firebasestorage.googleapis.com/v0/b/allconnected-p.appspot.com/o/static_images%2Fall-connected-banner.png?alt=media"
               alt="AllConnected Banner"
-              width={150}  // Tamaño más grande del banner
+              width={150} // Tamaño más grande del banner
               height={60}
             />
           </div>
 
           {/* Links de navegación */}
           <div className="hidden sm:flex sm:space-x-8">
-          <Link
+            <Link
               href="/home"
               className="text-gray-500 inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 hover:text-[#0C4A6E] hover:border-[#0C4A6E]"
             >
@@ -49,7 +49,7 @@ const NavBar = () => {
         </div>
       </div>
     </nav>
-  );
+  )
 };
 
 export default NavBar;
