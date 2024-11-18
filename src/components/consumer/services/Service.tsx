@@ -23,7 +23,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from '@/components/ui/use-toast'
 import { useUserId } from '@/hooks/use-user-id'
 import { getServiceById, createServiceReport } from '@/lib/api/services'
-import { getBusiness } from '@/lib/api/business'
 import { createChat } from '@/services/chatService'
 
 interface Service {
@@ -88,7 +87,7 @@ export default function ServicePage() {
         throw new Error("Servicio no encontrado")
       }
 
-      const businessData = await getBusiness(serviceData.id_business)
+      const businessData: Business = { name: serviceData.id_business } 
 
       if (!businessData) {
         throw new Error("Información del negocio no encontrada")
@@ -262,7 +261,7 @@ export default function ServicePage() {
 
             <div className="space-y-6">
               <div>
-                <p className="text-gray-500 text-sm font-medium">{business.name}</p>
+                <p className="text-gray-500 text-sm font-medium"> <b>Emprendimiento:</b> {business.name}</p>
                 <h2 className="text-3xl font-bold text-gray-900 mt-1">
                   {service.name}
                 </h2>
