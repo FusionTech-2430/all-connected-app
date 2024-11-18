@@ -1,8 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    output:'standalone',
+    output: 'standalone',
     images: {
-        domains: ['storage.googleapis.com'],
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'firebasestorage.googleapis.com',
+                pathname: '/v0/b/**',  // Ruta para Firebase Storage
+            },
+            {
+                protocol: 'https',
+                hostname: 'storage.googleapis.com',
+                pathname: '/**',  // Ruta para Storage API genérica
+            }
+        ]
     },
 };
 

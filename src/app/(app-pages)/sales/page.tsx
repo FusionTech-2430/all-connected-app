@@ -1,7 +1,5 @@
-export default function Page() {
-  return (
-    <>
-      <p>This is the sales page</p>
-    </>
-  )
+import Component from '@/components/dashboard/products/ManualSales'
+
+export default function BusinessPage() {
+  return <Component />
 }

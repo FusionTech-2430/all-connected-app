@@ -1,9 +1,7 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Table,
   TableBody,
@@ -20,299 +18,285 @@ import {
   DialogFooter
 } from '@/components/ui/dialog'
 import { ChevronUp, ChevronDown } from 'lucide-react'
+import { toast } from '@/components/ui/use-toast'
 
-interface Venta {
-  id: number
-  cliente: string
-  producto: string
-  cantidad: number
-  precio: number
-  fecha: string
+interface Order {
+  id: string
+  creationDate: string
+  deliveryDate: string | null
+  idUser: string
+  total: number
+  status: string
+  idBusiness: string
+  products: Record<string, number>
 }
 
-const ventasIniciales: Venta[] = [
-  {
-    id: 1,
-    cliente: 'Juan Pérez',
-    producto: 'Brownie de chocolate',
-    cantidad: 2,
-    precio: 8000,
-    fecha: '2024-05-01'
-  },
-  {
-    id: 2,
-    cliente: 'María Rodríguez',
-    producto: 'Galleta de limón',
-    cantidad: 5,
-    precio: 20000,
-    fecha: '2024-05-01'
-  },
-  {
-    id: 3,
-    cliente: 'Pedro Torres',
-    producto: 'Brownie de arequipe',
-    cantidad: 1,
-    precio: 4000,
-    fecha: '2024-05-12'
-  },
-  {
-    id: 4,
-    cliente: 'Julián García',
-    producto: 'Galleta Rebelvet',
-    cantidad: 2,
-    precio: 8000,
-    fecha: '2024-05-01'
-  }
-]
-
-const formatearPrecio = (precio: number) => {
-  return precio.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+interface User {
+  id: string
+  fullname: string
+  username: string
+  mail: string
 }
 
-const formatearFecha = (fecha: string) => {
-  const [year, month, day] = fecha.split('-')
-  return `${day}/${month}/${year}`
-}
+type SortField = 'creationDate' | 'total' | 'status'
+type SortOrder = 'asc' | 'desc'
 
-const esFechaValida = (fecha: string) => {
-  const fechaVenta = new Date(fecha)
-  const hoy = new Date()
-  hoy.setHours(0, 0, 0, 0) // Resetear la hora a medianoche para comparar solo las fechas
-  return fechaVenta <= hoy
-}
-
-type ClavesOrdenamiento = keyof Omit<Venta, 'id'>
-type DireccionOrdenamiento = 'asc' | 'desc'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
 
 export default function ManualSales() {
-  const [ventas, setVentas] = useState<Venta[]>(ventasIniciales)
-  const [modalAbierto, setModalAbierto] = useState(false)
-  const [nuevaVenta, setNuevaVenta] = useState<Omit<Venta, 'id'>>({
-    cliente: '',
-    producto: '',
-    cantidad: 0,
-    precio: 0,
-    fecha: new Date().toISOString().split('T')[0]
+  const [orders, setOrders] = useState<Order[]>([])
+  const [users, setUsers] = useState<Record<string, User>>({})
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [sortField, setSortField] = useState<SortField>('creationDate')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+
+  // useEffect(() => {
+  //   if (storedBusinessId) {
+  //     setBusinessId(storedBusinessId)
+  //     setNewProduct((prev) => ({
+  //       ...prev,
+  //       idBusiness: storedBusinessId
+  //     }))
+  //   } else {
+  //     setError('No se encontró el ID del negocio')
+  //   }
+  // }, [])
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      const storedBusinessId = sessionStorage.getItem('currentBusinessId')
+      setIsLoading(true)
+      setError(null)
+      try {
+        const response = await fetch(
+          `${API_URL}/orders-service/api/v1/orders/${storedBusinessId}/business`
+        )
+        if (!response.ok) {
+          throw new Error('Failed to fetch orders')
+        }
+        const data = await response.json()
+        setOrders(data)
+        fetchUsers(data)
+      } catch (err) {
+        setError('Error al cargar las órdenes')
+        toast({
+          title: 'Error',
+          description: 'No se pudieron cargar las órdenes',
+          variant: 'destructive'
+        })
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchOrders()
+  }, [])
+
+  const fetchUsers = async (orders: Order[]) => {
+    const userIds = Array.from(new Set(orders.map((order) => order.idUser)))
+    const userPromises = userIds.map((id) =>
+      fetch(`${API_URL}/users-service/api/v1/users/${id}`).then((res) =>
+        res.json()
+      )
+    )
+    const usersData = await Promise.all(userPromises)
+    const usersMap = usersData.reduce(
+      (acc, user) => {
+        acc[user.id_user] = user
+        return acc
+      },
+      {} as Record<string, User>
+    )
+    setUsers(usersMap)
+  }
+
+  const handleSort = (field: SortField) => {
+    if (field === sortField) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortOrder('asc')
+    }
+  }
+
+  const sortedOrders = [...orders].sort((a, b) => {
+    if (a[sortField] < b[sortField]) return sortOrder === 'asc' ? -1 : 1
+    if (a[sortField] > b[sortField]) return sortOrder === 'asc' ? 1 : -1
+    return 0
   })
-  const [errores, setErrores] = useState<Partial<Record<keyof Venta, string>>>(
-    {}
-  )
-  const [notificacion, setNotificacion] = useState<string | null>(null)
-  const [configuracionOrden, setConfiguracionOrden] = useState<{
-    clave: ClavesOrdenamiento
-    direccion: DireccionOrdenamiento
-  }>({ clave: 'cliente', direccion: 'asc' })
 
-  const ventasOrdenadas = useMemo(() => {
-    const ventasOrdenables = [...ventas]
-    if (configuracionOrden.clave) {
-      ventasOrdenables.sort((a, b) => {
-        if (a[configuracionOrden.clave] < b[configuracionOrden.clave]) {
-          return configuracionOrden.direccion === 'asc' ? -1 : 1
+  const handleDeliverOrder = (orderId: string) => {
+    setSelectedOrderId(orderId)
+    setIsConfirmModalOpen(true)
+  }
+
+  const confirmDelivery = async () => {
+    if (!selectedOrderId) return
+
+    try {
+      const response = await fetch(
+        `${API_URL}/orders-service/api/v1/orders/${selectedOrderId}/delivered`,
+        {
+          method: 'PUT'
         }
-        if (a[configuracionOrden.clave] > b[configuracionOrden.clave]) {
-          return configuracionOrden.direccion === 'asc' ? 1 : -1
-        }
-        return 0
+      )
+
+      if (!response.ok) {
+        throw new Error('Failed to update order status')
+      }
+
+      setOrders(
+        orders.map((order) =>
+          order.id === selectedOrderId
+            ? { ...order, status: 'delivered' }
+            : order
+        )
+      )
+
+      toast({
+        title: 'Éxito',
+        description: 'Orden marcada como entregada correctamente'
       })
-    }
-    return ventasOrdenables
-  }, [ventas, configuracionOrden])
-
-  const solicitarOrdenamiento = (clave: ClavesOrdenamiento) => {
-    let direccion: DireccionOrdenamiento = 'asc'
-    if (
-      configuracionOrden.clave === clave &&
-      configuracionOrden.direccion === 'asc'
-    ) {
-      direccion = 'desc'
-    }
-    setConfiguracionOrden({ clave, direccion })
-  }
-
-  const validarFormulario = () => {
-    const nuevosErrores: Partial<Record<keyof Venta, string>> = {}
-    if (!nuevaVenta.cliente)
-      nuevosErrores.cliente = 'El nombre del cliente es obligatorio'
-    if (!nuevaVenta.producto)
-      nuevosErrores.producto = 'El nombre del producto es obligatorio'
-    if (!nuevaVenta.cantidad || nuevaVenta.cantidad <= 0)
-      nuevosErrores.cantidad = 'La cantidad debe ser mayor a 0'
-    if (!nuevaVenta.precio || nuevaVenta.precio <= 0)
-      nuevosErrores.precio = 'El precio debe ser mayor a 0'
-    if (!nuevaVenta.fecha) {
-      nuevosErrores.fecha = 'La fecha es obligatoria'
-    } else if (!esFechaValida(nuevaVenta.fecha)) {
-      nuevosErrores.fecha = 'La fecha no puede ser posterior al día actual'
-    }
-    setErrores(nuevosErrores)
-    return Object.keys(nuevosErrores).length === 0
-  }
-
-  const manejarCambioInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setNuevaVenta((prev) => ({
-      ...prev,
-      [name]: name === 'cantidad' || name === 'precio' ? Number(value) : value
-    }))
-  }
-
-  const manejarEnvio = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (validarFormulario()) {
-      const id =
-        ventas.length > 0 ? Math.max(...ventas.map((v) => v.id)) + 1 : 1
-      setVentas([...ventas, { id, ...nuevaVenta }])
-      setModalAbierto(false)
-      setNuevaVenta({
-        cliente: '',
-        producto: '',
-        cantidad: 0,
-        precio: 0,
-        fecha: new Date().toISOString().split('T')[0]
+    } catch (error) {
+      console.error('Error updating order status:', error)
+      toast({
+        title: 'Error',
+        description: 'No se pudo actualizar el estado de la orden',
+        variant: 'destructive'
       })
-      setNotificacion('Venta registrada exitosamente')
-      setTimeout(() => setNotificacion(null), 3000)
+    } finally {
+      setIsConfirmModalOpen(false)
+      setSelectedOrderId(null)
     }
   }
+
+  const handleBackToBusinesses = () => {
+    // Implementación de la función para volver a la página de negocios
+  }
+
+  if (isLoading) return <div>Cargando órdenes...</div>
+  if (error) return <div>{error}</div>
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Ventas Manuales</h1>
-      <Button onClick={() => setModalAbierto(true)} className="mb-6">
-        Agregar venta
-      </Button>
+      <h1 className="text-3xl font-bold mb-6">Órdenes del Negocio</h1>
 
-      {notificacion && (
-        <div
-          className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4"
-          role="alert"
-        >
-          <span className="block sm:inline">{notificacion}</span>
-        </div>
-      )}
+      <Button onClick={handleBackToBusinesses} variant="outline" className="mb-4">
+        Volver a Emprendimientos
+      </Button>
 
       <Table>
         <TableHeader>
           <TableRow>
-            {(
-              [
-                { key: 'cliente', label: 'Cliente' },
-                { key: 'producto', label: 'Producto' },
-                { key: 'cantidad', label: 'Cantidad' },
-                { key: 'precio', label: 'Precio' },
-                { key: 'fecha', label: 'Fecha' }
-              ] as const
-            ).map(({ key, label }) => (
-              <TableHead
-                key={key}
-                className="cursor-pointer"
-                onClick={() => solicitarOrdenamiento(key)}
+            <TableHead>Cliente</TableHead>
+            <TableHead>Productos</TableHead>
+            <TableHead>
+              <Button
+                variant="ghost"
+                onClick={() => handleSort('creationDate')}
               >
-                <div className="flex items-center">
-                  {label}
-                  {configuracionOrden.clave === key &&
-                    (configuracionOrden.direccion === 'asc' ? (
-                      <ChevronUp className="ml-2 h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="ml-2 h-4 w-4" />
-                    ))}
-                </div>
-              </TableHead>
-            ))}
+                Fecha de Creación
+                {sortField === 'creationDate' &&
+                  (sortOrder === 'asc' ? (
+                    <ChevronUp className="ml-2 h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  ))}
+              </Button>
+            </TableHead>
+            <TableHead>
+              <Button variant="ghost" onClick={() => handleSort('total')}>
+                Total
+                {sortField === 'total' &&
+                  (sortOrder === 'asc' ? (
+                    <ChevronUp className="ml-2 h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  ))}
+              </Button>
+            </TableHead>
+            <TableHead>
+              <Button variant="ghost" onClick={() => handleSort('status')}>
+                Estado
+                {sortField === 'status' &&
+                  (sortOrder === 'asc' ? (
+                    <ChevronUp className="ml-2 h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  ))}
+              </Button>
+            </TableHead>
+            <TableHead>Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {ventasOrdenadas.map((venta) => (
-            <TableRow key={venta.id}>
-              <TableCell>{venta.cliente}</TableCell>
-              <TableCell>{venta.producto}</TableCell>
-              <TableCell>{venta.cantidad}</TableCell>
-              <TableCell>${formatearPrecio(venta.precio)}</TableCell>
-              <TableCell>{formatearFecha(venta.fecha)}</TableCell>
+          {sortedOrders.map((order) => (
+            <TableRow key={order.id}>
+              <TableCell>
+                {users[order.idUser]?.fullname || 'Usuario desconocido'}
+              </TableCell>
+              <TableCell>
+                {Object.entries(order.products).map(([product, quantity]) => (
+                  <div key={product}>
+                    {product}: {quantity}
+                  </div>
+                ))}
+              </TableCell>
+              <TableCell>
+                {new Date(order.creationDate).toLocaleDateString()}
+              </TableCell>
+              <TableCell>${order.total.toFixed(2)}</TableCell>
+              <TableCell>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-semibold
+                  ${
+                    order.status === 'confirmed'
+                      ? 'bg-green-100 text-green-800'
+                      : order.status === 'in_progress'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-blue-100 text-blue-800'
+                  }`}
+                >
+                  {order.status === 'in_progress'
+                    ? 'En progreso'
+                    : order.status === 'confirmed'
+                      ? 'Confirmado'
+                      : 'Entregado'}
+                </span>
+              </TableCell>
+              <TableCell>
+                {order.status === 'confirmed' && (
+                  <Button
+                    size="sm"
+                    onClick={() => handleDeliverOrder(order.id)}
+                  >
+                    Marcar como entregado
+                  </Button>
+                )}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
 
-      <Dialog open={modalAbierto} onOpenChange={setModalAbierto}>
+      <Dialog open={isConfirmModalOpen} onOpenChange={setIsConfirmModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Agregar Nueva Venta</DialogTitle>
+            <DialogTitle>Confirmar Entrega</DialogTitle>
           </DialogHeader>
-          <form onSubmit={manejarEnvio} className="space-y-4">
-            <div>
-              <Label htmlFor="cliente">Cliente</Label>
-              <Input
-                id="cliente"
-                name="cliente"
-                value={nuevaVenta.cliente}
-                onChange={manejarCambioInput}
-                placeholder="Nombre del cliente"
-              />
-              {errores.cliente && (
-                <p className="text-red-500 text-sm">{errores.cliente}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="producto">Producto</Label>
-              <Input
-                id="producto"
-                name="producto"
-                value={nuevaVenta.producto}
-                onChange={manejarCambioInput}
-                placeholder="Nombre del producto"
-              />
-              {errores.producto && (
-                <p className="text-red-500 text-sm">{errores.producto}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="cantidad">Cantidad</Label>
-              <Input
-                id="cantidad"
-                name="cantidad"
-                type="number"
-                value={nuevaVenta.cantidad || ''}
-                onChange={manejarCambioInput}
-                placeholder="Cantidad"
-              />
-              {errores.cantidad && (
-                <p className="text-red-500 text-sm">{errores.cantidad}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="precio">Precio por unidad</Label>
-              <Input
-                id="precio"
-                name="precio"
-                type="number"
-                value={nuevaVenta.precio || ''}
-                onChange={manejarCambioInput}
-                placeholder="Precio por unidad"
-              />
-              {errores.precio && (
-                <p className="text-red-500 text-sm">{errores.precio}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="fecha">Fecha</Label>
-              <Input
-                id="fecha"
-                name="fecha"
-                type="date"
-                value={nuevaVenta.fecha}
-                onChange={manejarCambioInput}
-                max={new Date().toISOString().split('T')[0]}
-              />
-              {errores.fecha && (
-                <p className="text-red-500 text-sm">{errores.fecha}</p>
-              )}
-            </div>
-            <DialogFooter>
-              <Button type="submit">Guardar venta</Button>
-            </DialogFooter>
-          </form>
+          <p>¿Está seguro que desea marcar esta orden como entregada?</p>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsConfirmModalOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={confirmDelivery}>Confirmar</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

@@ -2,6 +2,7 @@ import Image from 'next/image'
 import NavBar from './nav-bar'
 import NavItem from './nav-item'
 import { LifeBuoy } from 'lucide-react'
+import Link from 'next/link'
 
 export default function Sidebar() {
   return (
@@ -9,13 +10,15 @@ export default function Sidebar() {
       <aside className="hidden w-72 gap-6 h-full flex-col border-r bg-background items-start py-4 px-2 sm:flex">
         {/* Sidebar header */}
         <div className="pl-2">
-          <Image
-            src={'/all-connected-banner.png'}
-            alt="All Connected banner"
-            width={192}
-            height={192}
-            priority
-          />
+          <Link href="/home">
+            <Image
+              src={'/all-connected-banner.png'}
+              alt="All Connected banner"
+              width={192}
+              height={192}
+              priority
+            />
+          </Link>
         </div>
 
         {/* Sidebar Body */}

@@ -1,9 +1,11 @@
-import MessagesList from '@/components/chat/MessagesList'
+import MessagesList from '@/components/chat/MessagesList';
 
-export default function Page() {
+const Page = async () => {
   return (
     <div>
-      <MessagesList />
+      <MessagesList business={true} />
     </div>
-  )
-}
+  );
+};
+
+export default Page;

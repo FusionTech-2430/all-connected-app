@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,7 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { Eye, Trash2, MoreVertical, Upload } from 'lucide-react'
+import { Eye, Trash2, MoreVertical, Upload, ArrowLeft, Loader2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -71,6 +72,7 @@ interface Ally extends User {
 }
 
 export default function BusinessDashboard() {
+  const router = useRouter()
   const [business, setBusiness] = useState<Business | null>(null)
   const [allies, setAllies] = useState<Ally[]>([])
   const [filteredAllies, setFilteredAllies] = useState<Ally[]>([])
@@ -80,6 +82,7 @@ export default function BusinessDashboard() {
   const [isViewAllyModalOpen, setIsViewAllyModalOpen] = useState(false)
   const [isDeleteAllyModalOpen, setIsDeleteAllyModalOpen] = useState(false)
   const [isChangeImageModalOpen, setIsChangeImageModalOpen] = useState(false)
+  const [isJoinBusinessModalOpen, setIsJoinBusinessModalOpen] = useState(false)
   const [selectedAlly, setSelectedAlly] = useState<Ally | null>(null)
   const [newOwner, setNewOwner] = useState('')
   const [temporaryToken, setTemporaryToken] = useState('')
@@ -92,73 +95,75 @@ export default function BusinessDashboard() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    const fetchBusinessData = async () => {
-      try {
-        const response = await fetch(`${API_URL}/businesses-service/api/v1/businesses/2ebec1f5-5473-4c52-ad85-27c09fb0e83f`)
-        if (!response.ok) {
-          throw new Error('Failed to fetch business data')
-        }
-        const data = await response.json()
-        setBusiness(data)
-        return data
-      } catch (err) {
-        setError('Error al cargar la información del negocio')
-        console.error(err)
-      }
+    const businessId = sessionStorage.getItem('currentBusinessId')
+    if (!businessId) {
+      router.push('/businesses')
+      return
     }
 
-    const fetchAlliesData = async (businessData: Business) => {
-      try {
-        const membersResponse = await fetch(`${API_URL}/businesses-service/api/v1/businesses/${businessData.id_business}/members`)
-        if (!membersResponse.ok) {
-          throw new Error('Failed to fetch members data')
-        }
-        const membersData: Member[] = await membersResponse.json()
+    fetchBusinessData(businessId)
+  }, [router])
 
-        const alliesPromises = membersData.map(async (member) => {
-          const userResponse = await fetch(`${API_URL}/users-service/api/v1/users/${member.id.idUser}`)
-          if (!userResponse.ok) {
-            throw new Error(`Failed to fetch user data for ${member.id.idUser}`)
-          }
-          const userData: User = await userResponse.json()
-          return { 
-            ...userData, 
-            joinDate: member.joinDate,
-            isOwner: member.id.idUser === businessData.owner_id
-          }
-        })
-
-        const alliesData = await Promise.all(alliesPromises)
-        
-        // Ensure owner is in the list
-        if (!alliesData.some(ally => ally.id_user === businessData.owner_id)) {
-          const ownerResponse = await fetch(`${API_URL}/users-service/api/v1/users/${businessData.owner_id}`)
-          if (ownerResponse.ok) {
-            const ownerData: User = await ownerResponse.json()
-            alliesData.push({
-              ...ownerData,
-              joinDate: new Date().toISOString(), // Use current date as join date for owner
-              isOwner: true
-            })
-          }
-        }
-
-        setAllies(alliesData)
-        setFilteredAllies(alliesData)
-      } catch (err) {
-        setError('Error al cargar la información de los aliados')
-        console.error(err)
-      } finally {
-        setIsLoading(false)
+  const fetchBusinessData = async (businessId: string) => {
+    try {
+      const response = await fetch(`${API_URL}/businesses-service/api/v1/businesses/${businessId}`)
+      if (!response.ok) {
+        throw new Error('Failed to fetch business data')
       }
+      const data = await response.json()
+      setBusiness(data)
+      fetchAlliesData(data)
+    } catch (err) {
+      setError('Error al cargar la información del negocio')
+      console.error(err)
     }
+  }
 
-    fetchBusinessData().then(businessData => {
-      if (businessData) {
-        fetchAlliesData(businessData)
+  const fetchAlliesData = async (businessData: Business) => {
+    try {
+      const membersResponse = await fetch(`${API_URL}/businesses-service/api/v1/businesses/${businessData.id_business}/members`)
+      if (!membersResponse.ok) {
+        throw new Error('Failed to fetch members data')
       }
-    })
-  }, [])
+      const membersData: Member[] = await membersResponse.json()
+
+      const alliesPromises = membersData.map(async (member) => {
+        const userResponse = await fetch(`${API_URL}/users-service/api/v1/users/${member.id.idUser}`)
+        if (!userResponse.ok) {
+          throw new Error(`Failed to fetch user data for ${member.id.idUser}`)
+        }
+        const userData: User = await userResponse.json()
+        return {
+          ...userData,
+          joinDate: member.joinDate,
+          isOwner: member.id.idUser === businessData.owner_id
+        }
+      })
+
+      const alliesData = await Promise.all(alliesPromises)
+
+      // Ensure owner is in the list
+      if (!alliesData.some(ally => ally.id_user === businessData.owner_id)) {
+        const ownerResponse = await fetch(`${API_URL}/users-service/api/v1/users/${businessData.owner_id}`)
+        if (ownerResponse.ok) {
+          const ownerData: User = await ownerResponse.json()
+          alliesData.push({
+            ...ownerData,
+            joinDate: new Date().toISOString(), // Use current date as join date for owner
+            isOwner: true
+          })
+        }
+      }
+
+      setAllies(alliesData)
+      setFilteredAllies(alliesData)
+    } catch (err) {
+      setError('Error al cargar la información de los aliados')
+      console.error(err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const filterAllies = useCallback(() => {
     const filtered = allies.filter(
@@ -194,24 +199,20 @@ export default function BusinessDashboard() {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
-            // Asegúrate de incluir aquí cualquier token de autenticación necesario
-            // 'Authorization': `Bearer ${yourAuthToken}`
           },
         });
-  
+
         if (!response.ok) {
           const errorData = await response.json().catch(() => null);
           throw new Error(`Failed to delete ally: ${response.status} ${response.statusText}${errorData ? ` - ${JSON.stringify(errorData)}` : ''}`);
         }
-  
-        // Si la eliminación fue exitosa, actualizamos el estado local
+
         const updatedAllies = allies.filter((a) => a.id_user !== selectedAlly.id_user);
         setAllies(updatedAllies);
         setFilteredAllies(updatedAllies);
         setIsDeleteAllyModalOpen(false);
       } catch (error) {
         console.error('Error deleting ally:', error);
-        // Aquí mostramos un mensaje de error más detallado
         setError(`Error al eliminar al aliado: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     }
@@ -224,8 +225,6 @@ export default function BusinessDashboard() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            // Asegúrate de incluir aquí cualquier token de autenticación necesario
-            // 'Authorization': `Bearer ${yourAuthToken}`
           },
         });
 
@@ -234,7 +233,6 @@ export default function BusinessDashboard() {
           throw new Error(`Failed to transfer ownership: ${response.status} ${response.statusText}${errorData ? ` - ${JSON.stringify(errorData)}` : ''}`);
         }
 
-        // Actualizar el estado local
         const updatedAllies = allies.map(ally => ({
           ...ally,
           isOwner: ally.id_user === newOwner
@@ -265,7 +263,6 @@ export default function BusinessDashboard() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // Add any necessary authentication headers here
         },
       })
 
@@ -309,10 +306,6 @@ export default function BusinessDashboard() {
         const response = await fetch(`${API_URL}/businesses-service/api/v1/businesses/${business.id_business}`, {
           method: 'PUT',
           body: formData,
-          // Asegúrate de incluir aquí cualquier token de autenticación necesario
-          // headers: {
-          //   'Authorization': `Bearer ${yourAuthToken}`
-          // },
         })
 
         if (!response.ok) {
@@ -331,17 +324,67 @@ export default function BusinessDashboard() {
     }
   }
 
+  const joinBusinessWithToken = async () => {
+    if (!temporaryToken) {
+      setTokenError('Por favor, ingresa un token válido');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/businesses-service/api/v1/businesses/join`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token: temporaryToken }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setTemporaryToken('');
+        setTokenError(null);
+        setIsJoinBusinessModalOpen(false);
+        if (business) {
+          await fetchAlliesData(business);
+        }
+      } else {
+        setTokenError(data.message || 'Error al unirse al emprendimiento');
+      }
+    } catch (error) {
+      console.error('Error al unirse al emprendimiento:', error);
+      setTokenError('Hubo un error al procesar la solicitud. Inténtalo de nuevo.');
+    }
+  };
+
+  const handleBackToBusinesses = () => {
+    router.push('/businesses')
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    )
+  }
+
   if (error) {
     return <div className="container mx-auto p-6">{error}</div>
   }
 
-  if (isLoading || !business) {
-    return <div className="container mx-auto p-6">Cargando...</div>
+  if (!business) {
+    return <div className="container mx-auto p-6">Negocio no encontrado</div>
   }
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Mi Emprendimiento</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Mi Emprendimiento</h1>
+        <Button onClick={handleBackToBusinesses} variant="outline">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Volver a Emprendimientos
+        </Button>
+      </div>
 
       <div className="bg-blue-50 p-4 rounded-lg flex items-center justify-between mb-6">
         <div className="flex items-center space-x-4">
@@ -357,6 +400,7 @@ export default function BusinessDashboard() {
             <p className="text-sm text-gray-500">ID: {business.id_business}</p>
           </div>
         </div>
+
         <div className="flex space-x-2">
           <Button variant="outline" onClick={() => setIsChangeImageModalOpen(true)}>
             <Upload className="w-4 h-4 mr-2" />
@@ -365,6 +409,7 @@ export default function BusinessDashboard() {
           <Button
             variant="outline"
             onClick={() => setIsOwnershipModalOpen(true)}
+
           >
             Ceder título propietario
           </Button>
@@ -402,7 +447,9 @@ export default function BusinessDashboard() {
                     <img src={ally.photo_url} alt={ally.fullname} className="w-full h-full object-cover" />
                   </Avatar>
                   <div>
-                    <p>{ally.fullname} {ally.isOwner && <span className="text-sm font-normal text-gray-500">(Propietario)</span>}</p>
+                    <p>{ally.fullname}
+                      {ally.isOwner && <span className="text-sm font-normal text-gray-500 ml-2">(Propietario)</span>}
+                    </p>
                     <p className="text-sm text-gray-500">{ally.mail}</p>
                   </div>
                 </div>
@@ -438,11 +485,9 @@ export default function BusinessDashboard() {
         <p className="text-sm text-gray-500">Total: {filteredAllies.length} aliados.</p>
       </div>
 
+      {/* Modals */}
       {/* Ownership Transfer Modal */}
-      <Dialog
-        open={isOwnershipModalOpen}
-        onOpenChange={setIsOwnershipModalOpen}
-      >
+      <Dialog open={isOwnershipModalOpen} onOpenChange={setIsOwnershipModalOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Ceder título de propietario</DialogTitle>
@@ -470,7 +515,6 @@ export default function BusinessDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Add Ally Modal */}
       {/* Add Ally Modal */}
       <Dialog open={isAddAllyModalOpen} onOpenChange={setIsAddAllyModalOpen}>
         <DialogContent>
@@ -525,9 +569,9 @@ export default function BusinessDashboard() {
               <div className="flex items-center space-x-4">
                 <Avatar className="w-16 h-16">
                   {selectedAlly.photo_url ? (
-                    <img 
-                      src={selectedAlly.photo_url} 
-                      alt={`Foto de ${selectedAlly.fullname}`} 
+                    <img
+                      src={selectedAlly.photo_url}
+                      alt={`Foto de ${selectedAlly.fullname}`}
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -571,10 +615,7 @@ export default function BusinessDashboard() {
       </Dialog>
 
       {/* Delete Ally Modal */}
-      <Dialog
-        open={isDeleteAllyModalOpen}
-        onOpenChange={setIsDeleteAllyModalOpen}
-      >
+      <Dialog open={isDeleteAllyModalOpen} onOpenChange={setIsDeleteAllyModalOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Eliminar Aliado</DialogTitle>
@@ -635,6 +676,35 @@ export default function BusinessDashboard() {
             <Button onClick={handleImageUpload} disabled={!selectedImage}>
               Confirmar cambio de imagen
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Join Business Modal */}
+      <Dialog open={isJoinBusinessModalOpen} onOpenChange={setIsJoinBusinessModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Unirse a un Emprendimiento</DialogTitle>
+            <DialogDescription>
+              Ingresa el token que te proporcionaron para unirte al emprendimiento.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            placeholder="Ingresa tu token"
+            value={temporaryToken}
+            onChange={(e) => setTemporaryToken(e.target.value)}
+          />
+          {tokenError && (
+            <Alert variant="destructive" className="mt-2">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{tokenError}</AlertDescription>
+            </Alert>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsJoinBusinessModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={joinBusinessWithToken}>Unirse</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

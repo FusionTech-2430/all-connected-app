@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,65 +8,269 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Eye, Trash2, MoreVertical, Edit, ArrowUpDown, Upload } from 'lucide-react'
+import { Badge } from "@/components/ui/badge"
+import { Eye, Trash2, MoreVertical, Edit, ArrowUpDown, Upload, X } from 'lucide-react'
+import { toast } from "@/components/ui/use-toast"
 import Image from 'next/image'
 
-// Mock data
-const initialProducts = [
-  { id: 1, name: "Choco galletas", category: "Alimento", stock: 100, image: "/placeholder.svg" },
-  { id: 2, name: "Brownies de arequipe", category: "Alimento", stock: 400, image: "/placeholder.svg" },
-  { id: 3, name: "Vapes", category: "Cigarrillos", stock: 50, image: "/placeholder.svg" },
-  { id: 4, name: "Stickers", category: "Papelería", stock: 20, image: "/placeholder.svg" },
-  { id: 5, name: "Calculadoras", category: "Papelería", stock: 800, image: "/placeholder.svg" },
-]
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
 
-type SortField = 'name' | 'category' | 'stock'
+interface Product {
+  id: number
+  idBusiness: string
+  name: string
+  description: string
+  photoUrl: string | null
+  stock: number
+  price: number
+  status: string
+  labels: string[]
+}
+
+type SortField = 'name' | 'stock' | 'price'
 type SortOrder = 'asc' | 'desc'
 
+interface Label {
+  id: number
+  label: string
+}
+
 export default function InventoryDashboard() {
-  const [products, setProducts] = useState(initialProducts)
+  const AVAILABLE_LABELS: Label[] = [
+    { id: 7, label: "Tecnologia" },
+    { id: 8, label: "Ropa" },
+    { id: 9, label: "Hogar" },
+    { id: 10, label: "Cocinas" },
+    { id: 11, label: "Belleza" },
+    { id: 12, label: "Salud" },
+    { id: 13, label: "Juguetes" },
+    { id: 14, label: "Libros" }
+  ];
+
+  const [businessId, setBusinessId] = useState<string>('')
+  const [products, setProducts] = useState<Product[]>([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [newProduct, setNewProduct] = useState({ name: "", category: "", stock: "", image: "/placeholder.svg" })
+  const [newProduct, setNewProduct] = useState<Partial<Product>>({
+    idBusiness: '',
+    name: "",
+    description: "",
+    stock: 0,
+    price: 0,
+    status: "active",
+    labels: []
+  })
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isModifyDialogOpen, setIsModifyDialogOpen] = useState(false)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState<typeof initialProducts[0] | null>(null)
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [sortField, setSortField] = useState<SortField>('name')
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc')
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const filteredAndSortedProducts = products
-    .filter(product => product.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    .sort((a, b) => {
-      if (a[sortField] < b[sortField]) return sortOrder === 'asc' ? -1 : 1
-      if (a[sortField] > b[sortField]) return sortOrder === 'asc' ? 1 : -1
-      return 0
-    })
+  useEffect(() => {
+    const storedBusinessId = sessionStorage.getItem('currentBusinessId')
+    if (storedBusinessId) {
+      setBusinessId(storedBusinessId)
+      setNewProduct(prev => ({
+        ...prev,
+        idBusiness: storedBusinessId
+      }))
+    } else {
+      setError('No se encontró el ID del negocio')
+    }
+  }, [])
 
-  const handleAddProduct = () => {
-    if (newProduct.name && newProduct.category && newProduct.stock) {
-      setProducts([...products, { ...newProduct, id: products.length + 1, stock: parseInt(newProduct.stock) }])
-      setNewProduct({ name: "", category: "", stock: "", image: "/placeholder.svg" })
-      setIsAddDialogOpen(false)
+  useEffect(() => {
+    if (businessId) {
+      fetchProducts()
+    }
+  }, [businessId])
+
+  const fetchProducts = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await fetch(`${API_URL}/products-service/api/v1/products/businesses/${businessId}`)
+      if (!response.ok) {
+        throw new Error('Failed to fetch products')
+      }
+      const data = await response.json()
+      const productsWithLabels = data.map((product: Product) => ({
+        ...product,
+        labels: Array.isArray(product.labels) ? product.labels : []
+      }))
+      setProducts(productsWithLabels)
+    } catch (err) {
+      setError('Error al cargar los productos')
+      console.error(err)
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  const handleDeleteProduct = () => {
-    if (selectedProduct) {
-      setProducts(products.filter(product => product.id !== selectedProduct.id))
+  const handleAddProduct = async () => {
+    try {
+      const productData = {
+        idBusiness: newProduct.idBusiness || '',
+        name: newProduct.name || '',
+        description: newProduct.description || '',
+        stock: newProduct.stock || 0,
+        price: newProduct.price || 0,
+        status: newProduct.status || 'active',
+        labels: newProduct.labels || []
+      };
+  
+      console.log('Sending product data:', productData);
+  
+      const formData = new FormData();
+      
+      Object.entries(productData).forEach(([key, value]) => {
+        if (key === 'labels') {
+          formData.append('labels', JSON.stringify(value));
+        } else {
+          formData.append(key, String(value));
+        }
+      });
+  
+      if (fileInputRef.current?.files?.[0]) {
+        formData.append('photo', fileInputRef.current.files[0]);
+      }
+  
+      // POST request to create the product
+      const response = await fetch(`${API_URL}/products-service/api/v1/products`, {
+        method: 'POST',
+        body: formData,
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        console.error('Server response:', errorData);
+        throw new Error('Failed to create product');
+      }
+  
+      const createdProduct = await response.json();
+      console.log('Created product:', createdProduct);
+  
+      // Now handle the multiple POST requests for each associated label
+      for (const labelName of productData.labels) {
+        const labelData = AVAILABLE_LABELS.find((l) => l.label === labelName);
+        if (labelData) {
+          const response2 = await fetch(`${API_URL}/products-service/api/v1/products/${createdProduct.id}/labels/${labelData.id}`, {
+            method: 'POST'
+          });
+  
+          if (!response2.ok) {
+            console.error(`Failed to associate label ${labelData.label} with product ${createdProduct.id}`);
+          }
+        }
+      }
+  
+      const normalizedProduct = {
+        ...createdProduct,
+        labels: productData.labels // Use the labels from productData
+      };
+  
+      setProducts(prevProducts => [...prevProducts, normalizedProduct]);
+      setIsAddDialogOpen(false);
+      resetNewProductForm();
+  
+      toast({
+        title: "Éxito",
+        description: "Producto creado correctamente",
+      });
+    } catch (err) {
+      console.error('Error creating product:', err);
+      toast({
+        title: "Error",
+        description: "Error al crear el producto",
+        variant: "destructive",
+      });
+    }
+  }
+
+  const handleDeleteProduct = async () => {
+    if (!selectedProduct) return
+
+    try {
+      const response = await fetch(`${API_URL}/products-service/api/v1/products/${selectedProduct.id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete product')
+      }
+
+      setProducts(products.filter(p => p.id !== selectedProduct.id))
       setIsDeleteDialogOpen(false)
       setSelectedProduct(null)
+      toast({
+        title: "Éxito",
+        description: "Producto eliminado correctamente",
+      })
+    } catch (err) {
+      console.error('Error deleting product:', err)
+      toast({
+        title: "Error",
+        description: "Error al eliminar el producto",
+        variant: "destructive",
+      })
     }
   }
 
-  const handleModifyProduct = () => {
-    if (selectedProduct) {
-      setProducts(products.map(product => 
-        product.id === selectedProduct.id ? selectedProduct : product
-      ))
+  const handleModifyProduct = async () => {
+    if (!selectedProduct) return
+
+    try {
+      const formData = new FormData()
+      formData.append('idBusiness', selectedProduct.idBusiness)
+      formData.append('name', selectedProduct.name)
+      formData.append('description', selectedProduct.description)
+      formData.append('stock', selectedProduct.stock.toString())
+      formData.append('price', selectedProduct.price.toString())
+      formData.append('status', selectedProduct.status)
+      formData.append('labels', JSON.stringify(selectedProduct.labels))
+
+      if (fileInputRef.current?.files?.[0]) {
+        formData.append('photo', fileInputRef.current.files[0])
+      }
+
+      const response = await fetch(`${API_URL}/products-service/api/v1/products/${selectedProduct.id}`, {
+        method: 'PUT',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update product')
+      }
+
+      const updatedProduct = await response.json()
+
+      // Update labels associations
+      for (const labelName of selectedProduct.labels) {
+        const labelData = AVAILABLE_LABELS.find((l) => l.label === labelName);
+        if (labelData) {
+          await fetch(`${API_URL}/products-service/api/v1/products/${updatedProduct.id}/labels/${labelData.id}`, {
+            method: 'POST'
+          });
+        }
+      }
+
+      setProducts(products.map(p => p.id === selectedProduct.id ? {...updatedProduct, labels: selectedProduct.labels} : p))
       setIsModifyDialogOpen(false)
-      setSelectedProduct(null)
+      toast({
+        title: "Éxito",
+        description: "Producto actualizado correctamente",
+      })
+    } catch (err) {
+      console.error('Error updating product:', err)
+      toast({
+        title: "Error",
+        description: "Error al actualizar el producto",
+        variant: "destructive",
+      })
     }
   }
 
@@ -79,20 +283,70 @@ export default function InventoryDashboard() {
     }
   }
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>, isNewProduct: boolean) => {
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        if (isNewProduct) {
-          setNewProduct({ ...newProduct, image: reader.result as string })
-        } else if (selectedProduct) {
-          setSelectedProduct({ ...selectedProduct, image: reader.result as string })
-        }
-      }
-      reader.readAsDataURL(file)
+      console.log('File selected:', file.name)
     }
   }
+
+  const resetNewProductForm = () => {
+    setNewProduct({
+      idBusiness: businessId,
+      name: "",
+      description: "",
+      stock: 0,
+      price: 0,
+      status: "active",
+      labels: []
+    })
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const handleLabelChange = (value: string) => {
+    setNewProduct(prev => ({
+      ...prev,
+      labels: prev.labels?.includes(value)
+        ? prev.labels.filter(label => label !== value)
+        : [...(prev.labels || []), value]
+    }))
+  }
+
+  const handleRemoveLabel = (labelToRemove: string) => {
+    setNewProduct(prev => ({
+      ...prev,
+      labels: prev.labels?.filter(label => label !== labelToRemove) || []
+    }))
+  }
+
+  const handleModifyLabelChange = (value: string) => {
+    if (!selectedProduct) return;
+
+    setSelectedProduct(prev => {
+      if (!prev) return prev;
+      
+      const currentLabels = prev.labels || [];
+      return {
+        ...prev,
+        labels: currentLabels.includes(value)
+          ? currentLabels.filter(label => label !== value)
+          : [...currentLabels, value]
+      };
+    });
+  }
+
+  const filteredAndSortedProducts = products
+    .filter(product => product.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a, b) => {
+      if (a[sortField] < b[sortField]) return sortOrder === 'asc' ? -1 : 1
+      if (a[sortField] > b[sortField]) return sortOrder === 'asc' ? 1 : -1
+      return 0
+    })
+
+  if (isLoading) return <div>Cargando productos...</div>
+  if (error) return <div>Error: {error}</div>
 
   return (
     <div className="container mx-auto p-4">
@@ -125,21 +379,15 @@ export default function InventoryDashboard() {
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="category" className="text-right">
-                  Categoría
+                <Label htmlFor="description" className="text-right">
+                  Descripción
                 </Label>
-                <Select
-                  onValueChange={(value) => setNewProduct({ ...newProduct, category: value })}
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Selecciona una categoría" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Alimento">Alimento</SelectItem>
-                    <SelectItem value="Cigarrillos">Cigarrillos</SelectItem>
-                    <SelectItem value="Papelería">Papelería</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="description"
+                  value={newProduct.description}
+                  onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+                  className="col-span-3"
+                />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="stock" className="text-right">
@@ -149,9 +397,69 @@ export default function InventoryDashboard() {
                   id="stock"
                   type="number"
                   value={newProduct.stock}
-                  onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
+                  onChange={(e) => setNewProduct({ ...newProduct, stock: parseInt(e.target.value) })}
                   className="col-span-3"
                 />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="price" className="text-right">
+                  Precio
+                </Label>
+                <Input
+                  id="price"
+                  type="number"
+                  value={newProduct.price}
+                  onChange={(e) => setNewProduct({ ...newProduct, price: parseFloat(e.target.value) })}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="status" className="text-right">
+                  Estado
+                </Label>
+                <Select
+                  value={newProduct.status}
+                  onValueChange={(value) => setNewProduct({ ...newProduct, status: value })}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Selecciona un estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Activo</SelectItem>
+                    <SelectItem value="inactive">Inactivo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Etiquetas</Label>
+                <div className="col-span-3 space-y-4">
+                  <Select onValueChange={handleLabelChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar etiquetas" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {AVAILABLE_LABELS.map((label) => (
+                        <SelectItem key={label.id} value={label.label}>
+                          {label.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="flex flex-wrap gap-2">
+                    {newProduct.labels?.map((label) => (
+                      <Badge key={label} variant="secondary" className="flex items-center gap-1">
+                        {label}
+                        <button
+                          onClick={() => handleRemoveLabel(label)}
+                          className="ml-1 rounded-full hover:bg-muted"
+                        >
+                          <X className="h-3 w-3" />
+                          <span className="sr-only">Remove {label} tag</span>
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="image" className="text-right">
@@ -162,7 +470,7 @@ export default function InventoryDashboard() {
                     id="image"
                     type="file"
                     accept="image/*"
-                    onChange={(e) => handleImageUpload(e, true)}
+                    onChange={handleImageUpload}
                     className="hidden"
                     ref={fileInputRef}
                   />
@@ -171,13 +479,10 @@ export default function InventoryDashboard() {
                   </Button>
                 </div>
               </div>
-              {newProduct.image && (
-                <div className="col-span-4">
-                  <Image src={newProduct.image} alt="Vista previa" width={100} height={100} />
-                </div>
-              )}
             </div>
-            <Button onClick={handleAddProduct}>Guardar y enviar alianza</Button>
+            <DialogFooter>
+              <Button onClick={handleAddProduct}>Guardar producto</Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
@@ -190,15 +495,16 @@ export default function InventoryDashboard() {
               </Button>
             </TableHead>
             <TableHead>
-              <Button variant="ghost" onClick={() => handleSort('category')}>
-                Categoría {sortField === 'category' && <ArrowUpDown className="ml-2 h-4 w-4" />}
-              </Button>
-            </TableHead>
-            <TableHead>
               <Button variant="ghost" onClick={() => handleSort('stock')}>
                 Stock {sortField === 'stock' && <ArrowUpDown className="ml-2 h-4 w-4" />}
               </Button>
             </TableHead>
+            <TableHead>
+              <Button variant="ghost" onClick={() => handleSort('price')}>
+                Precio {sortField === 'price' && <ArrowUpDown className="ml-2 h-4 w-4" />}
+              </Button>
+            </TableHead>
+            <TableHead>Etiquetas</TableHead>
             <TableHead>Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -206,8 +512,17 @@ export default function InventoryDashboard() {
           {filteredAndSortedProducts.map((product) => (
             <TableRow key={product.id}>
               <TableCell>{product.name}</TableCell>
-              <TableCell>{product.category}</TableCell>
               <TableCell>{product.stock}</TableCell>
+              <TableCell>${product.price.toFixed(2)}</TableCell>
+              <TableCell>
+                <div className="flex flex-wrap gap-1">
+                  {product.labels.map(label => (
+                    <Badge key={label} variant="secondary">
+                      {label}
+                    </Badge>
+                  ))}
+                </div>
+              </TableCell>
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -245,32 +560,63 @@ export default function InventoryDashboard() {
         </TableBody>
       </Table>
 
-      {/* View Product Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Detalles del Producto</DialogTitle>
           </DialogHeader>
           {selectedProduct && (
-            <div className="grid gap-4 py-4">
-              <div className="flex justify-center">
-                <Image src={selectedProduct.image} alt={selectedProduct.name} width={200} height={200} />
+            <>
+              <div className="flex justify-center mb-4">
+                {selectedProduct.photoUrl ? (
+                  <Image
+                    src={selectedProduct.photoUrl}
+                    alt={selectedProduct.name}
+                    width={200}
+                    height={200}
+                    className="rounded-lg object-cover"
+                  />
+                ) : (
+                  <div className="w-[200px] h-[200px] bg-gray-200 rounded-lg flex items-center justify-center text-gray-400">
+                    No image available
+                  </div>
+                )}
               </div>
-              <div className="grid gap-2">
-                <div>
-                  <Label>Nombre</Label>
-                  <p className="font-medium">{selectedProduct.name}</p>
-                </div>
-                <div>
-                  <Label>Categoría</Label>
-                  <p className="font-medium">{selectedProduct.category}</p>
-                </div>
-                <div>
-                  <Label>Stock</Label>
-                  <p className="font-medium">{selectedProduct.stock}</p>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <div>
+                    <Label>Nombre</Label>
+                    <p className="font-medium">{selectedProduct.name}</p>
+                  </div>
+                  <div>
+                    <Label>Descripción</Label>
+                    <p className="font-medium">{selectedProduct.description}</p>
+                  </div>
+                  <div>
+                    <Label>Stock</Label>
+                    <p className="font-medium">{selectedProduct.stock}</p>
+                  </div>
+                  <div>
+                    <Label>Precio</Label>
+                    <p className="font-medium">${selectedProduct.price.toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <Label>Estado</Label>
+                    <p className="font-medium">{selectedProduct.status}</p>
+                  </div>
+                  <div>
+                    <Label>Etiquetas</Label>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {selectedProduct.labels.map(label => (
+                        <Badge key={label} variant="secondary">
+                          {label}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            </>
           )}
           <DialogFooter>
             <Button onClick={() => setIsViewDialogOpen(false)}>Cerrar</Button>
@@ -278,7 +624,6 @@ export default function InventoryDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Product Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -297,7 +642,6 @@ export default function InventoryDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Modify Product Dialog */}
       <Dialog open={isModifyDialogOpen} onOpenChange={setIsModifyDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -305,9 +649,6 @@ export default function InventoryDashboard() {
           </DialogHeader>
           {selectedProduct && (
             <div className="grid gap-4 py-4">
-              <div className="flex justify-center mb-4">
-                <Image src={selectedProduct.image} alt="Vista previa" width={150} height={150} />
-              </div>
               <div className="space-y-4">
                 <div className="grid gap-2">
                   <Label htmlFor="modify-name">Producto</Label>
@@ -318,20 +659,12 @@ export default function InventoryDashboard() {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="modify-category">Categoría</Label>
-                  <Select
-                    value={selectedProduct.category}
-                    onValueChange={(value) => setSelectedProduct({ ...selectedProduct, category: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Alimento">Alimento</SelectItem>
-                      <SelectItem  value="Cigarrillos">Cigarrillos</SelectItem>
-                      <SelectItem value="Papelería">Papelería</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="modify-description">Descripción</Label>
+                  <Input
+                    id="modify-description"
+                    value={selectedProduct.description}
+                    onChange={(e) => setSelectedProduct({ ...selectedProduct, description: e.target.value })}
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="modify-stock">Stock</Label>
@@ -343,13 +676,73 @@ export default function InventoryDashboard() {
                   />
                 </div>
                 <div className="grid gap-2">
+                  <Label htmlFor="modify-price">Precio</Label>
+                  <Input
+                    id="modify-price"
+                    type="number"
+                    value={selectedProduct.price}
+                    onChange={(e) =>
+                      setSelectedProduct({ ...selectedProduct, price: parseFloat(e.target.value) })
+                    }
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="modify-status">Estado</Label>
+                  <Select
+                    value={selectedProduct.status}
+                    onValueChange={(value) => setSelectedProduct({ ...selectedProduct, status: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Activo</SelectItem>
+                      <SelectItem value="inactive">Inactivo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label>Etiquetas</Label>
+                  <div className="space-y-4">
+                    <Select onValueChange={handleModifyLabelChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar etiquetas" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {AVAILABLE_LABELS.map((label) => (
+                          <SelectItem key={label.id} value={label.label}>
+                            {label.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedProduct.labels.map((label) => (
+                        <Badge key={label} variant="secondary" className="flex items-center gap-1">
+                          {label}
+                          <button
+                            onClick={() => setSelectedProduct({
+                              ...selectedProduct,
+                              labels: selectedProduct.labels.filter(l => l !== label)
+                            })}
+                            className="ml-1 rounded-full hover:bg-muted"
+                          >
+                            <X className="h-3 w-3" />
+                            <span className="sr-only">Remove {label} tag</span>
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="grid gap-2">
                   <Label htmlFor="modify-image">Imagen</Label>
                   <div className="flex items-center space-x-2">
                     <Input
                       id="modify-image"
                       type="file"
                       accept="image/*"
-                      onChange={(e) => handleImageUpload(e, false)}
+                      onChange={handleImageUpload}
                       className="hidden"
                       ref={fileInputRef}
                     />

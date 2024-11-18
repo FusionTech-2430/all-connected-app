@@ -1,14 +1,11 @@
-import React from 'react'
 import NavItem from './nav-item'
 
 import {
-  Calendar,
   House,
   LineChart,
   Package,
   ShoppingCart,
   Users,
-  NotebookPen
 } from 'lucide-react'
 
 const navBarItems = [
@@ -41,18 +38,6 @@ const navBarItems = [
     href: '/sales',
     title: 'Ventas',
     icon: <LineChart size={20} />
-  },
-  {
-    uid: 'events',
-    href: '/events',
-    title: 'Eventos',
-    icon: <Calendar size={20} />
-  },
-  {
-    uid: 'my-services',
-    href: '/my-services',
-    title: 'Servicios',
-    icon: <NotebookPen size={20} />
   }
 ]
 

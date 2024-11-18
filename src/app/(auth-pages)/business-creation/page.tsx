@@ -1,4 +1,3 @@
-import React from 'react'
 import Business from '@/components/dashboard/businesses/BusinessCreation'
 
 export default function UsersPage() {

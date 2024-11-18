@@ -40,13 +40,15 @@ export function AppHeader({ children, ...props }: HeaderProps) {
               </SheetDescription>
             </SheetHeader>
             <div className="flex flex-col h-full gap-6">
-              <Image
-                src={'/all-connected-banner.png'}
-                alt="All Connected banner"
-                width={192}
-                height={192}
-                priority
-              />
+              <Link href="/home">
+                <Image
+                  src={'/all-connected-banner.png'}
+                  alt="All Connected banner"
+                  width={192}
+                  height={192}
+                  priority
+                />
+              </Link>
 
               <NavBar className="grid gap-2 text-lg" />
 
@@ -62,13 +64,74 @@ export function AppHeader({ children, ...props }: HeaderProps) {
         </Sheet>
         {children}
         <div className="ml-auto flex items-center gap-4">
-          <Button variant="outline">Comprar</Button>
+      
+
+        <Button className="bg-primary hover:bg-primary-600">
+            <Link href="/consumer">
+              Comprar
+            </Link>
+          </Button>
+
           <Button className="bg-primary hover:bg-primary-600">
-            Mejora tu membresía
+            <Link href="/my-membership">
+              Mejora tu membresía
+            </Link>
           </Button>
           <Button variant="ghost" size="icon">
             <Bell size={20} />
           </Button>
+          <ThemeToggle />
+          <UserAvatar />
+        </div>
+      </header>
+    </>
+  )
+}
+
+export function AdminHeader({ children, ...props }: HeaderProps) {
+  return (
+    <>
+      <header {...props}>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button size="icon" variant="outline" className="sm:hidden">
+              <MenuIcon size={20} />
+              <span className="sr-only">Toggle Menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="sm:max-w-xs">
+            {/* Metadata for screen readers */}
+            <SheetHeader>
+              <SheetTitle className="sr-only">Menu</SheetTitle>
+              <SheetDescription className="sr-only">
+                Principal navigation
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex flex-col h-full gap-6">
+              <Link href="/home">
+                <Image
+                  src={'/all-connected-banner.png'}
+                  alt="All Connected banner"
+                  width={192}
+                  height={192}
+                  priority
+                />
+              </Link>
+
+              <NavBar className="grid gap-2 text-lg" />
+
+              <div className="flex flex-col justify-end items-start w-full h-full text-lg">
+                <NavItem
+                  href="/support"
+                  icon={<LifeBuoy size={20} />}
+                  title="Soporte técnico"
+                />
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+        {children}
+        <div className="ml-auto flex items-center gap-4">
           <ThemeToggle />
           <UserAvatar />
         </div>

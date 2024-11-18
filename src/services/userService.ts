@@ -91,3 +91,23 @@ export const deleteUser = async (userId: string) => {
     throw error
   }
 }
+
+export const getUsers = async () => {
+  try {
+    const response = await fetch(API_URL + '/users-service/api/v1/users', {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.message || 'Error inesperado en el servidor')
+    }
+    return await response.json()
+  } catch (error) {
+    console.error('Error getting users:', error)
+    throw error
+  }
+}
