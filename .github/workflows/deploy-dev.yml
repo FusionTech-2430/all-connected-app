@@ -12,7 +12,9 @@ on:
 jobs:
   Deploy:
     name: Deploy on Develop
-    if: ${{ github.event.pull_request.merged == true }}
+     if: |
+      (github.event_name == 'push') ||
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     runs-on: self-hosted
     steps:
       - name: executing remote ssh commands using ssh key
