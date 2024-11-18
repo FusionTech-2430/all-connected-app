@@ -96,9 +96,7 @@ export default function ManualSales() {
   }, [])
 
   const fetchUsers = async (orders: Order[]) => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    const userIds = [...new Set(orders.map((order) => order.idUser))]
+    const userIds = Array.from(new Set(orders.map((order) => order.idUser)))
     const userPromises = userIds.map((id) =>
       fetch(`${API_URL}/users-service/api/v1/users/${id}`).then((res) =>
         res.json()
@@ -175,12 +173,20 @@ export default function ManualSales() {
     }
   }
 
+  const handleBackToBusinesses = () => {
+    // Implementación de la función para volver a la página de negocios
+  }
+
   if (isLoading) return <div>Cargando órdenes...</div>
   if (error) return <div>{error}</div>
 
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">Órdenes del Negocio</h1>
+
+      <Button onClick={handleBackToBusinesses} variant="outline" className="mb-4">
+        Volver a Emprendimientos
+      </Button>
 
       <Table>
         <TableHeader>
@@ -262,7 +268,7 @@ export default function ManualSales() {
                 </span>
               </TableCell>
               <TableCell>
-                {order.status === 'in_progress' && (
+                {order.status === 'confirmed' && (
                   <Button
                     size="sm"
                     onClick={() => handleDeliverOrder(order.id)}
