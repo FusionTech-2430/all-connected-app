@@ -87,12 +87,27 @@ export default function BusinessCreation() {
         formData.append('logo_url', file)
       }
 
-      await createBusiness({
-        name,
-        owner_id: userId,
-        organization: selectedOrganization,
-        logo_url: file
-      })
+      let logoUrl = ''
+      if (file) {
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          logoUrl = reader.result as string
+          createBusiness({
+            name,
+            owner_id: userId,
+            organization: selectedOrganization,
+            logo_url: logoUrl
+          })
+        }
+        reader.readAsDataURL(file)
+      } else {
+        await createBusiness({
+          name,
+          owner_id: userId,
+          organization: selectedOrganization,
+          logo_url: logoUrl
+        })
+      }
 
       toast({
         title: 'Éxito',
