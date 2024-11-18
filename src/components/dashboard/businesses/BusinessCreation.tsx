@@ -15,16 +15,15 @@ import {
 } from '@/components/ui/select'
 import { toast } from '@/components/ui/use-toast'
 import { useUserId } from '@/hooks/use-user-id'
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+import { getOrganizations } from '@/lib/api/organizations'
+import { createBusiness } from '@/lib/api/business'
 
 interface Organization {
   id_organization: string
   name: string
 }
 
-
-const BusinessCreation = () => {
+export default function BusinessCreation() {
   const router = useRouter()
   const [name, setName] = useState('')
   const [selectedOrganization, setSelectedOrganization] = useState('')
@@ -41,13 +40,7 @@ const BusinessCreation = () => {
 
   const fetchOrganizations = async () => {
     try {
-      const response = await fetch(
-        `${API_URL}/organizations-service/api/v1/organizations`
-      )
-      if (!response.ok) {
-        throw new Error('Failed to fetch organizations')
-      }
-      const data = await response.json()
+      const data = await getOrganizations()
       setOrganizations(data)
     } catch (error) {
       console.error('Error fetching organizations:', error)
@@ -94,17 +87,12 @@ const BusinessCreation = () => {
         formData.append('logo_url', file)
       }
 
-      const response = await fetch(
-        `${API_URL}/businesses-service/api/v1/businesses`,
-        {
-          method: 'POST',
-          body: formData
-        }
-      )
-
-      if (!response.ok) {
-        throw new Error('Failed to create business')
-      }
+      await createBusiness({
+        name,
+        owner_id: userId,
+        organization: selectedOrganization,
+        logo_url: file
+      })
 
       toast({
         title: 'Éxito',
@@ -234,5 +222,3 @@ const BusinessCreation = () => {
     </div>
   )
 }
-
-export default BusinessCreation
